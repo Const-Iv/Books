@@ -1,0 +1,20 @@
+# Cursor Compatibility Mirror
+
+Этот файл поддерживается только для совместимости с Cursor.
+
+Обязательные правила проекта находятся в:
+
+- `AGENTS.md`
+- `.memory-bank/index.md` и релевантных `.memory-bank/*.md`
+- `CODEX_MEMORY.md`
+- `CLAUDE.md`
+
+Mirror rules:
+
+- не добавлять сюда уникальные обязательные правила, которых нет в Codex-primary sources;
+- новые governance/process rules сначала вносить в `AGENTS.md` и/или `.memory-bank/*`, и только потом зеркалить сюда;
+- conversational branch-chat должен маппиться на канонические repo scripts;
+- `task:start` допускается только из clean tree; `--allow-dirty` не считается допустимым bypass;
+- если используется BMAD, `_bmad/` — canonical install, `_bmad-output/` — локальный scratch без коммита;
+- `.cursorrules` не заменяет `AGENTS.md` и не считается единственным source of truth;
+- QA и release decisions должны идти через `qa:agent`, `task:*`, `release:local`, а не через ad-hoc shell flow.

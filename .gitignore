@@ -1,0 +1,27 @@
+node_modules/
+coverage/
+runtime/
+tmp/
+playwright-report/
+.env
+.DS_Store
+*.log
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# agent workspace local copies
+templates/agent-workspace/SOUL.md
+templates/agent-workspace/USER.md
+templates/agent-workspace/MEMORY.md
+templates/agent-workspace/memory/L0_INDEX.md
+templates/agent-workspace/memory/L1/
+templates/agent-workspace/memory/L2/
+
+# local app state / work artifacts
+.claude/
+.cursor/
+_bmad-output/
+
+# release artifacts
+release/*.json

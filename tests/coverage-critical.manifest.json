@@ -1,0 +1,34 @@
+{
+  "criticalModules": [
+    {
+      "module": "scripts/dependency-preflight.mjs",
+      "tests": [
+        "tests/unit/dependency-preflight.test.mjs"
+      ]
+    },
+    {
+      "module": "scripts/lib/doc-utils.mjs",
+      "tests": [
+        "tests/unit/doc-utils.test.mjs"
+      ]
+    },
+    {
+      "module": "scripts/triz-trigger.mjs",
+      "tests": [
+        "tests/unit/triz-trigger.test.mjs"
+      ]
+    },
+    {
+      "module": "scripts/worktree-start.mjs",
+      "tests": [
+        "tests/e2e/pr-smoke.test.mjs"
+      ]
+    },
+    {
+      "module": "scripts/worktree-finish-core.mjs",
+      "tests": [
+        "tests/e2e/nightly-finish.test.mjs"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+name: QA PR
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  workflow-lint:
+    name: workflow-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate workflow files exist
+        run: test -f .github/workflows/qa-pr.yml && test -f .github/workflows/qa-nightly.yml
+
+  actions-security:
+    name: actions-security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run starter security gate
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Security baseline
+        run: npm run qa:security
+
+  qa-pr:
+    name: qa-pr
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deterministic gate
+        run: npm run qa:agent
+
+      - name: PR smoke
+        run: npm run qa:smoke:pr
+
+      - name: Critical coverage
+        run: npm run qa:coverage:critical
+
+      - name: Critical performance
+        run: npm run qa:perf:critical

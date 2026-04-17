@@ -1,0 +1,38 @@
+{
+  "name": "new-project-starter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Executable Node/npm baseline for Codex worktree conveyor, deterministic QA, and governance-first project bootstrap.",
+  "scripts": {
+    "lint": "node scripts/repo-lint.mjs",
+    "lint:fix": "node scripts/repo-lint.mjs --fix",
+    "lint:fix:changed": "node scripts/lint-fix-changed.mjs",
+    "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
+    "test": "node --test tests/unit/*.test.mjs tests/integration/*.test.mjs",
+    "build": "node scripts/build-starter.mjs",
+    "qa:agent": "node scripts/deterministic-feedback-loop.mjs",
+    "qa:smoke:pr": "node --test tests/e2e/pr-smoke.test.mjs",
+    "qa:e2e:nightly": "node --test tests/e2e/*.test.mjs",
+    "qa:security": "node scripts/security-gate.mjs",
+    "qa:coverage:critical": "node scripts/coverage-critical.mjs",
+    "qa:perf:critical": "node scripts/perf-critical.mjs",
+    "task:start": "node scripts/worktree-start.mjs",
+    "task:test": "node scripts/task-test.mjs",
+    "task:qa:agent": "node scripts/worktree-qa-agent.mjs",
+    "task:finish:core": "node scripts/worktree-finish-core.mjs",
+    "task:merge:main": "node scripts/worktree-merge-main.mjs",
+    "task:history": "node scripts/worktree-history.mjs",
+    "task:ledger": "node scripts/worktree-ledger.mjs",
+    "task:operational-docs:capture": "node scripts/worktree-operational-docs.mjs capture",
+    "task:operational-docs:sync": "node scripts/worktree-operational-docs.mjs sync",
+    "release:local": "node scripts/release-local.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

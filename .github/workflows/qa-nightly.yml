@@ -1,0 +1,38 @@
+name: QA Nightly
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qa-nightly:
+    name: qa-nightly
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Nightly process suite
+        run: npm run qa:e2e:nightly
+
+      - name: Security baseline
+        run: npm run qa:security
+
+      - name: Critical coverage
+        run: npm run qa:coverage:critical
+
+      - name: Critical performance
+        run: npm run qa:perf:critical
