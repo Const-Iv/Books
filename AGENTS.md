@@ -109,7 +109,10 @@ These rules apply to the whole repository.
 - shared operational docs сначала capture'ить из task branch, а sync'ить обратно только на publish/release stage как single-writer artifacts;
 - `task:finish:core` не должен спрашивать legacy `--preview ok|skip`;
 - для starter baseline `task:qa:agent` всё равно пишет `previewPreparedSha`, но preview status по умолчанию `not_supported`, пока проект не добавит свой preview adapter;
-- перед cleanup всегда спрашивать явно: удалять локальный worktree/branch или оставить.
+- перед cleanup всегда спрашивать явно и в фиксированном формате:
+  `1. Удалить`
+  `2. Оставить`
+  Ответ `1` маппится на удаление локального worktree/branch, ответ `2` — на сохранение.
 
 ### Merge Semantic Command
 

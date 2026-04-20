@@ -1,6 +1,7 @@
 // @ts-check
 
 import { existsSync } from "node:fs";
+import { rmdir } from "node:fs/promises";
 import path from "node:path";
 
 import { buildCommitMessage } from "./lib/conveyor-utils.mjs";
@@ -9,6 +10,7 @@ import {
   appendHistoryEvent,
   findGitRoot,
   formatIso,
+  getCodexHome,
   getCurrentBranch,
   getHeadSha,
   getTrackedChangedFiles,
@@ -189,6 +191,47 @@ async function runPublishStage(repoRoot, state) {
 }
 
 /**
+ * @param {string | null} cleanup
+ * @returns {string | null}
+ */
+function normalizeCleanupChoice(cleanup) {
+  if (cleanup === "1") {
+    return "yes";
+  }
+  if (cleanup === "2") {
+    return "no";
+  }
+  return cleanup;
+}
+
+/**
+ * @param {string} taskPath
+ * @returns {Promise<void>}
+ */
+async function pruneManagedTaskRoot(taskPath) {
+  const managedRoot = path.resolve(getCodexHome(), "worktrees");
+  const taskRoot = path.resolve(path.dirname(taskPath));
+  const relative = path.relative(managedRoot, taskRoot);
+  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) {
+    return;
+  }
+
+  try {
+    await rmdir(taskRoot);
+  } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      ["ENOENT", "ENOTEMPTY", "EEXIST"].includes(String(error.code))
+    ) {
+      return;
+    }
+    throw error;
+  }
+}
+
+/**
  * @param {string} repoRoot
  * @param {import("./lib/runtime.mjs").TaskState} state
  * @param {string | null} cleanup
@@ -196,14 +239,19 @@ async function runPublishStage(repoRoot, state) {
  */
 async function finalizeTask(repoRoot, state, cleanup) {
   if (!cleanup) {
-    console.log("Finish complete. Re-run with --cleanup yes or --cleanup no.");
+    console.log(
+      ["Finish complete. Choose cleanup:", "1. Удалить", "2. Оставить", "CLI aliases: --cleanup 1|2 (legacy: yes|no)."].join(
+        "\n"
+      )
+    );
     return;
   }
 
+  const stateRepoRoot = state.repoRoot || state.mainWorktreePath || repoRoot;
   state.cleanupDecision = cleanup;
   state.finishedAt = formatIso();
   state.status = "finished";
-  await saveTaskState(repoRoot, state);
+  await saveTaskState(stateRepoRoot, state);
 
   const cleanupPayload = {
     decision: cleanup,
@@ -217,18 +265,19 @@ async function finalizeTask(repoRoot, state, cleanup) {
       process.chdir(path.dirname(repoRoot));
       runCommand(mainWorktreePath, "git", ["worktree", "remove", taskPath, "--force"], { allowFailure: true });
     }
+    await pruneManagedTaskRoot(taskPath);
     runCommand(mainWorktreePath, "git", ["branch", "-D", state.branch], { allowFailure: true });
     cleanupPayload.removed = true;
   }
 
-  await appendHistoryEvent(repoRoot, {
+  await appendHistoryEvent(stateRepoRoot, {
     at: formatIso(),
     type: "CLEANUP",
     taskId: state.taskId,
     branch: state.branch,
     payload: cleanupPayload
   });
-  await appendHistoryEvent(repoRoot, {
+  await appendHistoryEvent(stateRepoRoot, {
     at: state.finishedAt,
     type: "FINISH",
     taskId: state.taskId,
@@ -247,7 +296,8 @@ async function main() {
   const repoRoot = findGitRoot(process.cwd());
   const currentBranch = getCurrentBranch(repoRoot);
   const { flags } = parseArgs(process.argv.slice(2));
-  const cleanup = typeof flags.cleanup === "string" ? flags.cleanup : null;
+  const rawCleanup = typeof flags.cleanup === "string" ? flags.cleanup : null;
+  const cleanup = normalizeCleanupChoice(rawCleanup);
   const publishMain = typeof flags["publish-main"] === "string" ? flags["publish-main"] : null;
   const requestedBranch = typeof flags.branch === "string" ? flags.branch : null;
   const decision = typeof flags.decision === "string" ? flags.decision : null;
@@ -259,7 +309,7 @@ async function main() {
     throw new Error(`Unsupported --publish-main value: ${publishMain}. Expected retry.`);
   }
   if (cleanup && cleanup !== "yes" && cleanup !== "no") {
-    throw new Error(`Unsupported --cleanup value: ${cleanup}. Expected yes or no.`);
+    throw new Error(`Unsupported --cleanup value: ${rawCleanup}. Expected 1, 2, yes, or no.`);
   }
 
   const state = await resolveTaskState(repoRoot, currentBranch, {

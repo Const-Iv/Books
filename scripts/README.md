@@ -35,6 +35,7 @@
 - запускает merge/publish handoff через `task:merge:main`;
 - пишет `QA_REUSE`, `COMMIT_PUSH`, `CLEANUP`, `FINISH`;
 - требует явное решение `--cleanup yes|no`.
+- branch-chat cleanup gate задаётся фиксированно как `1. Удалить` / `2. Оставить`; ответ `1` маппится на `--cleanup yes`, ответ `2` — на `--cleanup no`.
 
 ### `task:merge:main`
 
