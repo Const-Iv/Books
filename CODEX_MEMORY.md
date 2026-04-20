@@ -39,6 +39,8 @@
 - `qa:coverage:critical` не обязан быть line-coverage percentage, если проект честно использует manifest-driven critical regression coverage и документирует это как source of truth.
 - Governance-правило считается реально внедрённым только после синхронизации хотя бы в `AGENTS.md` и `.memory-bank/*`; mirror-файлы сами по себе недостаточны.
 - `_bmad-output/` и похожие workflow scratch-артефакты нельзя смешивать с single-writer operational docs или task state.
+- `task:finish:core` должен писать task state и runtime history через стабильный repo root из task state, а cleanup managed worktree под `$CODEX_HOME/worktrees/<taskId>/` должен дополнительно подчищать пустой task-root после удаления самого worktree.
+- Cleanup-choice в finish-flow должен задаваться фиксированно как `1. Удалить` / `2. Оставить`; ответ цифрой считается canonical и не требует текстовой расшифровки.
 
 ## Project Notes
 

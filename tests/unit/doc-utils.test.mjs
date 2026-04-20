@@ -11,7 +11,9 @@ import {
   buildTaskHistoryMarkdown,
   captureOperationalDocs,
   extractBulletSection,
+  mergeAppendOnlyMarkdown,
   mergeBullets,
+  splitMarkdownSections,
   syncOperationalDocs
 } from "../../scripts/lib/doc-utils.mjs";
 import { readJson } from "../../scripts/lib/runtime.mjs";
@@ -118,4 +120,47 @@ test("doc utils build markdown snapshots", () => {
   );
   assert.match(ledger, /Change Ledger/);
   assert.match(ledger, /task-1/);
+});
+
+test("doc utils merge append-only markdown by section heading without duplicating full logs", () => {
+  const current = [
+    "# TRIZ Usage Log",
+    "",
+    "Журнал срабатываний.",
+    "",
+    "## 2026-04-18T10:00:00Z task-a",
+    "",
+    "- Branch: `codex/task-a`",
+    "- Status: trigger recorded",
+    "",
+    "## 2026-04-18T11:00:00Z task-b",
+    "",
+    "- Branch: `codex/task-b`",
+    "- Status: trigger recorded",
+    ""
+  ].join("\n");
+  const incoming = [
+    "# TRIZ Usage Log",
+    "",
+    "Журнал срабатываний.",
+    "",
+    "## 2026-04-18T10:00:00Z task-a",
+    "",
+    "- Branch: `codex/task-a`",
+    "- Status: trigger recorded",
+    "",
+    "## 2026-04-18T12:00:00Z task-c",
+    "",
+    "- Branch: `codex/task-c`",
+    "- Status: trigger recorded",
+    ""
+  ].join("\n");
+
+  const merged = mergeAppendOnlyMarkdown(current, incoming);
+  const split = splitMarkdownSections(merged);
+
+  assert.equal(split.sections.length, 3);
+  assert.equal(split.sections.filter((section) => section.heading === "## 2026-04-18T10:00:00Z task-a").length, 1);
+  assert.match(merged, /task-c/);
+  assert.equal(merged.match(/# TRIZ Usage Log/g)?.length, 1);
 });

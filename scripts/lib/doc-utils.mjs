@@ -49,6 +49,103 @@ export function mergeBullets(current, incoming) {
 
 /**
  * @param {string} content
+ * @returns {{ preamble: string, sections: Array<{heading: string, content: string}> }}
+ */
+export function splitMarkdownSections(content) {
+  const normalized = content.trim();
+  if (!normalized) {
+    return {
+      preamble: "",
+      sections: []
+    };
+  }
+
+  const lines = normalized.split("\n");
+  /** @type {string[]} */
+  const preambleLines = [];
+  /** @type {Array<{heading: string, lines: string[]}>} */
+  const sections = [];
+  /** @type {{heading: string, lines: string[]} | null} */
+  let currentSection = null;
+
+  for (const line of lines) {
+    if (line.startsWith("## ")) {
+      if (currentSection) {
+        sections.push(currentSection);
+      }
+      currentSection = {
+        heading: line.trim(),
+        lines: [line]
+      };
+      continue;
+    }
+
+    if (currentSection) {
+      currentSection.lines.push(line);
+      continue;
+    }
+
+    preambleLines.push(line);
+  }
+
+  if (currentSection) {
+    sections.push(currentSection);
+  }
+
+  return {
+    preamble: preambleLines.join("\n").trim(),
+    sections: sections.map((section) => ({
+      heading: section.heading,
+      content: section.lines.join("\n").trim()
+    }))
+  };
+}
+
+/**
+ * Merge append-only markdown logs by `##` section headings instead of appending whole files.
+ * This keeps existing main-worktree content stable and only appends truly missing entries.
+ *
+ * @param {string} current
+ * @param {string} incoming
+ * @returns {string}
+ */
+export function mergeAppendOnlyMarkdown(current, incoming) {
+  const currentTrimmed = current.trim();
+  const incomingTrimmed = incoming.trim();
+
+  if (!incomingTrimmed) {
+    return current;
+  }
+  if (!currentTrimmed) {
+    return `${incomingTrimmed}\n`;
+  }
+
+  const currentSplit = splitMarkdownSections(currentTrimmed);
+  const incomingSplit = splitMarkdownSections(incomingTrimmed);
+  if (!currentSplit.sections.length || !incomingSplit.sections.length) {
+    if (currentTrimmed.includes(incomingTrimmed)) {
+      return `${currentTrimmed}\n`;
+    }
+    return `${currentTrimmed}\n\n${incomingTrimmed}\n`;
+  }
+
+  const orderedSections = currentSplit.sections.map((section) => section.content);
+  const knownHeadings = new Set(currentSplit.sections.map((section) => section.heading));
+  for (const section of incomingSplit.sections) {
+    if (knownHeadings.has(section.heading)) {
+      continue;
+    }
+    orderedSections.push(section.content);
+    knownHeadings.add(section.heading);
+  }
+
+  const preamble = currentSplit.preamble || incomingSplit.preamble;
+  const next = [preamble, ...orderedSections].filter(Boolean).join("\n\n").trim();
+  return `${next}\n`;
+}
+
+/**
+ * @param {string} content
  * @param {string} heading
  * @param {string[]} bullets
  * @returns {string}
@@ -116,8 +213,11 @@ export async function syncOperationalDocs(repoRoot, artifactDir) {
     const absolutePath = path.join(repoRoot, relativePath);
     const current = (await fileExists(absolutePath)) ? await readFile(absolutePath, "utf8") : "";
     const incoming = parsedArtifact.docs[relativePath] || "";
-    if (incoming && !current.includes(incoming.trim())) {
-      const next = `${current.trim()}\n\n${incoming.trim()}\n`.trimStart();
+    if (incoming) {
+      const next = mergeAppendOnlyMarkdown(current, incoming);
+      if (next === current) {
+        continue;
+      }
       await writeFile(absolutePath, `${next}\n`, "utf8");
       changed.push(relativePath);
     }

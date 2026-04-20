@@ -1,5 +1,47 @@
 # QA implementation log
 
+## 2026-04-20 — Numbered cleanup choice
+
+### Scope
+
+- Cleanup gate в conveyor governance переведён на фиксированный формат `1. Удалить` / `2. Оставить`.
+- В canonical sources и reference-docs зафиксирован mapping: `1` => delete / `--cleanup yes`, `2` => keep / `--cleanup no`.
+- Тот же contract синхронизирован с `Agent_Const`.
+
+### Deterministic checks
+
+- `npm run lint` — PASS
+
+### Status
+
+- PASS
+
+## 2026-04-20 — Worktree cleanup managed-root prune
+
+### Scope
+
+- Исправлен cleanup в `scripts/worktree-finish-core.mjs`: после `git worktree remove` теперь безопасно удаляется пустой managed task-root `~/.codex/worktrees/<taskId>`.
+- Post-cleanup state/history запись переведена на стабильный repo root из task state, чтобы `--cleanup yes` не падал при запуске из самого task-worktree.
+- В `tests/e2e/nightly-finish.test.mjs` добавлен reported-case guard на `--cleanup yes`.
+
+### Deterministic checks
+
+- `node --test tests/e2e/nightly-finish.test.mjs` — PASS
+
+### Failures and fixes
+
+- Reproduction: `git worktree remove` удалял сам worktree-path, но пустой каталог `~/.codex/worktrees/<taskId>` оставался на диске.
+- Первый новый e2e-тест вскрыл связанный дефект: cleanup из task-worktree удалял active repo path до записи history, поэтому `appendHistoryEvent` падал на `git rev-parse --git-common-dir`.
+- Fix: cleanup теперь делает empty-dir prune только внутри `$CODEX_HOME/worktrees`, а state/history после cleanup пишутся через стабильный `state.repoRoot` / `state.mainWorktreePath`.
+
+### Rollback notes
+
+- Если downstream-проекту нужно сохранять task-root для внешнего аудита, достаточно убрать вызов prune helper; history/state fix при этом лучше оставить, потому что он устраняет failure-path независимо от удаления каталога.
+
+### Status
+
+- PASS
+
 ## 2026-04-16 — Runnable Node/npm baseline
 
 ### Scope
