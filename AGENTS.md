@@ -85,6 +85,13 @@ These rules apply to the whole repository.
 
 В `Default` режиме ассистент должен понимать разговорные формулировки и исполнять их через канонические скрипты репозитория.
 
+### Main Branch Protection
+
+- В `main` нельзя вносить изменения без явного разрешения пользователя на direct-main правку в рамках текущей задачи.
+- По умолчанию любые feature/refactor/bugfix/process/governance изменения выполняются в отдельном task-specific worktree и отдельной ветке `codex/*`.
+- Если ассистент находится на `main` и пользователь не дал явного разрешения менять `main`, нужно остановиться до mutating action и предложить безопасный путь: создать managed worktree через `task:start`, сначала закоммитить/stash'нуть текущие изменения, либо получить явное direct-main разрешение для маленькой низкорисковой правки.
+- На `main` без отдельного worktree допустимы read-only inspection, `git status`/`git diff`, а также явно запрошенные merge/release flows после обязательных QA gate'ов.
+
 ### Start Task / Worktree
 
 Канонический интент: `Создай новый worktree "<Тело задачи>"`.

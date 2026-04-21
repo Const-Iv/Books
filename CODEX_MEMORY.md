@@ -21,6 +21,8 @@
 - Для non-trivial work явно фиксировать assumptions, показывать plausible variants и делать surgical diffs.
 - Перед mutating action нужно кратко объяснить change intent.
 - Deterministic checks — единственное доказательство корректности.
+- В `main` нельзя вносить изменения без явного разрешения пользователя на direct-main правку в текущей задаче.
+- По умолчанию implementation work выполняется в отдельном managed worktree и ветке `codex/*`.
 - `qa:agent` обязателен перед finish / merge / release для code-changing work.
 - `task:start` / `task:qa:agent` / `task:finish:core` / `task:merge:main` / `release:local` — canonical process entrypoints.
 - `task:start` запускается только из clean tree; `--allow-dirty` не считается допустимым bypass.

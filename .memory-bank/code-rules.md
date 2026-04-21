@@ -36,6 +36,10 @@
 
 ## Conveyor Rules
 
+- В `main` нельзя вносить изменения без явного разрешения пользователя на direct-main правку в рамках текущей задачи.
+- По умолчанию feature/refactor/bugfix/process/governance работа выполняется в отдельном task-specific worktree и отдельной ветке `codex/*`.
+- Если сессия находится на `main` без direct-main разрешения, mutating actions нужно остановить и предложить safe path: `task:start`, commit/stash текущих изменений или явное разрешение на маленькую низкорисковую direct-main правку.
+- На `main` без отдельного worktree допустимы только read-only inspection, `git status`/`git diff` и явно запрошенные merge/release flows после QA gate'ов.
 - Worktree task branches используют префикс `codex/`.
 - Канонический flow: `task:start -> task:qa:agent -> task:finish:core -> task:merge:main | release:local`.
 - Task state и runtime history должны быть machine-readable и append-friendly.

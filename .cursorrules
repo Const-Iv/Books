@@ -13,6 +13,8 @@ Mirror rules:
 
 - не добавлять сюда уникальные обязательные правила, которых нет в Codex-primary sources;
 - новые governance/process rules сначала вносить в `AGENTS.md` и/или `.memory-bank/*`, и только потом зеркалить сюда;
+- в `main` нельзя вносить изменения без явного direct-main разрешения пользователя в текущей задаче;
+- по умолчанию implementation work выполняется в отдельном managed worktree и ветке `codex/*`;
 - conversational branch-chat должен маппиться на канонические repo scripts;
 - `task:start` допускается только из clean tree; `--allow-dirty` не считается допустимым bypass;
 - если используется BMAD, `_bmad/` — canonical install, `_bmad-output/` — локальный scratch без коммита;
