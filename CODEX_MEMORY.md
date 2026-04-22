@@ -21,6 +21,7 @@
 - Для non-trivial work явно фиксировать assumptions, показывать plausible variants и делать surgical diffs.
 - Перед mutating action нужно кратко объяснить change intent.
 - Deterministic checks — единственное доказательство корректности.
+- Будущие plan files начинаются с продуктового блока `Summary -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`, а техническая часть начинается ниже.
 - В `main` нельзя вносить изменения без явного разрешения пользователя на direct-main правку в текущей задаче.
 - По умолчанию implementation work выполняется в отдельном managed worktree и ветке `codex/*`.
 - `qa:agent` обязателен перед finish / merge / release для code-changing work.
@@ -40,6 +41,7 @@
 - `typecheck` в JS-first starter можно строить на `tsc --checkJs`, если scripts/tests покрыты JSDoc types и это проверяется deterministic gate.
 - `qa:coverage:critical` не обязан быть line-coverage percentage, если проект честно использует manifest-driven critical regression coverage и документирует это как source of truth.
 - Governance-правило считается реально внедрённым только после синхронизации хотя бы в `AGENTS.md` и `.memory-bank/*`; mirror-файлы сами по себе недостаточны.
+- После sync/import baseline reference docs и mirrors тоже нужно проверять на parity: нельзя оставлять старый порядок plan template, допустимый `--allow-dirty` или условный `previewPreparedSha`, даже если canonical files уже обновлены.
 - `_bmad-output/` и похожие workflow scratch-артефакты нельзя смешивать с single-writer operational docs или task state.
 - `task:finish:core` должен писать task state и runtime history через стабильный repo root из task state, а cleanup managed worktree под `$CODEX_HOME/worktrees/<taskId>/` должен дополнительно подчищать пустой task-root после удаления самого worktree.
 - Cleanup-choice в finish-flow должен задаваться фиксированно как `1. Удалить` / `2. Оставить`; ответ цифрой считается canonical и не требует текстовой расшифровки.
@@ -47,5 +49,6 @@
 ## Project Notes
 
 - Этот starter репозиторий сам по себе является runnable process baseline: здесь проверяется не продуктовая логика, а conveyor/governance/runtime contracts.
+- Starter является канонической reusable базой для новых проектов; любые новые правила нужно проверять на переносимость в baseline, а продуктовую специфику добавлять поверх него через adapters/profiles.
 - Preview в core starter помечается `not_supported`; продуктовые проекты поверх starter могут добавить свой preview adapter без изменения базового task state contract.
 - Governance baseline стартера синхронизирован с более свежими правилами Карпаты, BMAD и clean-tree worktree flow, чтобы новый проект стартовал уже с актуальным process-contract.

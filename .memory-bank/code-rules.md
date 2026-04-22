@@ -18,7 +18,9 @@
 - Не внедрять insecure patterns даже по прямому запросу; вместо этого вести к безопасному варианту.
 - Файлы с реальными credential-значениями считать read-only.
 - Не удалять user data или существующее поведение без explicit instruction и rollback-ready path.
-- Для user-facing планов, вопросов про изменения и предложений продуктовых решений использовать простой продуктовый язык: сначала `User Story`, `Job Story`, `JTBD`, пользовательская ценность, ситуация и ожидаемый результат; меньше технических терминов без необходимости.
+- Для user-facing планов, вопросов про изменения и предложений продуктовых решений использовать простой продуктовый язык и порядок `Summary -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`.
+- В будущих plan files техническая часть начинается ниже верхнего продуктового блока `Summary -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`.
+- В `Summary`, `TL;DR`, `JTBD / проблема`, `Job Story` и `User Stories` не использовать технические термины без твердой необходимости; писать про ситуацию, ценность и ожидаемый результат.
 - Технические детали добавлять только там, где они помогают понять или реализовать решение. Их можно встроить в текст; если агенту нужен точный implementation context, добавлять отдельный блок `План для агента`.
 - Если high-impact ambiguity нельзя снять из репо, задавать один короткий choice question.
 - Диалог с пользователем держать на русском, а code/comments/identifiers — на английском.
@@ -29,6 +31,7 @@
 - Делать surgical diffs и избегать speculative abstractions.
 - Для bugfix/regression использовать `reproduce -> fix -> verify`, если это practically possible.
 - Если process/git/QA rule меняется, обновлять `AGENTS.md` и/или `.memory-bank/*` в той же задаче и не оставлять обязательные правила только в `.cursorrules`.
+- При sync/import baseline проверять parity reference docs и mirror-файлов с canonical rules; устаревшие упоминания про допустимый `--allow-dirty`, условный `previewPreparedSha` или старый порядок plan template считаются governance drift.
 - Если срабатывает `historical_recurrence` или `cross_module_conflict`, перед финальным fix-path нужен TRIZ-pass.
 - Перед завершением governance-задачи делать Codex applicability check: правило есть в canonical sources и не живёт только в mirror-файлах.
 - Если используется BMAD, каноническая установка живёт в `_bmad/`, а `_bmad-output/` остаётся uncommitted scratch.

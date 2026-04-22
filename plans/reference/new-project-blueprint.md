@@ -8,6 +8,8 @@
 
 Этот blueprint нужен не для описания конкретного продукта, а для задания **операционной конституции проекта**:
 
+JTBD: когда начинается новый проект, дать команде готовую операционную основу с первого дня, чтобы не собирать заново правила работы, QA, task flow и agent governance в каждом репозитории.
+
 - как хранить канонические правила;
 - как заводить и завершать задачи;
 - как проводить QA;
@@ -118,7 +120,8 @@ tests/
 `plans/_template.md`
 
 - стандартная карточка задачи;
-- обязательно содержит: цель, scope, out-of-scope, invariant, shared seam, QA plan, risks/rollback, evidence.
+- верх плана должен идти как `Summary -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`;
+- техническая часть начинается ниже верхнего продуктового блока и содержит scope, out-of-scope, invariant, shared seam, QA plan, risks/rollback, evidence.
 
 `templates/agent-workspace/*`
 
@@ -145,7 +148,7 @@ tests/
 
 - создаёт `codex/*` branch и отдельный worktree;
 - проверяет состояние репозитория;
-- если дерево грязное, может продолжить через `--allow-dirty`, но обязано предупредить;
+- если дерево грязное, обязан остановиться до создания ветки/worktree; bypass через `--allow-dirty` не допускается, вместо этого нужно предложить `git diff`, commit текущей работы или `git stash -u`;
 - бутстрапит зависимости в новом worktree;
 - по возможности открывает новый worktree и новый branch-chat автоматически;
 - пишет task state/history в `.git/codex-task-pipeline/*`.
@@ -155,7 +158,7 @@ tests/
 - запускает детерминированный QA gate проекта;
 - сохраняет результат в task state;
 - обновляет `qaLastPassSha`;
-- готовит `previewPreparedSha`, если preview/inspection checkpoint поддерживается;
+- всегда пишет `previewPreparedSha`; для core baseline preview status по умолчанию `not_supported`, пока проект явно не добавит свой preview adapter;
 - при TRIZ-trigger пишет событие и в runtime history, и в `Docs/triz-usage-log.md`.
 
 `task:finish:core`
