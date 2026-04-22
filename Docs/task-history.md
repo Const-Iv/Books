@@ -1,14 +1,13 @@
 # Task History
 
-Human-readable projection of task pipeline state and major runtime events.
-
-## Task `<task-id>`
-
-- Title: `<task title>`
-- Branch: `codex/<task-title>`
-- Status: `<created|qa_passed|finish_blocked|published|closed>`
-- Seed message preview: `<seed message preview>`
-
-### `<EVENT_NAME>` — `<YYYY-MM-DD HH:MM:SS>`
-
-- details: `<json or short summary>`
+| Timestamp | Task | Branch | Event | Payload |
+| --- | --- | --- | --- | --- |
+| 2026-04-22T12:37:52.482Z | 20260422-123751-07b0 | codex/20260422-123751-07b0-agent-const-plan-template-sync | START | `{"title":"Agent Const plan template sync","seedMessage":"Пользователь обновил Agent_Const: формат будущих планов в plans/_template.md теперь Summary → JTBD / проблема → Job Story → User Stories → Критерии приемки → Метрика успеха; правило закреплено в AGENTS.md и .memory-bank/code-rules.md. Нужно посмотреть свежие правила Agent_Const и перенести подходящие baseline/governance правила в new-project-starter.","worktreePath":"/Users/constantine.ivshin/.codex/worktrees/20260422-123751-07b0/new-project-starter-agent-const-plan-template-sync","allowDirtyRequested":false}` |
+| 2026-04-22T12:52:38.319Z | 20260422-123751-07b0 | codex/20260422-123751-07b0-agent-const-plan-template-sync | QA_ATTEMPT | `{"status":"PASS","failedStage":null,"failureClass":null}` |
+| 2026-04-22T12:52:38.319Z | 20260422-123751-07b0 | codex/20260422-123751-07b0-agent-const-plan-template-sync | QA_CHECKPOINT | `{"status":"PASS","qaLastPassSha":"493b8323f317722dbf73cbf8d64aee18b2731f25","qaLastPassAt":"2026-04-22T12:52:38.319Z"}` |
+| 2026-04-22T12:52:38.319Z | 20260422-123751-07b0 | codex/20260422-123751-07b0-agent-const-plan-template-sync | PREVIEW_READY | `{"previewStatus":"not_supported","previewPreparedSha":"493b8323f317722dbf73cbf8d64aee18b2731f25","frontendUrl":null,"backendHealthUrl":null,"reason":"Starter baseline does not ship an application preview."}` |
+| 2026-04-22T12:52:38.419Z | 20260422-123751-07b0 | codex/20260422-123751-07b0-agent-const-plan-template-sync | TRIZ_TRIGGER | `{"reasons":["historical_recurrence"]}` |
+| 2026-04-22T12:53:07.761Z | 20260422-123751-07b0 | codex/20260422-123751-07b0-agent-const-plan-template-sync | QA_REUSE | `{"qaLastPassSha":"493b8323f317722dbf73cbf8d64aee18b2731f25","qaLastPassAt":"2026-04-22T12:52:38.319Z"}` |
+| 2026-04-22T12:53:07.877Z | 20260422-123751-07b0 | codex/20260422-123751-07b0-agent-const-plan-template-sync | OP_DOC_CAPTURE | `{"artifactPath":"/Users/constantine.ivshin/!AI/new-project-starter/.git/codex-task-pipeline/artifacts/20260422-123751-07b0/operational-docs.json"}` |
+| 2026-04-22T12:53:54.704Z | 20260422-123751-07b0 | codex/20260422-123751-07b0-agent-const-plan-template-sync | COMMIT_PUSH | `{"commitSha":"493b8323f317722dbf73cbf8d64aee18b2731f25","pushed":true,"repaired":true,"reason":"manual commit existed before task finish recorded commitSha"}` |
+| 2026-04-22T12:54:02.385Z | 20260422-123751-07b0 | codex/20260422-123751-07b0-agent-const-plan-template-sync | MERGE_MAIN | `{"mainWorktreePath":"/Users/constantine.ivshin/!AI/new-project-starter","mergedCommitSha":"493b8323f317722dbf73cbf8d64aee18b2731f25","alreadyMerged":false}` |

@@ -12,3 +12,10 @@
 - Principle: `<chosen principle or structural move>`
 - Changes: `<what changed>`
 - Guard: `<what reusable guard was added>`
+
+## 2026-04-22T12:52:38.438Z 20260422-123751-07b0
+
+- Branch: `codex/20260422-123751-07b0-agent-const-plan-template-sync`
+- Reasons: historical_recurrence
+- Status: trigger recorded
+
