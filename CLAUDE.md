@@ -26,6 +26,8 @@ These rules apply to the whole repository.
 
 - Перед mutating action кратко объяснять, что меняется и почему.
 - Для non-trivial work явно фиксировать assumptions, делать surgical diffs и предпочитать `reproduce -> fix -> verify`.
+- User-facing планы, вопросы про изменения и продуктовые предложения формулировать простым языком в порядке `Summary -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`; техническую часть планов начинать ниже этого блока.
+- В `Summary`, `TL;DR`, `JTBD / проблема`, `Job Story` и `User Stories` не использовать технические термины без твердой необходимости.
 - Для code-changing work использовать deterministic checks как evidence.
 - `npm run qa:agent` обязателен перед finish / merge / release.
 - Использовать канонические scripts: `task:start`, `task:qa:agent`, `task:finish:core`, `task:merge:main`, `release:local`.

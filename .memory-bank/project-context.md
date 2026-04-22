@@ -1,5 +1,11 @@
 # Project Context
 
+## Purpose
+
+- `new-project-starter` — reusable baseline для старта любых новых проектов в привычной операционной модели: Codex/worktree conveyor, deterministic QA, memory-bank governance, TRIZ escalation и branch-chat rules.
+- JTBD: когда начинается новый проект, дать команде готовую операционную основу с первого дня, чтобы не собирать заново правила работы, QA, task flow и agent governance в каждом репозитории.
+- Core starter не является продуктовым runtime. Новые правила и скрипты должны быть переносимыми baseline-контрактами; product-specific capabilities добавляются поверх starter через adapters/profiles.
+
 ## Repository Layout
 
 - `scripts/`: канонические conveyor, QA, release и operational-doc entrypoints.

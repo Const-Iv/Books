@@ -1,6 +1,6 @@
 # Starter Kit нового проекта
 
-Этот репозиторий — не просто blueprint-папка, а **исполняемый Node/npm baseline** для нового проекта под правила Codex/worktree conveyor:
+Этот репозиторий — не просто blueprint-папка, а **канонический исполняемый Node/npm baseline** для старта любого нового проекта под привычный Codex/worktree conveyor:
 
 - `codex/*` managed worktrees;
 - conversational branch-chat;
@@ -11,6 +11,10 @@
 - single-writer operational docs;
 - shared memory-bank governance;
 - local-first `release:local`.
+
+JTBD: когда начинается новый проект, дать команде готовую операционную основу с первого дня, чтобы не собирать заново правила работы, QA, task flow и agent governance в каждом репозитории.
+
+Любое изменение starter нужно сверять с этой ролью: оно должно быть полезно как переносимый baseline для новых проектов. Продуктовую специфику добавляйте поверх starter через adapters/profiles, а не в core governance.
 
 ## Что внутри
 
