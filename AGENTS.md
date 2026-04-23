@@ -7,6 +7,7 @@ These rules apply to the whole repository.
 - `new-project-starter` — каноническая reusable база для старта любых новых проектов в привычном фреймворке: Codex/worktree conveyor, deterministic QA, memory-bank governance, TRIZ escalation и branch-chat rules.
 - JTBD: когда начинается новый проект, дать команде готовую операционную основу с первого дня, чтобы не собирать заново правила работы, QA, task flow и agent governance в каждом репозитории.
 - При любых изменениях сверяться с этой ролью: правило или скрипт должны быть полезны как baseline для новых проектов, а product-specific поведение добавляется только поверх starter через adapters/profiles и не hardcode'ится в core governance.
+- Reusable shared skills можно versioned хранить в `skills/` и публиковать в `$CODEX_HOME/skills` через repo scripts; `.system`, plugin-managed и product-specific skills не являются частью starter core.
 
 ## Language Requirements
 
@@ -123,6 +124,7 @@ These rules apply to the whole repository.
 - использовать `npm run task:finish:core`, а не свободный ad-hoc flow;
 - перед commit/merge/publish task QA должен быть PASS;
 - если `HEAD == qaLastPassSha`, переиспользовать QA checkpoint вместо повторного full task QA;
+- если finish стартует из dirty task tree, `task:finish:core` должен сначала зафиксировать task commit/checkpoint, затем прогнать task QA уже на committed `HEAD`, и только после этого переходить к publish stage;
 - shared operational docs сначала capture'ить из task branch, а sync'ить обратно только на publish/release stage как single-writer artifacts;
 - `task:finish:core` не должен спрашивать legacy `--preview ok|skip`;
 - для cleanup/publish resume из `main` использовать `--task-id <id>` как канонический селектор, `--branch codex/<task-branch>` оставить совместимым fallback;
@@ -223,6 +225,9 @@ High-priority findings для этого starter repo ограничены:
 - `npm run lint`
 - `npm run lint:fix`
 - `npm run lint:fix:changed`
+- `npm run skills:link`
+- `npm run skills:status`
+- `npm run skills:unlink`
 - `npm run typecheck`
 - `npm test`
 - `npm run build`

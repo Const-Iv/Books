@@ -120,7 +120,6 @@ test("Nightly: finish blocks on failed QA and then merges cleanly into main", as
     assert.match(mainReadme, /Validated finish flow\./);
 
     const events = await readNdjson(getHistoryPath(fixture.repoRoot));
-    assert.ok(events.some((event) => event.type === "QA_REUSE" && event.branch === started.branch));
     assert.ok(events.some((event) => event.type === "MERGE_MAIN" && event.branch === started.branch));
     assert.ok(events.some((event) => event.type === "PUSH_MAIN" && event.branch === started.branch));
     const cleanupEvent = getLatestEvent(events, "CLEANUP", started.branch);
@@ -198,6 +197,43 @@ test("Nightly: finish accepts numeric cleanup choices", async () => {
     const deleteState = await loadTaskStateByBranch(fixture.repoRoot, startedDelete.branch);
     assert.equal(deleteState?.cleanupDecision, "yes");
     assert.equal(deleteState?.cleanupStatus, "passed");
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test("Nightly: finish commits dirty task changes before final QA reuse/publish", async () => {
+  const fixture = await createTempStarterRepo({ installDependencies: true });
+  try {
+    const env = buildEnv(fixture);
+    const started = startTask(fixture.repoRoot, env, "Finish dirty task commit before qa");
+    const initialHead = runCommand(started.worktreePath, "git", ["rev-parse", "HEAD"]).stdout.trim();
+
+    await appendReadmeLine(started.worktreePath, "Validated dirty finish commit ordering.");
+    runQaCheckpoint(started.worktreePath, env);
+
+    const finished = runStarterScript(started.worktreePath, ["scripts/worktree-finish-core.mjs", "--cleanup", "2"], {
+      env
+    });
+    assert.equal(finished.status, 0);
+
+    const state = await loadTaskStateByBranch(fixture.repoRoot, started.branch);
+    assert.ok(state?.commitSha);
+    assert.notEqual(state?.commitSha, initialHead);
+    assert.equal(state?.qaLastPassSha, state?.commitSha);
+    assert.equal(state?.cleanupStatus, "kept");
+
+    const mainReadme = await readFile(path.join(fixture.repoRoot, "README.md"), "utf8");
+    assert.match(mainReadme, /Validated dirty finish commit ordering\./);
+
+    const events = await readNdjson(getHistoryPath(fixture.repoRoot));
+    const qaReuseEvents = events.filter((event) => event.type === "QA_REUSE" && event.branch === started.branch);
+    assert.equal(qaReuseEvents.length, 0);
+    const qaCheckpointEvents = events.filter((event) => event.type === "QA_CHECKPOINT" && event.branch === started.branch);
+    assert.equal(qaCheckpointEvents.length, 2);
+    assert.equal(qaCheckpointEvents.at(-1)?.payload.qaLastPassSha, state?.commitSha);
+    const commitEvent = getLatestEvent(events, "COMMIT_PUSH", started.branch);
+    assert.equal(commitEvent.payload.commitSha, state?.commitSha);
   } finally {
     await fixture.cleanup();
   }

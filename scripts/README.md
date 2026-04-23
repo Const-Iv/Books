@@ -4,6 +4,26 @@
 
 ## Канонические entrypoint'ы
 
+### `skills:status`
+
+- показывает состояние repo-managed skills относительно `$CODEX_HOME/skills`;
+- различает `linked`, `missing` и `conflict`;
+- не меняет файловую систему и печатает machine-readable JSON.
+
+### `skills:link`
+
+- находит все repo-owned skills из `skills/**/SKILL.md`;
+- создаёт symlink в `$CODEX_HOME/skills/<relative-path>`;
+- не перезаписывает конфликтующие локальные директории или symlink'и по умолчанию;
+- с `--adopt` переносит конфликтующий target в `$CODEX_HOME/skills-backups/<timestamp>/...`, затем ставит managed symlink;
+- после обычного `git pull` уже существующие symlink'и сразу видят обновления repo skill.
+
+### `skills:unlink`
+
+- удаляет только symlink'и, которые указывают на текущий repo-owned skill source;
+- не трогает конфликтующие или чужие директории;
+- подчищает пустые parent-директории внутри `$CODEX_HOME/skills`, если после unlink они опустели.
+
 ### `task:start`
 
 - создаёт `codex/*` branch и отдельный managed worktree;
@@ -29,6 +49,7 @@
 - умеет resume из `main` через `--task-id <id>` для cleanup/publish retry; `--branch codex/<task-branch>` остаётся совместимым fallback;
 - не коммитит и не публикует при failed task QA;
 - переиспользует `qaLastPassSha`, если `HEAD` не менялся после последнего PASS;
+- если finish стартует из dirty task tree, сначала фиксирует task commit/checkpoint, потом прогоняет task QA на committed `HEAD`, и только затем идёт в publish stage;
 - вызывает `task:operational-docs:capture` перед commit;
 - после capture нормализует shared operational snapshots, чтобы они не попадали в task commit;
 - пушит task branch при наличии `origin`;

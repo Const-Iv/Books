@@ -10,7 +10,9 @@ import {
   formatIso,
   getCurrentBranch,
   getHeadSha,
+  hasRemote,
   getTrackedChangedFiles,
+  isGitDirty,
   loadAllTaskStates,
   loadTaskStateByBranch,
   loadTaskStateByTaskId,
@@ -109,7 +111,7 @@ async function normalizeOperationalSnapshots(repoRoot) {
  * @returns {Promise<boolean>}
  */
 async function maybeReuseQa(repoRoot, state) {
-  if (state.qaLastPassSha && state.qaLastPassSha === getHeadSha(repoRoot)) {
+  if (state.qaLastPassSha && state.qaLastPassSha === getHeadSha(repoRoot) && !isGitDirty(repoRoot)) {
     await appendHistoryEvent(repoRoot, {
       at: formatIso(),
       type: "QA_REUSE",
@@ -153,29 +155,15 @@ async function ensureTaskQa(repoRoot, state) {
 /**
  * @param {string} repoRoot
  * @param {import("./lib/runtime.mjs").TaskState} state
- * @returns {Promise<boolean>}
+ * @param {{repaired?: boolean, reason?: string | null}} [options]
+ * @returns {Promise<void>}
  */
-async function maybeCommitAndPush(repoRoot, state) {
-  if (state.commitSha) {
-    return false;
-  }
-
-  runCommand(repoRoot, "node", ["scripts/worktree-operational-docs.mjs", "capture"]);
-  await normalizeOperationalSnapshots(repoRoot);
-
-  const changed = runCommand(repoRoot, "git", ["status", "--porcelain"], { allowFailure: true }).stdout.trim();
-  if (!changed) {
-    return false;
-  }
-
-  runCommand(repoRoot, "git", ["add", "-A"]);
-  const message = await buildCommitMessage(repoRoot, state.title);
-  runCommand(repoRoot, "git", ["commit", "-m", message]);
+async function recordCommitAndPush(repoRoot, state, options = {}) {
   state.commitSha = getHeadSha(repoRoot);
   await saveTaskState(repoRoot, state);
 
   let pushed = false;
-  if (runCommand(repoRoot, "git", ["remote"], { allowFailure: true }).stdout.includes("origin")) {
+  if (hasRemote(repoRoot)) {
     runCommand(repoRoot, "git", ["push", "-u", "origin", state.branch]);
     pushed = true;
   }
@@ -187,10 +175,41 @@ async function maybeCommitAndPush(repoRoot, state) {
     branch: state.branch,
     payload: {
       commitSha: state.commitSha,
-      pushed
+      pushed,
+      repaired: options.repaired === true,
+      reason: options.reason ?? null
     }
   });
-  return true;
+}
+
+/**
+ * @param {string} repoRoot
+ * @param {import("./lib/runtime.mjs").TaskState} state
+ * @returns {Promise<void>}
+ */
+async function ensureTaskCommit(repoRoot, state) {
+  if (!isGitDirty(repoRoot) && state.commitSha === getHeadSha(repoRoot)) {
+    return;
+  }
+
+  runCommand(repoRoot, "node", ["scripts/worktree-operational-docs.mjs", "capture"]);
+  await normalizeOperationalSnapshots(repoRoot);
+
+  const changed = runCommand(repoRoot, "git", ["status", "--porcelain"], { allowFailure: true }).stdout.trim();
+  if (!changed) {
+    await recordCommitAndPush(repoRoot, state, {
+      repaired: true,
+      reason: state.commitSha
+        ? "updated commitSha to the existing task branch HEAD before publish"
+        : "recorded existing task branch HEAD as commitSha before publish"
+    });
+    return;
+  }
+
+  runCommand(repoRoot, "git", ["add", "-A"]);
+  const message = await buildCommitMessage(repoRoot, state.title);
+  runCommand(repoRoot, "git", ["commit", "-m", message]);
+  await recordCommitAndPush(repoRoot, state);
 }
 
 /**
@@ -302,14 +321,15 @@ async function main() {
     taskId: requestedTaskId
   });
 
-  if (!state.commitSha) {
-    await ensureTaskQa(repoRoot, state);
-    await maybeCommitAndPush(state.worktreePath, state);
-  }
-
   const publishAlreadyCompleted =
     ["pushed", "local-only"].includes(state.publishStatus ?? "") &&
     ["merged", "finished"].includes(state.status ?? "");
+
+  if (!publishAlreadyCompleted) {
+    await ensureTaskCommit(state.worktreePath, state);
+    await ensureTaskQa(state.worktreePath, state);
+  }
+
   const shouldPublish = publishMain === "retry" || !publishAlreadyCompleted;
   if (shouldPublish) {
     await runPublishStage(state.mainWorktreePath ?? repoRoot, state);

@@ -50,6 +50,7 @@ Dependency preflight обязателен перед запуском gate:
 - Для bugfixes фиксировать defect class, invariant и shared seam.
 - Для temporary fixtures/worktrees cleanup result тоже является QA evidence.
 - Для process/conveyor задач фиксировать task state/history changes как часть acceptance evidence.
+- `task:finish:core` не должен publish'ить commit, который не прошёл task QA: если finish стартует из dirty task tree, сначала нужен task commit/checkpoint, затем новый QA checkpoint уже на committed `HEAD`.
 
 ## Failure Classes for Finish / Merge / Release
 
