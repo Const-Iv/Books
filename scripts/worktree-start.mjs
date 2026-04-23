@@ -101,6 +101,8 @@ async function main() {
     commitSha: null,
     publishStatus: "pending",
     cleanupDecision: null,
+    cleanupStatus: null,
+    cleanupTargets: [],
     operationalArtifacts: [],
     mainWorktreePath
   };

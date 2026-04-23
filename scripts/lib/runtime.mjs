@@ -49,6 +49,8 @@ import path from "node:path";
  * @property {string | null} [commitSha]
  * @property {string | null} [publishStatus]
  * @property {string | null} [cleanupDecision]
+ * @property {"kept"|"passed"|"failed"|null} [cleanupStatus]
+ * @property {string[]} [cleanupTargets]
  * @property {string | null} [finishedAt]
  * @property {string[]} [operationalArtifacts]
  * @property {string | null} [mainWorktreePath]

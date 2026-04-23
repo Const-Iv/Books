@@ -26,7 +26,7 @@
 ### `task:finish:core`
 
 - работает только на `codex/*` branch;
-- умеет resume из `main` через `--branch codex/<task-branch>` для cleanup/publish retry;
+- умеет resume из `main` через `--task-id <id>` для cleanup/publish retry; `--branch codex/<task-branch>` остаётся совместимым fallback;
 - не коммитит и не публикует при failed task QA;
 - переиспользует `qaLastPassSha`, если `HEAD` не менялся после последнего PASS;
 - вызывает `task:operational-docs:capture` перед commit;
@@ -34,8 +34,10 @@
 - пушит task branch при наличии `origin`;
 - запускает merge/publish handoff через `task:merge:main`;
 - пишет `QA_REUSE`, `COMMIT_PUSH`, `CLEANUP`, `FINISH`;
-- требует явное решение `--cleanup yes|no`.
+- требует явное решение `--cleanup 1|2` как canonical path; legacy `yes|no` остаётся совместимым.
 - branch-chat cleanup gate задаётся фиксированно как `1. Удалить` / `2. Оставить`; ответ `1` маппится на `--cleanup yes`, ответ `2` — на `--cleanup no`.
+- успешный finish требует итоговый `cleanupStatus = passed|kept`; один `cleanupDecision` не считается доказательством фактической уборки.
+- optional repo hook `task:finish:cleanup` может вернуть task-scoped `extraPaths`, `blocked` и `notes`; starter core удаляет только пути внутри текущего task scope.
 
 ### `task:merge:main`
 
