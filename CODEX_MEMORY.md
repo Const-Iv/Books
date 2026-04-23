@@ -48,6 +48,8 @@
 - Resume cleanup из `main` должен использовать `--task-id <id>` как canonical selector; `--branch` допустим только как compatibility fallback.
 - `cleanupStatus` и `cleanupTargets` — часть канонического task state/history contract; отсутствие `cleanupStatus` означает, что cleanup может требовать resume even if `cleanupDecision` уже записан.
 - Optional `task:finish:cleanup` repo hook может возвращать только task-scoped `extraPaths` и/или `blocked`; starter core не делает sweep вне текущего task scope.
+- Reusable starter skills должны жить в repo `skills/` и подключаться в `$CODEX_HOME/skills` через symlink-based `skills:link`; после `git pull` existing links обновляются сами, а для новых/renamed skills нужно повторно запустить link.
+- Finish-flow не должен reuse task QA для dirty worktree перед commit: если есть незакоммиченные task changes, сначала фиксируется task commit/checkpoint, затем прогоняется QA уже на этом committed `HEAD`.
 
 ## Project Notes
 
@@ -55,3 +57,4 @@
 - Starter является канонической reusable базой для новых проектов; любые новые правила нужно проверять на переносимость в baseline, а продуктовую специфику добавлять поверх него через adapters/profiles.
 - Preview в core starter помечается `not_supported`; продуктовые проекты поверх starter могут добавить свой preview adapter без изменения базового task state contract.
 - Governance baseline стартера синхронизирован с более свежими правилами Карпаты, BMAD и clean-tree worktree flow, чтобы новый проект стартовал уже с актуальным process-contract.
+- Starter теперь может versioned хранить reusable shared skills вроде `worktree-create` и `worktree-finish`, чтобы их можно было коммитить в git и использовать на нескольких устройствах через один bootstrap link.
