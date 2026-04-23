@@ -49,6 +49,8 @@ import path from "node:path";
  * @property {string | null} [commitSha]
  * @property {string | null} [publishStatus]
  * @property {string | null} [cleanupDecision]
+ * @property {"kept"|"passed"|"failed"|null} [cleanupStatus]
+ * @property {string[]} [cleanupTargets]
  * @property {string | null} [finishedAt]
  * @property {string[]} [operationalArtifacts]
  * @property {string | null} [mainWorktreePath]
@@ -85,6 +87,9 @@ export const OPERATIONAL_DOCS = [
 export const REQUIRED_COMMANDS = [
   "lint",
   "lint:fix:changed",
+  "skills:link",
+  "skills:status",
+  "skills:unlink",
   "typecheck",
   "test",
   "build",
@@ -126,9 +131,13 @@ export const REQUIRED_FILES = [
   "plans/_template.md",
   "plans/_bugfix_template.md",
   "scripts/README.md",
+  "scripts/skills-manage.mjs",
+  "scripts/lib/skills-manager.mjs",
   "research/triz/knowledge-pack.md",
   "research/triz/agent-prompt-v2.md",
   "research/triz/case-library.md",
+  "skills/worktree-create/SKILL.md",
+  "skills/worktree-finish/SKILL.md",
   "templates/agent-workspace/README.md",
   "templates/agent-workspace/SOUL.template.md",
   "templates/agent-workspace/USER.template.md",

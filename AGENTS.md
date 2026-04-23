@@ -7,6 +7,7 @@ These rules apply to the whole repository.
 - `new-project-starter` — каноническая reusable база для старта любых новых проектов в привычном фреймворке: Codex/worktree conveyor, deterministic QA, memory-bank governance, TRIZ escalation и branch-chat rules.
 - JTBD: когда начинается новый проект, дать команде готовую операционную основу с первого дня, чтобы не собирать заново правила работы, QA, task flow и agent governance в каждом репозитории.
 - При любых изменениях сверяться с этой ролью: правило или скрипт должны быть полезны как baseline для новых проектов, а product-specific поведение добавляется только поверх starter через adapters/profiles и не hardcode'ится в core governance.
+- Reusable shared skills можно versioned хранить в `skills/` и публиковать в `$CODEX_HOME/skills` через repo scripts; `.system`, plugin-managed и product-specific skills не являются частью starter core.
 
 ## Language Requirements
 
@@ -123,13 +124,17 @@ These rules apply to the whole repository.
 - использовать `npm run task:finish:core`, а не свободный ad-hoc flow;
 - перед commit/merge/publish task QA должен быть PASS;
 - если `HEAD == qaLastPassSha`, переиспользовать QA checkpoint вместо повторного full task QA;
+- если finish стартует из dirty task tree, `task:finish:core` должен сначала зафиксировать task commit/checkpoint, затем прогнать task QA уже на committed `HEAD`, и только после этого переходить к publish stage;
 - shared operational docs сначала capture'ить из task branch, а sync'ить обратно только на publish/release stage как single-writer artifacts;
 - `task:finish:core` не должен спрашивать legacy `--preview ok|skip`;
+- для cleanup/publish resume из `main` использовать `--task-id <id>` как канонический селектор, `--branch codex/<task-branch>` оставить совместимым fallback;
 - для starter baseline `task:qa:agent` всё равно пишет `previewPreparedSha`, но preview status по умолчанию `not_supported`, пока проект не добавит свой preview adapter;
 - перед cleanup всегда спрашивать явно и в фиксированном формате:
   `1. Удалить`
   `2. Оставить`
   Ответ `1` маппится на удаление локального worktree/branch, ответ `2` — на сохранение.
+- finish считается успешно завершённым только когда `cleanupStatus` в task state/history стал `passed` или `kept`; одного `cleanupDecision` недостаточно.
+- optional repo script `task:finish:cleanup` может добавить только task-scoped `extraPaths` и/или вернуть `blocked`; starter core не делает глобальный sweep вне текущего task scope.
 
 ### Merge Semantic Command
 
@@ -169,6 +174,7 @@ These rules apply to the whole repository.
 - Task state canonical path: `.git/codex-task-pipeline/tasks/*.json`.
 - Runtime history canonical path: `.git/codex-task-pipeline/history/events.ndjson`.
 - `qaLastPassSha` и `previewPreparedSha` — обязательные reuse checkpoints.
+- `cleanupStatus` и `cleanupTargets` — обязательные finish-cleanup markers; отсутствие `cleanupStatus` означает, что cleanup ещё может требовать resume.
 - Shared operational snapshots (`Docs/qa-implementation-log.md`, `Docs/triz-usage-log.md`, append-only sections `CODEX_MEMORY.md`) — single-writer artifacts.
 - Task branches должны использовать `task:operational-docs:capture`, а publish/release stage — `task:operational-docs:sync`.
 
@@ -219,6 +225,9 @@ High-priority findings для этого starter repo ограничены:
 - `npm run lint`
 - `npm run lint:fix`
 - `npm run lint:fix:changed`
+- `npm run skills:link`
+- `npm run skills:status`
+- `npm run skills:unlink`
 - `npm run typecheck`
 - `npm test`
 - `npm run build`

@@ -1,21 +1,21 @@
 // @ts-check
 
-import { existsSync } from "node:fs";
-import { rmdir } from "node:fs/promises";
-import path from "node:path";
-
 import { buildCommitMessage } from "./lib/conveyor-utils.mjs";
+import { executeTaskCleanup, normalizeCleanupChoice } from "./lib/worktree-cleanup.mjs";
 import {
   OPERATIONAL_DOCS,
   appendHistoryEvent,
+  findMainWorktree,
   findGitRoot,
   formatIso,
-  getCodexHome,
   getCurrentBranch,
   getHeadSha,
+  hasRemote,
   getTrackedChangedFiles,
+  isGitDirty,
   loadAllTaskStates,
   loadTaskStateByBranch,
+  loadTaskStateByTaskId,
   parseArgs,
   runCommand,
   saveTaskState
@@ -24,7 +24,7 @@ import {
 /**
  * @param {string} repoRoot
  * @param {string} currentBranch
- * @param {{branch: string | null, cleanup: string | null, publishMain: string | null}} options
+ * @param {{branch: string | null, cleanup: string | null, publishMain: string | null, taskId: string | null}} options
  * @returns {Promise<import("./lib/runtime.mjs").TaskState>}
  */
 async function resolveTaskState(repoRoot, currentBranch, options) {
@@ -36,6 +36,9 @@ async function resolveTaskState(repoRoot, currentBranch, options) {
     if (options.branch && options.branch !== currentBranch) {
       throw new Error(`Current branch is ${currentBranch}; --branch must match the active task branch.`);
     }
+    if (options.taskId && options.taskId !== state.taskId) {
+      throw new Error(`Current task is ${state.taskId}; --task-id must match the active task.`);
+    }
     return state;
   }
 
@@ -44,6 +47,17 @@ async function resolveTaskState(repoRoot, currentBranch, options) {
   }
 
   const states = await loadAllTaskStates(repoRoot);
+  if (options.taskId) {
+    const explicit = await loadTaskStateByTaskId(repoRoot, options.taskId);
+    if (!explicit) {
+      throw new Error(`Task state not found for --task-id ${options.taskId}`);
+    }
+    if (options.branch && options.branch !== explicit.branch) {
+      throw new Error(`Task ${options.taskId} belongs to branch ${explicit.branch}; --branch must match.`);
+    }
+    return explicit;
+  }
+
   if (options.branch) {
     const explicit = states.find((state) => state.branch === options.branch);
     if (!explicit) {
@@ -60,7 +74,7 @@ async function resolveTaskState(repoRoot, currentBranch, options) {
       return Boolean(state.commitSha) && state.publishStatus === "failed";
     }
     if (options.cleanup) {
-      return Boolean(state.commitSha) && state.cleanupDecision === null;
+      return Boolean(state.commitSha) && !["passed", "kept"].includes(state.cleanupStatus ?? "");
     }
     return false;
   });
@@ -70,12 +84,12 @@ async function resolveTaskState(repoRoot, currentBranch, options) {
   }
 
   if (candidates.length === 0) {
-    throw new Error("No resumable task state found on main. Provide --branch codex/<task-branch>.");
+    throw new Error("No resumable task state found on main. Provide --task-id <id> or --branch codex/<task-branch>.");
   }
 
   throw new Error(
     `Multiple resumable task states found: ${candidates.map((state) => state.branch).join(", ")}. ` +
-    "Provide --branch codex/<task-branch>."
+    "Provide --task-id <id> or --branch codex/<task-branch>."
   );
 }
 
@@ -97,7 +111,7 @@ async function normalizeOperationalSnapshots(repoRoot) {
  * @returns {Promise<boolean>}
  */
 async function maybeReuseQa(repoRoot, state) {
-  if (state.qaLastPassSha && state.qaLastPassSha === getHeadSha(repoRoot)) {
+  if (state.qaLastPassSha && state.qaLastPassSha === getHeadSha(repoRoot) && !isGitDirty(repoRoot)) {
     await appendHistoryEvent(repoRoot, {
       at: formatIso(),
       type: "QA_REUSE",
@@ -141,29 +155,15 @@ async function ensureTaskQa(repoRoot, state) {
 /**
  * @param {string} repoRoot
  * @param {import("./lib/runtime.mjs").TaskState} state
- * @returns {Promise<boolean>}
+ * @param {{repaired?: boolean, reason?: string | null}} [options]
+ * @returns {Promise<void>}
  */
-async function maybeCommitAndPush(repoRoot, state) {
-  if (state.commitSha) {
-    return false;
-  }
-
-  runCommand(repoRoot, "node", ["scripts/worktree-operational-docs.mjs", "capture"]);
-  await normalizeOperationalSnapshots(repoRoot);
-
-  const changed = runCommand(repoRoot, "git", ["status", "--porcelain"], { allowFailure: true }).stdout.trim();
-  if (!changed) {
-    return false;
-  }
-
-  runCommand(repoRoot, "git", ["add", "-A"]);
-  const message = await buildCommitMessage(repoRoot, state.title);
-  runCommand(repoRoot, "git", ["commit", "-m", message]);
+async function recordCommitAndPush(repoRoot, state, options = {}) {
   state.commitSha = getHeadSha(repoRoot);
   await saveTaskState(repoRoot, state);
 
   let pushed = false;
-  if (runCommand(repoRoot, "git", ["remote"], { allowFailure: true }).stdout.includes("origin")) {
+  if (hasRemote(repoRoot)) {
     runCommand(repoRoot, "git", ["push", "-u", "origin", state.branch]);
     pushed = true;
   }
@@ -175,10 +175,41 @@ async function maybeCommitAndPush(repoRoot, state) {
     branch: state.branch,
     payload: {
       commitSha: state.commitSha,
-      pushed
+      pushed,
+      repaired: options.repaired === true,
+      reason: options.reason ?? null
     }
   });
-  return true;
+}
+
+/**
+ * @param {string} repoRoot
+ * @param {import("./lib/runtime.mjs").TaskState} state
+ * @returns {Promise<void>}
+ */
+async function ensureTaskCommit(repoRoot, state) {
+  if (!isGitDirty(repoRoot) && state.commitSha === getHeadSha(repoRoot)) {
+    return;
+  }
+
+  runCommand(repoRoot, "node", ["scripts/worktree-operational-docs.mjs", "capture"]);
+  await normalizeOperationalSnapshots(repoRoot);
+
+  const changed = runCommand(repoRoot, "git", ["status", "--porcelain"], { allowFailure: true }).stdout.trim();
+  if (!changed) {
+    await recordCommitAndPush(repoRoot, state, {
+      repaired: true,
+      reason: state.commitSha
+        ? "updated commitSha to the existing task branch HEAD before publish"
+        : "recorded existing task branch HEAD as commitSha before publish"
+    });
+    return;
+  }
+
+  runCommand(repoRoot, "git", ["add", "-A"]);
+  const message = await buildCommitMessage(repoRoot, state.title);
+  runCommand(repoRoot, "git", ["commit", "-m", message]);
+  await recordCommitAndPush(repoRoot, state);
 }
 
 /**
@@ -188,47 +219,6 @@ async function maybeCommitAndPush(repoRoot, state) {
  */
 async function runPublishStage(repoRoot, state) {
   runCommand(repoRoot, "node", ["scripts/worktree-merge-main.mjs", "--branch", state.branch], { allowFailure: false });
-}
-
-/**
- * @param {string | null} cleanup
- * @returns {string | null}
- */
-function normalizeCleanupChoice(cleanup) {
-  if (cleanup === "1") {
-    return "yes";
-  }
-  if (cleanup === "2") {
-    return "no";
-  }
-  return cleanup;
-}
-
-/**
- * @param {string} taskPath
- * @returns {Promise<void>}
- */
-async function pruneManagedTaskRoot(taskPath) {
-  const managedRoot = path.resolve(getCodexHome(), "worktrees");
-  const taskRoot = path.resolve(path.dirname(taskPath));
-  const relative = path.relative(managedRoot, taskRoot);
-  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) {
-    return;
-  }
-
-  try {
-    await rmdir(taskRoot);
-  } catch (error) {
-    if (
-      error &&
-      typeof error === "object" &&
-      "code" in error &&
-      ["ENOENT", "ENOTEMPTY", "EEXIST"].includes(String(error.code))
-    ) {
-      return;
-    }
-    throw error;
-  }
 }
 
 /**
@@ -248,34 +238,33 @@ async function finalizeTask(repoRoot, state, cleanup) {
   }
 
   const stateRepoRoot = state.repoRoot || state.mainWorktreePath || repoRoot;
+  const mainWorktreePath = state.mainWorktreePath ?? (await findMainWorktree(stateRepoRoot)) ?? stateRepoRoot;
   state.cleanupDecision = cleanup;
   state.finishedAt = formatIso();
   state.status = "finished";
+  const cleanupResult = await executeTaskCleanup(repoRoot, state, mainWorktreePath);
+  state.cleanupDecision = cleanupResult.decision;
+  state.cleanupStatus = cleanupResult.status;
+  state.cleanupTargets = cleanupResult.cleanupTargets;
   await saveTaskState(stateRepoRoot, state);
-
-  const cleanupPayload = {
-    decision: cleanup,
-    removed: false
-  };
-
-  if (cleanup === "yes") {
-    const taskPath = state.worktreePath;
-    const mainWorktreePath = state.mainWorktreePath ?? repoRoot;
-    if (existsSync(taskPath)) {
-      process.chdir(path.dirname(repoRoot));
-      runCommand(mainWorktreePath, "git", ["worktree", "remove", taskPath, "--force"], { allowFailure: true });
-    }
-    await pruneManagedTaskRoot(taskPath);
-    runCommand(mainWorktreePath, "git", ["branch", "-D", state.branch], { allowFailure: true });
-    cleanupPayload.removed = true;
-  }
 
   await appendHistoryEvent(stateRepoRoot, {
     at: formatIso(),
     type: "CLEANUP",
     taskId: state.taskId,
     branch: state.branch,
-    payload: cleanupPayload
+    payload: {
+      decision: cleanupResult.decision,
+      status: cleanupResult.status,
+      removedPaths: cleanupResult.removedPaths,
+      remainingPaths: cleanupResult.remainingPaths,
+      cleanupTargets: cleanupResult.cleanupTargets,
+      hookInvoked: cleanupResult.hookInvoked,
+      blocked: cleanupResult.blocked,
+      errors: cleanupResult.errors,
+      notes: cleanupResult.notes,
+      branchRemoved: cleanupResult.branchRemoved
+    }
   });
   await appendHistoryEvent(stateRepoRoot, {
     at: state.finishedAt,
@@ -284,9 +273,21 @@ async function finalizeTask(repoRoot, state, cleanup) {
     branch: state.branch,
     payload: {
       publishStatus: state.publishStatus ?? null,
-      cleanupDecision: state.cleanupDecision
+      cleanupDecision: state.cleanupDecision,
+      cleanupStatus: state.cleanupStatus ?? null
     }
   });
+
+  if (cleanupResult.status === "failed") {
+    const details = [
+      "task:finish:core completed publish but cleanup did not finish.",
+      cleanupResult.blocked.length > 0 ? `blocked: ${cleanupResult.blocked.join("; ")}` : null,
+      cleanupResult.errors.length > 0 ? `errors: ${cleanupResult.errors.join("; ")}` : null,
+      cleanupResult.remainingPaths.length > 0 ? `remaining: ${cleanupResult.remainingPaths.join(", ")}` : null,
+      `resume command: npm run task:finish:core -- --task-id ${state.taskId} --cleanup 1`
+    ].filter(Boolean);
+    throw new Error(details.join("\n"));
+  }
 }
 
 /**
@@ -300,6 +301,7 @@ async function main() {
   const cleanup = normalizeCleanupChoice(rawCleanup);
   const publishMain = typeof flags["publish-main"] === "string" ? flags["publish-main"] : null;
   const requestedBranch = typeof flags.branch === "string" ? flags.branch : null;
+  const requestedTaskId = typeof flags["task-id"] === "string" ? flags["task-id"] : null;
   const decision = typeof flags.decision === "string" ? flags.decision : null;
 
   if (decision && decision !== "retry") {
@@ -315,17 +317,19 @@ async function main() {
   const state = await resolveTaskState(repoRoot, currentBranch, {
     branch: requestedBranch,
     cleanup,
-    publishMain
+    publishMain,
+    taskId: requestedTaskId
   });
-
-  if (!state.commitSha) {
-    await ensureTaskQa(repoRoot, state);
-    await maybeCommitAndPush(state.worktreePath, state);
-  }
 
   const publishAlreadyCompleted =
     ["pushed", "local-only"].includes(state.publishStatus ?? "") &&
     ["merged", "finished"].includes(state.status ?? "");
+
+  if (!publishAlreadyCompleted) {
+    await ensureTaskCommit(state.worktreePath, state);
+    await ensureTaskQa(state.worktreePath, state);
+  }
+
   const shouldPublish = publishMain === "retry" || !publishAlreadyCompleted;
   if (shouldPublish) {
     await runPublishStage(state.mainWorktreePath ?? repoRoot, state);

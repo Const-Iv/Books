@@ -45,6 +45,9 @@
 - `_bmad-output/` и похожие workflow scratch-артефакты нельзя смешивать с single-writer operational docs или task state.
 - `task:finish:core` должен писать task state и runtime history через стабильный repo root из task state, а cleanup managed worktree под `$CODEX_HOME/worktrees/<taskId>/` должен дополнительно подчищать пустой task-root после удаления самого worktree.
 - Cleanup-choice в finish-flow должен задаваться фиксированно как `1. Удалить` / `2. Оставить`; ответ цифрой считается canonical и не требует текстовой расшифровки.
+- Resume cleanup из `main` должен использовать `--task-id <id>` как canonical selector; `--branch` допустим только как compatibility fallback.
+- `cleanupStatus` и `cleanupTargets` — часть канонического task state/history contract; отсутствие `cleanupStatus` означает, что cleanup может требовать resume even if `cleanupDecision` уже записан.
+- Optional `task:finish:cleanup` repo hook может возвращать только task-scoped `extraPaths` и/или `blocked`; starter core не делает sweep вне текущего task scope.
 
 ## Project Notes
 

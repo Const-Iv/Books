@@ -23,6 +23,7 @@ JTBD: когда начинается новый проект, дать кома
 - `.memory-bank/` — shared long-lived knowledge.
 - `CODEX_MEMORY.md` — оперативная память Codex.
 - `scripts/` — реальные process entrypoints, а не только README-контракты.
+- `skills/` — versioned reusable Codex skills, которые можно подключить глобально через symlink.
 - `tests/` — unit/integration/e2e проверки самого starter baseline.
 - `Docs/` — process evidence, baselines и review guidance.
 - `research/triz/` — канонический TRIZ pack.
@@ -42,7 +43,19 @@ JTBD: когда начинается новый проект, дать кома
 npm ci
 ```
 
-4. Прогоните baseline QA:
+4. Если хотите использовать общие repo-managed skills на этом устройстве, один раз подключите их в глобальный Codex home:
+
+```bash
+npm run skills:link
+```
+
+Если в `~/.codex/skills` уже есть локальная конфликтующая копия того же skill, используйте безопасную миграцию с backup:
+
+```bash
+npm run skills:link -- --adopt
+```
+
+5. Прогоните baseline QA:
 
 ```bash
 npm run qa:agent
@@ -68,6 +81,9 @@ npm run qa:perf:critical
 - `npm run lint`
 - `npm run lint:fix`
 - `npm run lint:fix:changed`
+- `npm run skills:link`
+- `npm run skills:status`
+- `npm run skills:unlink`
 - `npm run typecheck`
 - `npm test`
 - `npm run build`
@@ -91,6 +107,8 @@ npm run qa:perf:critical
 ## Что важно понимать
 
 - Core starter не содержит продуктовый UI/API runtime. Smoke/nightly здесь проверяют process-level сценарии на временных git repos.
+- Repo-managed shared skills обновляются на устройстве обычным `git pull`, если symlink уже был создан. Для новых или переименованных skills повторно запускайте `npm run skills:link`.
+- В starter core стоит хранить только reusable shared skills. `.system`, plugin-managed и product-specific skills должны жить вне этой baseline-папки.
 - `task:qa:agent` всё равно создаёт `previewPreparedSha`, но по умолчанию preview status = `not_supported`. Когда реальный проект добавит preview adapter, contract уже будет готов.
 - `release:local` — обязательный core publish path. Deploy-to-server и `db:prod:*` контуры должны добавляться как optional profile поверх этой базы.
 - Если вы подключаете BMAD поверх starter, не делайте `_bmad-output/` источником истины для conveyor state, shared docs или committed plans.
