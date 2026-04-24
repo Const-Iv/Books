@@ -7,12 +7,14 @@
 ### `skills:status`
 
 - показывает состояние repo-managed skills относительно `$CODEX_HOME/skills`;
+- с `--source <skills-root>` проверяет внешний skills root, например `vendor/new-project-starter/skills` из git submodule;
 - различает `linked`, `missing` и `conflict`;
 - не меняет файловую систему и печатает machine-readable JSON.
 
 ### `skills:link`
 
 - находит все repo-owned skills из `skills/**/SKILL.md`;
+- с `--source <skills-root>` находит shared skills во внешнем source tree, например в starter submodule downstream проекта;
 - создаёт symlink в `$CODEX_HOME/skills/<relative-path>`;
 - не перезаписывает конфликтующие локальные директории или symlink'и по умолчанию;
 - с `--adopt` переносит конфликтующий target в `$CODEX_HOME/skills-backups/<timestamp>/...`, затем ставит managed symlink;
@@ -21,8 +23,31 @@
 ### `skills:unlink`
 
 - удаляет только symlink'и, которые указывают на текущий repo-owned skill source;
+- с `--source <skills-root>` удаляет только symlink'и, которые указывают на этот внешний skills source;
 - не трогает конфликтующие или чужие директории;
 - подчищает пустые parent-директории внутри `$CODEX_HOME/skills`, если после unlink они опустели.
+
+### Git submodule для shared skills
+
+Downstream проект может держать starter как versioned submodule и не копировать reusable skills вручную:
+
+```bash
+git submodule add <starter-repo-url> vendor/new-project-starter
+git submodule update --init --recursive
+node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/new-project-starter/skills
+```
+
+В `package.json` downstream проекта можно добавить wrapper:
+
+```json
+{
+  "scripts": {
+    "skills:link": "node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/new-project-starter/skills",
+    "skills:status": "node vendor/new-project-starter/scripts/skills-manage.mjs status --source vendor/new-project-starter/skills",
+    "skills:unlink": "node vendor/new-project-starter/scripts/skills-manage.mjs unlink --source vendor/new-project-starter/skills"
+  }
+}
+```
 
 ### `task:start`
 

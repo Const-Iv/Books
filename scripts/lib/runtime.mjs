@@ -143,6 +143,7 @@ export const REQUIRED_FILES = [
   "templates/agent-workspace/USER.template.md",
   "templates/agent-workspace/MEMORY.template.md",
   "templates/agent-workspace/memory/L0_INDEX.template.md",
+  "templates/shared-skills-submodule/README.md",
   "package.json",
   "tsconfig.json"
 ];

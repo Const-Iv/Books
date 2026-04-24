@@ -71,6 +71,6 @@
 ## Contracts and Boundaries
 
 - Source-specific или product-specific интеграции должны добавляться поверх starter через shared adapter contracts, а не hardcode в core scripts.
-- Reusable shared Codex skills можно хранить в repo `skills/` и публиковать в `$CODEX_HOME/skills` только через безопасный symlink flow; `.system`, plugin-managed и product-specific skills не должны попадать в starter core.
+- Reusable shared Codex skills можно хранить в repo `skills/` и публиковать в `$CODEX_HOME/skills` только через безопасный symlink flow; downstream проекты могут использовать git submodule source через `skills-manage.mjs --source <skills-root>`; `.system`, plugin-managed и product-specific skills не должны попадать в starter core.
 - Build/test/release scripts не должны зависеть от наличия продуктового UI/backend кода.
 - Любой optional deploy profile обязан дополнять core baseline, а не ломать `release:local`.

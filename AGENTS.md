@@ -7,7 +7,7 @@ These rules apply to the whole repository.
 - `new-project-starter` — каноническая reusable база для старта любых новых проектов в привычном фреймворке: Codex/worktree conveyor, deterministic QA, memory-bank governance, TRIZ escalation и branch-chat rules.
 - JTBD: когда начинается новый проект, дать команде готовую операционную основу с первого дня, чтобы не собирать заново правила работы, QA, task flow и agent governance в каждом репозитории.
 - При любых изменениях сверяться с этой ролью: правило или скрипт должны быть полезны как baseline для новых проектов, а product-specific поведение добавляется только поверх starter через adapters/profiles и не hardcode'ится в core governance.
-- Reusable shared skills можно versioned хранить в `skills/` и публиковать в `$CODEX_HOME/skills` через repo scripts; `.system`, plugin-managed и product-specific skills не являются частью starter core.
+- Reusable shared skills можно versioned хранить в `skills/` и публиковать в `$CODEX_HOME/skills` через repo scripts; downstream проекты могут подключать starter как git submodule и линковать skills через `skills-manage.mjs --source vendor/new-project-starter/skills`; `.system`, plugin-managed и product-specific skills не являются частью starter core.
 
 ## Language Requirements
 
