@@ -50,6 +50,7 @@
 - Optional `task:finish:cleanup` repo hook может возвращать только task-scoped `extraPaths` и/или `blocked`; starter core не делает sweep вне текущего task scope.
 - Reusable starter skills должны жить в repo `skills/` и подключаться в `$CODEX_HOME/skills` через symlink-based `skills:link`; после `git pull` existing links обновляются сами, а для новых/renamed skills нужно повторно запустить link.
 - Finish-flow не должен reuse task QA для dirty worktree перед commit: если есть незакоммиченные task changes, сначала фиксируется task commit/checkpoint, затем прогоняется QA уже на этом committed `HEAD`.
+- Для командного multi-project reuse shared skills downstream repo может держать starter как git submodule и линковать skills через `skills-manage.mjs --source vendor/new-project-starter/skills`, чтобы новые участники получали зафиксированную версию baseline.
 
 ## Project Notes
 

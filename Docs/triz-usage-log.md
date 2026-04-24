@@ -31,3 +31,15 @@
 - Reasons: cross_module_conflict, historical_recurrence
 - Status: trigger recorded
 
+## 2026-04-24T09:22:26.456Z 20260424-091736-6c73
+
+- Branch: `codex/20260424-091736-6c73-submodule-shared-skills`
+- Reasons: cross_module_conflict
+- Status: trigger recorded
+
+## 2026-04-24T09:22:54.300Z 20260424-091736-6c73 — TRIZ_APPLIED
+
+- Principle: separation in space / mediator
+- Changes: skills source ownership is separated from local Codex activation through `--source <skills-root>`, so downstream repos can pin starter as `vendor/new-project-starter` while `$CODEX_HOME/skills` keeps symlink activation.
+- Guard: `tests/unit/skills-manager.test.mjs` covers linking from a submodule source path.
+
