@@ -28,6 +28,7 @@ JTBD: когда начинается новый проект, дать кома
 - `Docs/` — process evidence, baselines и review guidance.
 - `research/triz/` — канонический TRIZ pack.
 - `templates/agent-workspace/` — безопасные локальные шаблоны без коммита личных данных.
+- `templates/shared-skills-submodule/` — готовый downstream contract для подключения starter skills через git submodule.
 
 ## Быстрый старт
 
@@ -55,7 +56,17 @@ npm run skills:link
 npm run skills:link -- --adopt
 ```
 
-5. Прогоните baseline QA:
+5. Если проект подключает shared skills через git submodule, добавьте starter как versioned dependency и линкуйте skills из него:
+
+```bash
+git submodule add <starter-repo-url> vendor/new-project-starter
+git submodule update --init --recursive
+node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/new-project-starter/skills
+```
+
+В таком режиме проект фиксирует конкретный commit starter baseline, а новые люди получают тот же набор skills после `git clone --recurse-submodules` или `git submodule update --init --recursive`.
+
+6. Прогоните baseline QA:
 
 ```bash
 npm run qa:agent
@@ -108,6 +119,7 @@ npm run qa:perf:critical
 
 - Core starter не содержит продуктовый UI/API runtime. Smoke/nightly здесь проверяют process-level сценарии на временных git repos.
 - Repo-managed shared skills обновляются на устройстве обычным `git pull`, если symlink уже был создан. Для новых или переименованных skills повторно запускайте `npm run skills:link`.
+- Для multi-project командного использования предпочтителен git submodule: downstream repo хранит starter под `vendor/new-project-starter`, а `skills-manage.mjs --source vendor/new-project-starter/skills` создаёт symlink'и в локальный `$CODEX_HOME/skills`.
 - В starter core стоит хранить только reusable shared skills. `.system`, plugin-managed и product-specific skills должны жить вне этой baseline-папки.
 - `task:qa:agent` всё равно создаёт `previewPreparedSha`, но по умолчанию preview status = `not_supported`. Когда реальный проект добавит preview adapter, contract уже будет готов.
 - `release:local` — обязательный core publish path. Deploy-to-server и `db:prod:*` контуры должны добавляться как optional profile поверх этой базы.

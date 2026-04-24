@@ -47,6 +47,7 @@ import { getCodexHome } from "./runtime.mjs";
 /**
  * @typedef {Object} SkillsOptions
  * @property {string} [codexHome]
+ * @property {string} [source]
  * @property {boolean} [adopt]
  */
 
@@ -72,6 +73,15 @@ async function pathExists(filePath) {
  */
 export function getRepoSkillsRoot(repoRoot) {
   return path.join(repoRoot, "skills");
+}
+
+/**
+ * @param {string} repoRoot
+ * @param {SkillsOptions} [options]
+ * @returns {string}
+ */
+function getResolvedSkillsRoot(repoRoot, options = {}) {
+  return options.source ? path.resolve(repoRoot, options.source) : getRepoSkillsRoot(repoRoot);
 }
 
 /**
@@ -111,11 +121,10 @@ function isInsidePath(parentDir, candidatePath) {
 }
 
 /**
- * @param {string} repoRoot
+ * @param {string} skillsRoot
  * @returns {Promise<RepoSkill[]>}
  */
-export async function discoverRepoSkills(repoRoot) {
-  const skillsRoot = getRepoSkillsRoot(repoRoot);
+export async function discoverSkills(skillsRoot) {
   if (!(await pathExists(skillsRoot))) {
     return [];
   }
@@ -158,6 +167,14 @@ export async function discoverRepoSkills(repoRoot) {
       targetDir: getSkillTargetDir(getCodexHome(), skill.relativeDir)
     }))
     .sort((left, right) => left.relativeDir.localeCompare(right.relativeDir));
+}
+
+/**
+ * @param {string} repoRoot
+ * @returns {Promise<RepoSkill[]>}
+ */
+export async function discoverRepoSkills(repoRoot) {
+  return discoverSkills(getRepoSkillsRoot(repoRoot));
 }
 
 /**
@@ -232,7 +249,7 @@ async function pruneEmptyParents(startDir, stopDir) {
  */
 async function loadRepoSkills(repoRoot, options = {}) {
   const codexHome = options.codexHome ? path.resolve(options.codexHome) : getCodexHome();
-  const skills = await discoverRepoSkills(repoRoot);
+  const skills = await discoverSkills(getResolvedSkillsRoot(repoRoot, options));
   return skills.map((skill) => ({
     ...skill,
     targetDir: getSkillTargetDir(codexHome, skill.relativeDir)
@@ -246,8 +263,8 @@ async function loadRepoSkills(repoRoot, options = {}) {
  */
 export async function getRepoSkillsStatus(repoRoot, options = {}) {
   const codexHome = options.codexHome ? path.resolve(options.codexHome) : getCodexHome();
-  const skillsRoot = getRepoSkillsRoot(repoRoot);
-  const skills = await loadRepoSkills(repoRoot, { codexHome });
+  const skillsRoot = getResolvedSkillsRoot(repoRoot, options);
+  const skills = await loadRepoSkills(repoRoot, { codexHome, source: options.source });
   const results = [];
   for (const skill of skills) {
     results.push(await inspectSkillTarget(skill));
@@ -278,9 +295,9 @@ function createBackupLabel() {
  */
 export async function linkRepoSkills(repoRoot, options = {}) {
   const codexHome = options.codexHome ? path.resolve(options.codexHome) : getCodexHome();
-  const skillsRoot = getRepoSkillsRoot(repoRoot);
+  const skillsRoot = getResolvedSkillsRoot(repoRoot, options);
   const codexSkillsRoot = getCodexSkillsRoot(codexHome);
-  const skills = await loadRepoSkills(repoRoot, { codexHome });
+  const skills = await loadRepoSkills(repoRoot, { codexHome, source: options.source });
   /** @type {SkillResult[]} */
   const results = [];
   let ok = true;
@@ -344,9 +361,9 @@ export async function linkRepoSkills(repoRoot, options = {}) {
  */
 export async function unlinkRepoSkills(repoRoot, options = {}) {
   const codexHome = options.codexHome ? path.resolve(options.codexHome) : getCodexHome();
-  const skillsRoot = getRepoSkillsRoot(repoRoot);
+  const skillsRoot = getResolvedSkillsRoot(repoRoot, options);
   const codexSkillsRoot = getCodexSkillsRoot(codexHome);
-  const skills = await loadRepoSkills(repoRoot, { codexHome });
+  const skills = await loadRepoSkills(repoRoot, { codexHome, source: options.source });
   /** @type {SkillResult[]} */
   const results = [];
   let ok = true;

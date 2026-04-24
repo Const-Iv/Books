@@ -6,7 +6,13 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { discoverRepoSkills, getRepoSkillsStatus, linkRepoSkills, unlinkRepoSkills } from "../../scripts/lib/skills-manager.mjs";
+import {
+  discoverRepoSkills,
+  discoverSkills,
+  getRepoSkillsStatus,
+  linkRepoSkills,
+  unlinkRepoSkills
+} from "../../scripts/lib/skills-manager.mjs";
 
 /**
  * @param {string} filePath
@@ -74,6 +80,54 @@ test("skills manager discovers repo skills and links them into CODEX_HOME", asyn
         ["shared/worktree-finish", "linked"],
         ["worktree-create", "linked"]
       ]
+    );
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test("skills manager can link skills from a submodule source path", async () => {
+  const fixture = await createSkillFixture();
+  try {
+    const consumerRoot = path.join(fixture.baseDir, "consumer");
+    const sourceRoot = path.join(consumerRoot, "vendor", "new-project-starter", "skills");
+    await mkdir(path.join(sourceRoot, "worktree-create"), { recursive: true });
+    await writeFile(path.join(sourceRoot, "worktree-create", "SKILL.md"), "# Worktree Create\n", "utf8");
+    await mkdir(path.join(sourceRoot, "worktree-finish"), { recursive: true });
+    await writeFile(path.join(sourceRoot, "worktree-finish", "SKILL.md"), "# Worktree Finish\n", "utf8");
+
+    const discovered = await discoverSkills(sourceRoot);
+    assert.deepEqual(
+      discovered.map((skill) => skill.relativeDir),
+      ["worktree-create", "worktree-finish"]
+    );
+
+    const linked = await linkRepoSkills(consumerRoot, {
+      codexHome: fixture.codexHome,
+      source: "vendor/new-project-starter/skills"
+    });
+    assert.equal(linked.ok, true);
+    assert.equal(linked.skillsRoot, sourceRoot);
+    assert.deepEqual(
+      linked.results.map((result) => [result.relativeDir, result.status]),
+      [
+        ["worktree-create", "linked"],
+        ["worktree-finish", "linked"]
+      ]
+    );
+    assert.equal(
+      await realpath(path.join(fixture.codexHome, "skills", "worktree-finish")),
+      await realpath(path.join(sourceRoot, "worktree-finish"))
+    );
+
+    const status = await getRepoSkillsStatus(consumerRoot, {
+      codexHome: fixture.codexHome,
+      source: sourceRoot
+    });
+    assert.equal(status.ok, true);
+    assert.deepEqual(
+      status.results.map((result) => result.status),
+      ["linked", "linked"]
     );
   } finally {
     await fixture.cleanup();
