@@ -23,7 +23,7 @@ Purpose: хранить долгоживущие, reusable знания прое
 ## Update Policy
 
 - Coding constraints и assistant standing orders — в `code-rules.md`.
-- Mission, vision, goal и `JTBD` — в `product-charter.md`; `Job Story`, `User Story` и критерии приемки оформлять на уровне конкретных feature/spec задач, а не общего charter.
+- Mission, vision, goal, целевая аудитория проекта и `JTBD` — в `product-charter.md`; проблема, целевая аудитория изменения, сценарии, требования, `Job Story`, `User Story`, критерии приемки, метрика успеха и ограничения оформляются на уровне конкретных feature/spec задач, а не общего charter.
 - Stable architecture/process boundaries — в `architecture-map.md`.
 - Repeatable QA rules, failure classes, evidence capture — в `qa-playbook.md`.
 - Stack/runtime/command context — в `project-context.md`.

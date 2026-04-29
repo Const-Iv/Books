@@ -1,5 +1,26 @@
 # QA implementation log
 
+## 2026-04-29 — Product spec and target audience gate
+
+### Scope
+
+- В `.memory-bank/product-charter.md` добавлена целевая аудитория `new-project-starter` и явное правило, что downstream-проекты описывают свою аудиторию отдельно.
+- `plans/_template.md` усилен блоком `Продуктовая спека`: проблема / `JTBD`, целевая аудитория изменения, сценарии использования, требования, критерии приемки, метрика успеха и ограничения / что нельзя сломать.
+- Product Charter gate синхронизирован в `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, mirrors и reference blueprint.
+
+### Deterministic checks
+
+- `npm run lint` — PASS
+- `npm run qa:agent` — PASS
+
+### Rollback notes
+
+- Если downstream-проекту нужен другой формат спеки, можно адаптировать `plans/_template.md` и `.memory-bank/product-charter.md` в downstream repo, сохранив обязательные charter anchors и baseline-инварианты starter core.
+
+### Status
+
+- PASS
+
 ## 2026-04-20 — Numbered cleanup choice
 
 ### Scope

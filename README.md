@@ -10,10 +10,12 @@
 - TRIZ escalation by trigger;
 - single-writer operational docs;
 - shared memory-bank governance;
-- product charter for mission/vision/goal/JTBD;
+- product charter for mission/vision/goal/target-audience/JTBD;
 - local-first `release:local`.
 
 Миссия starter: дать команде переносимую операционную основу для старта нового проекта с первого дня.
+
+Целевая аудитория starter: команды, которые начинают новый проект или репозиторий, технические и продуктовые лиды, инженеры и agent-operators, а также downstream maintainers, которые подключают starter как baseline.
 
 JTBD: когда начинается новый проект, получить готовую и переносимую основу, чтобы команда сразу работала по ясным правилам, проверяла изменения воспроизводимо и не собирала governance, task flow и QA заново.
 
@@ -24,7 +26,7 @@ JTBD: когда начинается новый проект, получить 
 - `AGENTS.md` — канонический договор для Codex.
 - `CLAUDE.md` и `.cursorrules` — cross-agent mirrors.
 - `.memory-bank/` — shared long-lived knowledge.
-- `.memory-bank/product-charter.md` — миссия, видение, цель и JTBD проекта.
+- `.memory-bank/product-charter.md` — миссия, видение, цель, целевая аудитория и JTBD проекта.
 - `CODEX_MEMORY.md` — оперативная память Codex.
 - `scripts/` — реальные process entrypoints, а не только README-контракты.
 - `skills/` — versioned reusable Codex skills, которые можно подключить глобально через symlink.

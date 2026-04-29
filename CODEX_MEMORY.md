@@ -21,7 +21,8 @@
 - Для non-trivial work явно фиксировать assumptions, показывать plausible variants и делать surgical diffs.
 - Перед mutating action нужно кратко объяснить change intent.
 - Deterministic checks — единственное доказательство корректности.
-- Будущие plan files начинаются с продуктового блока `Summary -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`, а техническая часть начинается ниже.
+- Будущие plan files начинаются с продуктового блока `Миссия -> Видение -> Цель -> Целевая аудитория проекта -> Продуктовая спека`; product spec включает проблему / `JTBD`, целевую аудиторию изменения, сценарии использования, требования, критерии приемки, метрику успеха и ограничения / что нельзя сломать.
+- В Plan mode уточняющие вопросы, варианты выбора и рекомендации должны проходить через Product Charter; recommended option должен быть charter-safe, а конфликтный с charter вариант нельзя подавать как равнозначно рекомендуемый.
 - В `main` нельзя вносить изменения без явного разрешения пользователя на direct-main правку в текущей задаче.
 - По умолчанию implementation work выполняется в отдельном managed worktree и ветке `codex/*`.
 - `qa:agent` обязателен перед finish / merge / release для code-changing work.
@@ -51,7 +52,7 @@
 - Reusable starter skills должны жить в repo `skills/` и подключаться в `$CODEX_HOME/skills` через symlink-based `skills:link`; после `git pull` existing links обновляются сами, а для новых/renamed skills нужно повторно запустить link.
 - Finish-flow не должен reuse task QA для dirty worktree перед commit: если есть незакоммиченные task changes, сначала фиксируется task commit/checkpoint, затем прогоняется QA уже на этом committed `HEAD`.
 - Для командного multi-project reuse shared skills downstream repo может держать starter как git submodule и линковать skills через `skills-manage.mjs --source vendor/new-project-starter/skills`, чтобы новые участники получали зафиксированную версию baseline.
-- Product proposal нельзя подменять `Summary` / `Key Changes` / technical sketch без product-charter якоря; полный вариант идёт через `Миссия -> Видение -> Цель -> JTBD`, короткий вариант обязан явно опереться хотя бы на один charter anchor.
+- Product proposal нельзя подменять `Summary` / `Key Changes` / technical sketch без product-charter якоря; полный вариант идёт через `Миссия -> Видение -> Цель -> Целевая аудитория -> JTBD`, короткий вариант обязан явно опереться хотя бы на один charter anchor.
 - Generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) считаются profile/tool output; в starter core нельзя bulk-import'ить их содержимое вместо repo-owned source в `skills/` или переносимой policy.
 - Активные `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` должны оставаться читаемыми; при compaction полный pre-compaction snapshot сохраняется в `Docs/archive/*.md.gz`.
 - Если clean task branch уже содержится в `main` и task commit ещё не записан, finish-flow должен ставить `publishStatus=skipped_already_merged`, писать `PUBLISH_SKIP` и всё равно завершать cleanup через `passed|kept`.
