@@ -16,7 +16,10 @@ git submodule update --init --recursive
   "scripts": {
     "skills:link": "node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/new-project-starter/skills",
     "skills:status": "node vendor/new-project-starter/scripts/skills-manage.mjs status --source vendor/new-project-starter/skills",
-    "skills:unlink": "node vendor/new-project-starter/scripts/skills-manage.mjs unlink --source vendor/new-project-starter/skills"
+    "skills:unlink": "node vendor/new-project-starter/scripts/skills-manage.mjs unlink --source vendor/new-project-starter/skills",
+    "rule-share:scan": "node vendor/new-project-starter/scripts/rule-share.mjs scan",
+    "rule-share:report": "node vendor/new-project-starter/scripts/rule-share.mjs report",
+    "rule-share:apply-plan": "node vendor/new-project-starter/scripts/rule-share.mjs apply-plan"
   }
 }
 ```

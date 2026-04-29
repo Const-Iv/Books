@@ -51,6 +51,28 @@
 - возвращает seed и команду для managed `task:start`;
 - не применяет правила, не меняет `main` и не создаёт source edits без отдельного task worktree/plan/QA.
 
+### `rule-share:scan`
+
+- ищет только owner-allowed active downstream проекты из ignored local config `runtime/rule-share/config.json`;
+- поддерживает `roots`, `allowlist`, `ignorelist` и `starterPath`;
+- классифицирует проекты как готовые к `update_starter_reference`, готовые к `prepare_rule_import`, требующие ручной проверки или заблокированные;
+- пишет snapshot в `runtime/rule-share/scans/*.json`;
+- остаётся read-only относительно downstream source.
+
+### `rule-share:report`
+
+- читает последний или явно выбранный rule-share snapshot;
+- строит owner-facing сводку с секциями `Предложения к проектам`, `Готово к обновлению`, `Требует ручной проверки`, `Заблокировано`, `Диагностика`;
+- показывает project ids только как traceability для approval JSON;
+- не предлагает проекты вне локального allowlist как готовые targets.
+
+### `rule-share:apply-plan`
+
+- принимает approval JSON с ids подтверждённых проектов;
+- в v1 требует `--dry-run`;
+- возвращает per-project task seeds и команды для managed `task:start` внутри выбранных downstream проектов;
+- не редактирует downstream source, не обновляет submodule напрямую и не делает bulk-copy правил.
+
 ### Git submodule для shared skills
 
 Downstream проект может держать starter как versioned submodule и не копировать reusable skills вручную:
@@ -71,7 +93,10 @@ node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/n
     "skills:unlink": "node vendor/new-project-starter/scripts/skills-manage.mjs unlink --source vendor/new-project-starter/skills",
     "rule-sync:scan": "node vendor/new-project-starter/scripts/rule-sync.mjs scan",
     "rule-sync:report": "node vendor/new-project-starter/scripts/rule-sync.mjs report",
-    "rule-sync:apply-plan": "node vendor/new-project-starter/scripts/rule-sync.mjs apply-plan"
+    "rule-sync:apply-plan": "node vendor/new-project-starter/scripts/rule-sync.mjs apply-plan",
+    "rule-share:scan": "node vendor/new-project-starter/scripts/rule-share.mjs scan",
+    "rule-share:report": "node vendor/new-project-starter/scripts/rule-share.mjs report",
+    "rule-share:apply-plan": "node vendor/new-project-starter/scripts/rule-share.mjs apply-plan"
   }
 }
 ```

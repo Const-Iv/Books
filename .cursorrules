@@ -29,6 +29,7 @@ Mirror rules:
 - `.cursorrules` не заменяет `AGENTS.md` и не считается единственным source of truth;
 - QA и release decisions должны идти через `qa:agent`, `task:*`, `release:local`, а не через ad-hoc shell flow.
 - cross-project rule sync должен идти через project-local skill `starter-rule-sync`; автоматизации тоже должны вызывать этот skill; `rule-sync:scan`, `rule-sync:report`, `rule-sync:apply-plan --dry-run` остаются execution layer; default scan window идёт от последнего saved scan snapshot до текущего запуска; owner report начинается с decision proposals, а candidate ids остаются traceability; auto-apply без managed worktree и plan approval запрещён.
+- outbound sharing обновлённого starter baseline должен идти через project-local skill `starter-rule-share`; `rule-share:scan`, `rule-share:report`, `rule-share:apply-plan --dry-run` остаются execution layer; список проектов берётся из ignored `runtime/rule-share/config.json`; direct edits и bulk-copy во все локальные проекты запрещены.
 - `task:finish:core` пропускает publish для clean task branch, чей `HEAD` уже есть в `main`, записывает `publishStatus=skipped_already_merged` / `PUBLISH_SKIP` и всё равно завершает cleanup.
 - active `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` compact'ятся через `Docs/archive/*.md.gz`, чтобы сохранить полный evidence snapshot и оставить активный лог читаемым.
 - generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) не bulk-import'ятся в starter core; reusable source хранится в `skills/`.

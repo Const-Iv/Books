@@ -12,6 +12,8 @@
 - Rule-sync scan/report должны быть read-only относительно starter source, а apply-plan обязан оставаться approval-safe: только dry-run seed для managed `task:start`, без direct-main edits и без автоприменения правил.
 - Rule-sync default scan window должен идти от `until` последнего saved scan snapshot до текущего запуска; previous-local-day допустим только как fallback, когда валидного snapshot ещё нет.
 - Rule-sync owner report должен сначала показывать decision proposals через `Миссия -> Видение -> Цель -> Целевая аудитория -> JTBD -> Job Story -> User Stories -> Критерии приемки`; candidate ids используются как traceability, а не как основной decision interface.
+- `starter-rule-share` является основным project-local skill для outbound sharing текущего подтверждённого starter baseline в выбранные active downstream проекты; `rule-share:*` scripts остаются deterministic execution layer.
+- Rule-share scan/report должны быть read-only относительно downstream source, список проектов берётся из ignored `runtime/rule-share/config.json`, а apply-plan обязан оставаться approval-safe: только per-project dry-run task seeds без direct edits и без bulk-copy во все локальные проекты.
 - Не использовать TypeScript `any` в новом или изменённом typed code / JSDoc contracts.
 - Не глушить ошибки пустыми `catch {}`.
 - Для bugfixes избегать unrelated refactors.
@@ -47,6 +49,7 @@
 - Для bugfix/regression использовать `reproduce -> fix -> verify`, если это practically possible.
 - Если process/git/QA rule меняется, обновлять `AGENTS.md` и/или `.memory-bank/*` в той же задаче и не оставлять обязательные правила только в `.cursorrules`.
 - Для изменений `scripts/rule-sync.mjs` обновлять `tests/unit/rule-sync.test.mjs`, `tests/coverage-critical.manifest.json` и docs/scripts reference в той же задаче.
+- Для изменений `scripts/rule-share.mjs` обновлять `tests/unit/rule-share.test.mjs`, `tests/coverage-critical.manifest.json` и docs/scripts reference в той же задаче.
 - При sync/import baseline проверять parity reference docs и mirror-файлов с canonical rules; устаревшие упоминания про допустимый `--allow-dirty`, условный `previewPreparedSha` или старый порядок plan template считаются governance drift.
 - Если срабатывает `historical_recurrence` или `cross_module_conflict`, перед финальным fix-path нужен TRIZ-pass.
 - Перед завершением governance-задачи делать Codex applicability check: правило есть в canonical sources и не живёт только в mirror-файлах.
@@ -91,5 +94,6 @@
 
 - Source-specific или product-specific интеграции должны добавляться поверх starter через shared adapter contracts, а не hardcode в core scripts.
 - Reusable shared Codex skills можно хранить в repo `skills/` и публиковать в `$CODEX_HOME/skills` только через безопасный symlink flow; downstream проекты могут использовать git submodule source через `skills-manage.mjs --source <skills-root>`; `.system`, plugin-managed, product-specific skills и generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) не должны попадать в starter core через bulk import.
+- Outbound rule sharing не должен перезаписывать downstream product charter, adapters, profiles или локальные правила; если проект не starter-based, dirty, archived или без managed task flow, он остаётся manual review / blocked.
 - Build/test/release scripts не должны зависеть от наличия продуктового UI/backend кода.
 - Любой optional deploy profile обязан дополнять core baseline, а не ломать `release:local`.
