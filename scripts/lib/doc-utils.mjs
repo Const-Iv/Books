@@ -2,8 +2,14 @@
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { promisify } from "node:util";
+import { gzip } from "node:zlib";
 
 import { OPERATIONAL_DOCS, fileExists, formatIso, readJson, writeJson } from "./runtime.mjs";
+
+const gzipAsync = promisify(gzip);
+const ACTIVE_LOG_SECTION_LIMIT = 30;
+const ARCHIVABLE_OPERATIONAL_LOGS = new Set(["Docs/qa-implementation-log.md", "Docs/triz-usage-log.md"]);
 
 /**
  * @typedef {Object} OperationalDocsArtifact
@@ -131,7 +137,12 @@ export function mergeAppendOnlyMarkdown(current, incoming) {
 
   const orderedSections = currentSplit.sections.map((section) => section.content);
   const knownHeadings = new Set(currentSplit.sections.map((section) => section.heading));
-  for (const section of incomingSplit.sections) {
+  const lastKnownIncomingIndex = incomingSplit.sections.reduce((latest, section, index) => {
+    return knownHeadings.has(section.heading) ? index : latest;
+  }, -1);
+  const incomingSections =
+    lastKnownIncomingIndex >= 0 ? incomingSplit.sections.slice(lastKnownIncomingIndex + 1) : incomingSplit.sections;
+  for (const section of incomingSections) {
     if (knownHeadings.has(section.heading)) {
       continue;
     }
@@ -142,6 +153,45 @@ export function mergeAppendOnlyMarkdown(current, incoming) {
   const preamble = currentSplit.preamble || incomingSplit.preamble;
   const next = [preamble, ...orderedSections].filter(Boolean).join("\n\n").trim();
   return `${next}\n`;
+}
+
+/**
+ * Keep operational logs readable while preserving the complete pre-compaction snapshot.
+ *
+ * @param {string} repoRoot
+ * @param {string} relativePath
+ * @param {string} content
+ * @param {number} [sectionLimit]
+ * @returns {Promise<{content: string, archivePath: string | null}>}
+ */
+export async function compactReadableOperationalLog(
+  repoRoot,
+  relativePath,
+  content,
+  sectionLimit = ACTIVE_LOG_SECTION_LIMIT
+) {
+  if (!ARCHIVABLE_OPERATIONAL_LOGS.has(relativePath)) {
+    return { content, archivePath: null };
+  }
+
+  const split = splitMarkdownSections(content);
+  if (split.sections.length <= sectionLimit) {
+    return { content, archivePath: null };
+  }
+
+  const archiveSlug = path.basename(relativePath, ".md");
+  const timestamp = formatIso().replace(/[:.]/g, "").replace("T", "-").replace("Z", "Z");
+  const archivePath = path.join("Docs", "archive", `${archiveSlug}-${timestamp}.md.gz`);
+  const archiveAbsolutePath = path.join(repoRoot, archivePath);
+  await mkdir(path.dirname(archiveAbsolutePath), { recursive: true });
+  await writeFile(archiveAbsolutePath, await gzipAsync(content), "utf8");
+
+  const compactedSections = split.sections.slice(-sectionLimit).map((section) => section.content);
+  const compacted = [split.preamble, ...compactedSections].filter(Boolean).join("\n\n").trim();
+  return {
+    content: `${compacted}\n`,
+    archivePath
+  };
 }
 
 /**
@@ -214,12 +264,17 @@ export async function syncOperationalDocs(repoRoot, artifactDir) {
     const current = (await fileExists(absolutePath)) ? await readFile(absolutePath, "utf8") : "";
     const incoming = parsedArtifact.docs[relativePath] || "";
     if (incoming) {
-      const next = mergeAppendOnlyMarkdown(current, incoming);
+      const merged = mergeAppendOnlyMarkdown(current, incoming);
+      const compacted = await compactReadableOperationalLog(repoRoot, relativePath, merged);
+      const next = compacted.content;
       if (next === current) {
         continue;
       }
-      await writeFile(absolutePath, `${next}\n`, "utf8");
+      await writeFile(absolutePath, `${next.trim()}\n`, "utf8");
       changed.push(relativePath);
+      if (compacted.archivePath) {
+        changed.push(compacted.archivePath);
+      }
     }
   }
 

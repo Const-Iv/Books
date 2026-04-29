@@ -12,9 +12,10 @@
 ## Repository Layout
 
 - `scripts/`: канонические conveyor, QA, release и operational-doc entrypoints.
-- `scripts/rule-sync.mjs`: daily governance/rule sync scanner, report renderer и approval-safe apply-plan seam.
+- `scripts/rule-sync.mjs`: deterministic scanner, report renderer и approval-safe apply-plan seam для starter rule sync.
 - `scripts/lib/`: shared runtime helpers для task state, history, docs sync и git-safe operations.
 - `skills/`: reusable repo-owned Codex skills, которые можно линковать в `$CODEX_HOME/skills`.
+- `skills/starter-rule-sync/`: primary project-local skill для ручного и автоматического rule sync workflow; `rule-sync:*` scripts остаются execution layer.
 - `.memory-bank/`: shared knowledge layer для всех агентов.
 - `Docs/`: human-readable process evidence и baselines.
 - `plans/`: plan и bugfix templates плюс reference blueprint.
@@ -37,7 +38,7 @@
 - Product charter: `.memory-bank/product-charter.md`.
 - Task state: `.git/codex-task-pipeline/tasks/*.json`.
 - Runtime history: `.git/codex-task-pipeline/history/events.ndjson`.
-- Operational docs: `Docs/qa-implementation-log.md`, `Docs/triz-usage-log.md`, append-only sections of `CODEX_MEMORY.md`.
+- Operational docs: активные читаемые логи `Docs/qa-implementation-log.md`, `Docs/triz-usage-log.md`, архивные pre-compaction snapshots в `Docs/archive/*.md.gz` и append-only sections of `CODEX_MEMORY.md`.
 - TRIZ canon: `research/triz/*`.
 
 ## Common Commands
@@ -80,8 +81,12 @@
 - Дефолтный implementation path для feature/refactor/bugfix/process/governance задач — отдельный managed worktree и ветка `codex/*`.
 - `task:start` по умолчанию работает с managed worktrees under `$CODEX_HOME/worktrees/<taskId>/`.
 - Reusable starter skills публикуются в `$CODEX_HOME/skills` через symlink-based `skills:link`; после `git pull` существующие ссылки подхватывают обновления сразу, а для новых или переименованных skills нужно повторно запустить `skills:link`.
+- `starter-rule-sync` — основной Codex entrypoint для быстрого ручного запуска rule sync вне расписания и для scheduled automation; он показывает decision proposals до raw ids и сохраняет owner approval, managed worktree и deterministic QA gates.
 - `rule-sync:scan` и `rule-sync:report` остаются read-only относительно starter source; `rule-sync:apply-plan` в v1 только готовит dry-run seed для managed `task:start` и не применяет изменения автоматически.
+- Default `rule-sync:scan` window идёт от `until` последнего saved scan snapshot до текущего запуска; fallback на previous local day используется только при отсутствии валидного snapshot.
 - Downstream проекты могут подключать starter как git submodule под `vendor/new-project-starter` и линковать shared skills через `skills-manage.mjs --source vendor/new-project-starter/skills`, чтобы repo фиксировал версию baseline для новых участников.
 - `.system`, plugin-cache и product-specific skills не должны вендориться в starter core.
+- Generated skill trees вроде `.agents/skills`, `.claude/skills` и `.cursor/skills` считаются output'ом профиля или инструмента; starter импортирует только reusable source policy или repo-owned skills under `skills/`, а не bulk generated trees.
 - `task:qa:agent` всегда пишет `qaLastPassSha` и `previewPreparedSha`; preview status по умолчанию `not_supported`, пока проект не добавит preview adapter.
+- `task:finish:core` пропускает publish stage для clean task branch, чей `HEAD` уже содержится в `main` и у которой ещё нет записанного task commit; это фиксируется как `publishStatus=skipped_already_merged`, после чего cleanup всё равно должен завершиться `passed|kept`.
 - `release:local` — core publish path. Deploy-to-server и `db:prod:*` контуры должны добавляться как optional profile поверх starter baseline.

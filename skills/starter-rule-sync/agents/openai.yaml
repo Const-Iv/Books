@@ -1,0 +1,4 @@
+interface:
+  display_name: "Starter Rule Sync"
+  short_description: "Sync reusable rules into starter"
+  default_prompt: "Use $starter-rule-sync to review reusable rule updates from local projects and prepare an approval-safe starter import."

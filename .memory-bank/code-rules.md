@@ -5,7 +5,10 @@
 - Product charter в `.memory-bank/product-charter.md` — первичный gate для любых продуктовых решений и feature/behavior/process/governance изменений: сначала прочитать документ целиком, проверить миссию, видение, цель и `JTBD`, затем выбирать implementation path.
 - Feature, behavior, process и governance изменения должны явно поддерживать хотя бы одну часть миссии, видения, цели или `JTBD`; maintenance-изменения должны явно сохранять charter.
 - Нельзя принимать изменение, которое ослабляет переносимость baseline, deterministic QA, safe task flow, source-of-truth governance или hardcode'ит product-specific поведение в starter core.
+- `starter-rule-sync` является основным project-local skill для ручного и автоматического rule sync workflow; автоматизации должны вызывать skill, а не дублировать его логику; `rule-sync:*` scripts остаются deterministic execution layer.
 - Rule-sync scan/report должны быть read-only относительно starter source, а apply-plan обязан оставаться approval-safe: только dry-run seed для managed `task:start`, без direct-main edits и без автоприменения правил.
+- Rule-sync default scan window должен идти от `until` последнего saved scan snapshot до текущего запуска; previous-local-day допустим только как fallback, когда валидного snapshot ещё нет.
+- Rule-sync owner report должен сначала показывать decision proposals через `Миссия -> Видение -> Цель -> JTBD -> Job Story -> User Stories -> Критерии приемки`; candidate ids используются как traceability, а не как основной decision interface.
 - Не использовать TypeScript `any` в новом или изменённом typed code / JSDoc contracts.
 - Не глушить ошибки пустыми `catch {}`.
 - Для bugfixes избегать unrelated refactors.
@@ -27,6 +30,7 @@
 - В будущих plan files техническая часть начинается ниже верхнего продуктового блока `Миссия -> Видение -> Цель -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`.
 - В `Summary`, `TL;DR`, `Миссия`, `Видение`, `Цель`, `JTBD`, `Job Story` и `User Stories` не использовать технические термины без твердой необходимости; писать про ситуацию, ценность и ожидаемый результат.
 - Технические детали добавлять только там, где они помогают понять или реализовать решение. Их можно встроить в текст; если агенту нужен точный implementation context, добавлять отдельный блок `План для агента`.
+- В user-facing ответах не использовать необъяснённый Git/process-жаргон; если термин нужен, сразу объяснять его простыми словами рядом.
 - Если high-impact ambiguity нельзя снять из репо, задавать один короткий choice question.
 - Диалог с пользователем держать на русском, а code/comments/identifiers — на английском.
 
@@ -59,8 +63,10 @@
 - Для starter baseline `previewPreparedSha` допустим даже при preview status `not_supported`; это canonical checkpoint, а не обещание UI preview.
 - Если `HEAD == qaLastPassSha`, finish-flow должен переиспользовать checkpoint, а не повторять full task QA.
 - `task:finish:core` не имеет права завершать commit/merge/release path при failed task QA.
+- Если clean task branch уже содержится в `main` и task commit ещё не записан, finish-flow должен пропустить publish stage, поставить `publishStatus=skipped_already_merged` и всё равно записать итоговый cleanup status.
 - Cleanup gate должен задаваться в виде фиксированного numbered choice: `1. Удалить`, `2. Оставить`; пользовательские ответы `1`/`2` маппятся на delete/keep без необходимости писать слова.
 - Shared operational docs и generated `Docs/task-history.md` — single-writer; task branch обновления проходят только через capture, а sync/rebuild происходят на publish/release stage.
+- `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` остаются активными читаемыми логами: при compaction полный pre-compaction snapshot сохраняется в `Docs/archive/*.md.gz`, а активный файл хранит компактный текущий хвост.
 
 ## QA Rules
 
@@ -77,6 +83,6 @@
 ## Contracts and Boundaries
 
 - Source-specific или product-specific интеграции должны добавляться поверх starter через shared adapter contracts, а не hardcode в core scripts.
-- Reusable shared Codex skills можно хранить в repo `skills/` и публиковать в `$CODEX_HOME/skills` только через безопасный symlink flow; downstream проекты могут использовать git submodule source через `skills-manage.mjs --source <skills-root>`; `.system`, plugin-managed и product-specific skills не должны попадать в starter core.
+- Reusable shared Codex skills можно хранить в repo `skills/` и публиковать в `$CODEX_HOME/skills` только через безопасный symlink flow; downstream проекты могут использовать git submodule source через `skills-manage.mjs --source <skills-root>`; `.system`, plugin-managed, product-specific skills и generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) не должны попадать в starter core через bulk import.
 - Build/test/release scripts не должны зависеть от наличия продуктового UI/backend кода.
 - Любой optional deploy profile обязан дополнять core baseline, а не ломать `release:local`.

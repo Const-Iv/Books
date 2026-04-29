@@ -215,6 +215,49 @@ async function ensureTaskCommit(repoRoot, state) {
 /**
  * @param {string} repoRoot
  * @param {import("./lib/runtime.mjs").TaskState} state
+ * @returns {Promise<boolean>}
+ */
+async function maybeSkipAlreadyMergedPublish(repoRoot, state) {
+  if (state.commitSha || isGitDirty(state.worktreePath)) {
+    return false;
+  }
+
+  const stateRepoRoot = state.repoRoot || state.mainWorktreePath || repoRoot;
+  const mainWorktreePath = state.mainWorktreePath ?? (await findMainWorktree(stateRepoRoot)) ?? stateRepoRoot;
+  if (getCurrentBranch(mainWorktreePath) !== "main") {
+    return false;
+  }
+
+  const taskHeadSha = getHeadSha(state.worktreePath);
+  const alreadyMerged = runCommand(mainWorktreePath, "git", ["merge-base", "--is-ancestor", taskHeadSha, "main"], {
+    allowFailure: true
+  });
+  if (alreadyMerged.status !== 0) {
+    return false;
+  }
+
+  state.commitSha = taskHeadSha;
+  state.publishStatus = "skipped_already_merged";
+  state.status = "merged";
+  await saveTaskState(stateRepoRoot, state);
+  await appendHistoryEvent(stateRepoRoot, {
+    at: formatIso(),
+    type: "PUBLISH_SKIP",
+    taskId: state.taskId,
+    branch: state.branch,
+    payload: {
+      reason: "task branch HEAD is already contained in main",
+      commitSha: taskHeadSha,
+      mainWorktreePath,
+      publishStatus: state.publishStatus
+    }
+  });
+  return true;
+}
+
+/**
+ * @param {string} repoRoot
+ * @param {import("./lib/runtime.mjs").TaskState} state
  * @returns {Promise<void>}
  */
 async function runPublishStage(repoRoot, state) {
@@ -320,10 +363,12 @@ async function main() {
     publishMain,
     taskId: requestedTaskId
   });
+  const skippedAlreadyMerged = await maybeSkipAlreadyMergedPublish(repoRoot, state);
 
   const publishAlreadyCompleted =
-    ["pushed", "local-only"].includes(state.publishStatus ?? "") &&
-    ["merged", "finished"].includes(state.status ?? "");
+    skippedAlreadyMerged ||
+    (["pushed", "local-only", "skipped_already_merged"].includes(state.publishStatus ?? "") &&
+      ["merged", "finished"].includes(state.status ?? ""));
 
   if (!publishAlreadyCompleted) {
     await ensureTaskCommit(state.worktreePath, state);

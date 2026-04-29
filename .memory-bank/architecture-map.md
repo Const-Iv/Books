@@ -11,7 +11,8 @@
 - `scripts/worktree-history.mjs` + `scripts/worktree-ledger.mjs`: docs snapshots from runtime history/state.
 - `scripts/worktree-operational-docs.mjs`: single-writer capture/sync of operational docs.
 - `scripts/release-local.mjs`: local-first release gate.
-- `scripts/rule-sync.mjs`: cross-project governance scan/report/apply-plan seam for reusable starter rules.
+- `skills/starter-rule-sync/SKILL.md`: primary Codex workflow for manual and automated reusable rule sync.
+- `scripts/rule-sync.mjs`: deterministic cross-project governance scan/report/apply-plan execution seam for reusable starter rules.
 
 ## Runtime Data Flow
 
@@ -28,8 +29,10 @@
 - task state schema drift (`qaLastPassSha`, `previewPreparedSha`, publish markers, operational artifacts);
 - неправильная работа с git worktree lifecycle и cleanup;
 - silent overwrite shared docs вместо single-writer capture/sync;
+- разрастание active operational logs без archive snapshot, из-за чего evidence становится трудно читать или переносить;
 - flaky perf/security/coverage gates, которые выглядят “включёнными”, но не дают надёжного evidence.
 - rule-sync classifier drift, из-за которого product-specific правила могут попасть в starter core.
+- rule-sync window drift, из-за которого scheduled automation пропускает правила после missed run вместо catch-up от последнего saved scan snapshot.
 
 ## Change Impact Checklist
 
@@ -37,6 +40,7 @@
 
 - проверить `scripts/lib/runtime.mjs`;
 - проверить task state/history schema;
+- проверить finish no-op path для already-in-main task branch, если меняется publish/cleanup logic;
 - проверить smoke/nightly integration tests.
 
 Когда меняется governance:
@@ -46,12 +50,15 @@
 
 Когда меняется rule-sync:
 
+- проверить `skills/starter-rule-sync/SKILL.md`;
 - проверить `scripts/rule-sync.mjs`;
 - проверить `tests/unit/rule-sync.test.mjs`;
 - проверить, что scan/report read-only, а apply-plan не меняет starter source без managed worktree.
+- проверить, что default scan window идёт от последнего saved scan snapshot, а previous-local-day остаётся только fallback.
 
 Когда меняются operational docs helpers:
 
 - проверить capture/sync;
+- проверить active log compaction и archive snapshot в `Docs/archive/*.md.gz`;
 - проверить `Docs/task-history.md` и `Docs/change-ledger.md` rebuild path;
 - проверить append-only sections `CODEX_MEMORY.md`.

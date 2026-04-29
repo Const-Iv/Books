@@ -34,11 +34,14 @@
 - читает task pipeline events/states и governance commits за заданный период;
 - пишет snapshot в `runtime/rule-sync/scans/*.json`;
 - остаётся read-only относительно tracked starter source.
+- ручной owner-facing workflow должен идти через repo skill `starter-rule-sync`; script остаётся детерминированным execution layer.
+- если `--since` / `--until` не указаны, default window начинается с `until` последнего сохранённого scan snapshot и заканчивается текущим временем; если snapshot ещё нет, используется предыдущий локальный день.
 
 ### `rule-sync:report`
 
 - читает последний или явно выбранный scan snapshot;
-- строит русскую owner-facing сводку по секциям `Кандидаты на импорт`, `Требует ручной проверки`, `Пропущено как product-specific`, `Диагностика`;
+- строит русскую owner-facing сводку, которая начинается с decision proposals в формате `Миссия -> Видение -> Цель -> JTBD -> Job Story -> User Stories -> Критерии приемки`;
+- ниже decision proposals оставляет raw секции `Кандидаты на импорт`, `Требует ручной проверки`, `Пропущено как product-specific`, `Диагностика`;
 - сохраняет traceability: source project, task/commit evidence, changed files, suggested starter target.
 
 ### `rule-sync:apply-plan`
@@ -99,6 +102,7 @@ node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/n
 - не коммитит и не публикует при failed task QA;
 - переиспользует `qaLastPassSha`, если `HEAD` не менялся после последнего PASS;
 - если finish стартует из dirty task tree, сначала фиксирует task commit/checkpoint, потом прогоняет task QA на committed `HEAD`, и только затем идёт в publish stage;
+- если clean task branch уже содержится в `main` и task commit ещё не записан, пропускает publish stage, пишет `publishStatus=skipped_already_merged` и history event `PUBLISH_SKIP`;
 - вызывает `task:operational-docs:capture` перед commit;
 - после capture нормализует shared operational snapshots, чтобы они не попадали в task commit;
 - пушит task branch при наличии `origin`;
@@ -138,6 +142,7 @@ node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/n
 ### `task:operational-docs:sync`
 
 - синхронизирует captured operational docs обратно в single-writer snapshots на publish/release stage.
+- если `Docs/qa-implementation-log.md` или `Docs/triz-usage-log.md` разрастаются, сохраняет полный pre-compaction snapshot в `Docs/archive/*.md.gz`, а в активном файле оставляет компактный текущий хвост.
 
 ### `release:local`
 

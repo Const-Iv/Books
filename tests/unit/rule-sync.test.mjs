@@ -8,7 +8,9 @@ import test from "node:test";
 
 import {
   buildApplyPlan,
+  buildDecisionProposals,
   classifyRuleCandidate,
+  defaultScanWindow,
   renderRuleSyncReport,
   scanRuleSync
 } from "../../scripts/rule-sync.mjs";
@@ -91,6 +93,35 @@ test("rule-sync classifier separates product-specific rules", () => {
   assert.equal(productSpecific.category, "product_specific");
 });
 
+test("rule-sync default window resumes from latest scan until", async () => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), "rule-sync-window-"));
+  try {
+    const scansRoot = path.join(repoRoot, "runtime", "rule-sync", "scans");
+    await mkdir(scansRoot, { recursive: true });
+    await writeFile(
+      path.join(scansRoot, "rule-sync-2026-04-27-020000000Z.json"),
+      `${JSON.stringify({
+        schemaVersion: 1,
+        generatedAt: "2026-04-27T02:00:00.000Z",
+        since: "2026-04-26T00:00:00.000Z",
+        until: "2026-04-27T02:00:00.000Z",
+        repoRoot,
+        projects: [],
+        candidates: [],
+        diagnostics: []
+      })}\n`,
+      "utf8"
+    );
+
+    const window = await defaultScanWindow(repoRoot, new Date("2026-04-29T02:30:00.000Z"));
+    assert.equal(window.source, "latest_scan");
+    assert.equal(window.since.toISOString(), "2026-04-27T02:00:00.000Z");
+    assert.equal(window.until.toISOString(), "2026-04-29T02:30:00.000Z");
+  } finally {
+    await rm(repoRoot, { recursive: true, force: true });
+  }
+});
+
 test("rule-sync report renders required sections", () => {
   const text = renderRuleSyncReport({
     schemaVersion: 1,
@@ -103,21 +134,21 @@ test("rule-sync report renders required sections", () => {
     candidates: [
       {
         id: "rs-test",
-        category: "needs_review",
+        category: "import_candidate",
         sourceProject: "Agent_Const",
         sourceRepo: "/tmp/agent",
         sourceType: "task",
         taskId: "task-1",
         branch: "codex/task-1",
         commitSha: "abcdef",
-        title: "Mixed governance rule",
-        paths: ["AGENTS.md"],
-        snippets: ["Rule text"],
-        suggestedTargetFiles: ["AGENTS.md"],
-        summary: "Изменены governance paths: AGENTS.md.",
+        title: "JTBD planning rule",
+        paths: ["AGENTS.md", "plans/_template.md"],
+        snippets: ["Plans must include Job Story and User Stories before technical decomposition."],
+        suggestedTargetFiles: ["AGENTS.md", "plans/_template.md"],
+        summary: "Изменены governance paths: AGENTS.md, plans/_template.md.",
         evidence: "task task-1; commit abcdef",
         confidence: "high",
-        classifierReasons: ["reusable:governance"]
+        classifierReasons: ["reusable:governance", "reusable:jtbd", "reusable:plan template"]
       }
     ]
   });
@@ -125,8 +156,50 @@ test("rule-sync report renders required sections", () => {
   assert.match(text, /Кандидаты на импорт/);
   assert.match(text, /Требует ручной проверки/);
   assert.match(text, /Пропущено как product-specific/);
+  assert.match(text, /Предложения к решению/);
+  assert.match(text, /Миссия:/);
+  assert.match(text, /Job Story:/);
+  assert.match(text, /User Stories:/);
+  assert.match(text, /Критерии приемки:/);
   assert.match(text, /Диагностика/);
   assert.match(text, /rs-test/);
+});
+
+test("rule-sync decision proposals group product planning candidates", () => {
+  const proposals = buildDecisionProposals({
+    schemaVersion: 1,
+    generatedAt: "2026-04-29T08:00:00.000Z",
+    since: "2026-04-28T00:00:00.000Z",
+    until: "2026-04-29T00:00:00.000Z",
+    repoRoot: "/tmp/starter",
+    projects: [],
+    diagnostics: [],
+    candidates: [
+      {
+        id: "rs-plan",
+        category: "import_candidate",
+        sourceProject: "Agent_Const",
+        sourceRepo: "/tmp/agent",
+        sourceType: "task",
+        taskId: "task-1",
+        branch: "codex/task-1",
+        commitSha: "abcdef",
+        title: "JTBD planning",
+        paths: ["plans/_template.md"],
+        snippets: ["Plans must include Job Story and User Stories before technical decomposition."],
+        suggestedTargetFiles: ["plans/_template.md"],
+        summary: "Изменены governance paths: plans/_template.md.",
+        evidence: "task task-1; commit abcdef",
+        confidence: "high",
+        classifierReasons: ["reusable:jtbd", "reusable:plan template"]
+      }
+    ]
+  });
+
+  assert.equal(proposals.length, 1);
+  assert.equal(proposals[0].recommendation, "import");
+  assert.equal(proposals[0].candidates[0].id, "rs-plan");
+  assert.match(proposals[0].jobStory, /candidate ids/);
 });
 
 test("rule-sync apply-plan builds safe task-start seed", () => {
