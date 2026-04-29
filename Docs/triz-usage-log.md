@@ -67,3 +67,9 @@
 - Changes: cross-project rule discovery is separated from rule application through `rule-sync:scan`, `rule-sync:report`, and `rule-sync:apply-plan --dry-run`; scan/report can run on a schedule, while actual source edits still require owner approval, managed worktree, plan file, and QA.
 - Guard: `tests/unit/rule-sync.test.mjs` covers discovery, reusable/product-specific classification, report rendering, and safe apply-plan seed generation; `tests/coverage-critical.manifest.json` tracks `scripts/rule-sync.mjs` as critical coverage.
 
+## 2026-04-29T10:14:24.619Z 20260429-083348-74bc
+
+- Branch: `codex/20260429-083348-74bc-agent-const`
+- Reasons: historical_recurrence
+- Status: trigger recorded
+
