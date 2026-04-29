@@ -9,6 +9,22 @@
 - Product Charter gate синхронизирован в `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, mirrors и reference blueprint.
 - Добавлен Project Intake Gate: новый downstream-проект обязан заполнить и согласовать недостающую product/governance информацию до первой feature/refactor/behavior-change реализации.
 - Добавлен `plans/_project_intake_template.md` с owner approval по каждому обязательному пункту.
+- Добавлен Eval Gate для AI/agent behavior changes: `Eval spec` в plan template, agent/eval choices в Project Intake, eval evidence в QA playbook и mirrors.
+
+### Eval evidence
+
+- Case: Plan mode task changes assistant recommendation behavior.
+  - Expected: plan requires `Eval spec` and QA requires eval evidence.
+  - Actual: `AGENTS.md`, `.memory-bank/code-rules.md`, `.memory-bank/qa-playbook.md` and `plans/_template.md` require Eval spec/evidence for AI/agent behavior changes.
+  - Result: PASS
+- Case: New downstream project uses agents.
+  - Expected: Project Intake captures agent surfaces, good/failure rubrics, edge cases, golden prompts, pass threshold and eval owner.
+  - Actual: `plans/_project_intake_template.md` includes `Agent / eval choices` with those fields.
+  - Result: PASS
+- Case: Non-agent task does not need eval.
+  - Expected: template allows explicit non-applicability with reason.
+  - Actual: `plans/_template.md` includes `Применимо: да | нет` and `Если eval не применим, причина`.
+  - Result: PASS
 
 ### Deterministic checks
 

@@ -5,6 +5,7 @@
 - `codex/*` managed worktrees;
 - conversational branch-chat;
 - deterministic QA;
+- eval gate for AI/agent behavior changes;
 - Karpathy-style execution discipline;
 - BMAD-ready governance;
 - TRIZ escalation by trigger;
@@ -32,7 +33,7 @@ JTBD: когда начинается новый проект, получить 
 - `skills/` — versioned reusable Codex skills, которые можно подключить глобально через symlink.
 - `skills/starter-rule-sync/` — основной project-local skill для ручного и автоматического поиска reusable правил в downstream проектах; `scripts/rule-sync.mjs` остаётся детерминированным execution layer для scan/report/apply-plan.
 - `tests/` — unit/integration/e2e проверки самого starter baseline.
-- `Docs/` — process evidence, baselines и review guidance.
+- `Docs/` — process evidence, baselines, eval evidence и review guidance.
 - `research/triz/` — канонический TRIZ pack.
 - `templates/agent-workspace/` — безопасные локальные шаблоны без коммита личных данных.
 - `templates/shared-skills-submodule/` — готовый downstream contract для подключения starter skills через git submodule.
@@ -40,7 +41,7 @@ JTBD: когда начинается новый проект, получить 
 ## Быстрый старт
 
 1. Скопируйте этот репозиторий или его содержимое в корень нового проекта.
-2. Создайте Project Intake по `plans/_project_intake_template.md`: заполните миссию, видение, цель, целевую аудиторию, `JTBD`, ограничения, сценарии, метрики, stack/runtime, QA/release choices и ownership правил. Каждый пункт должен быть явно согласован owner'ом; `TBD` и “заполним потом” считаются blocker.
+2. Создайте Project Intake по `plans/_project_intake_template.md`: заполните миссию, видение, цель, целевую аудиторию, `JTBD`, ограничения, сценарии, метрики, stack/runtime, QA/release choices, agent/eval choices и ownership правил. Каждый пункт должен быть явно согласован owner'ом; `TBD` и “заполним потом” считаются blocker.
 3. После approval перенесите согласованные ответы в:
    - `AGENTS.md`
    - `.memory-bank/product-charter.md`

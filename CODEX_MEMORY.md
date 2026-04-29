@@ -23,6 +23,7 @@
 - Deterministic checks — единственное доказательство корректности.
 - Будущие plan files начинаются с продуктового блока `Миссия -> Видение -> Цель -> Целевая аудитория проекта -> Продуктовая спека`; product spec включает проблему / `JTBD`, целевую аудиторию изменения, сценарии использования, требования, критерии приемки, метрику успеха и ограничения / что нельзя сломать.
 - Новый downstream-проект стартует с Project Intake Gate по `plans/_project_intake_template.md`; все обязательные сведения должны быть заполнены и явно согласованы owner'ом до первой feature/refactor/behavior-change реализации.
+- Для AI/agent behavior changes обязателен `Eval spec`; QA evidence должно фиксировать eval cases, expected behavior, actual behavior и pass/fail.
 - В Plan mode уточняющие вопросы, варианты выбора и рекомендации должны проходить через Product Charter; recommended option должен быть charter-safe, а конфликтный с charter вариант нельзя подавать как равнозначно рекомендуемый.
 - В `main` нельзя вносить изменения без явного разрешения пользователя на direct-main правку в текущей задаче.
 - По умолчанию implementation work выполняется в отдельном managed worktree и ветке `codex/*`.

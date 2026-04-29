@@ -54,6 +54,18 @@ User Stories:
 - <ограничение 1>
 - <ограничение 2>
 
+Eval spec (обязательно для AI/agent behavior changes):
+- Применимо: да | нет
+- Agent surface: <Plan mode / Product Charter gate / Project Intake / rule-sync / conversational commands / TRIZ / другое>
+- Хороший ответ:
+- Провал:
+- Критичные edge cases:
+- Regression examples / golden prompts:
+- Сравнение old vs new behavior:
+- Minimum pass threshold:
+- Eval owner:
+- Если eval не применим, причина:
+
 Техническая часть:
 
 Область:
@@ -117,6 +129,10 @@ Exception (если применимо):
 - [ ] Команда 1:
 - [ ] Команда 2:
 
+Eval checks (если применимо):
+- [ ] Eval case 1:
+- [ ] Eval case 2:
+
 Ручные / сценарные проверки:
 - [ ] Проверка 1:
 - [ ] Проверка 2:
@@ -149,6 +165,12 @@ Exception (если применимо):
 - Проверка:
   - Ожидалось:
   - Факт:
+
+Eval results:
+- Case:
+  - Ожидалось:
+  - Факт:
+  - PASS/FAIL:
 
 Изменённые файлы:
 - <путь>

@@ -38,10 +38,16 @@ Product Charter Gate:
 
 Project Intake Gate для нового downstream-проекта:
 - Новый проект, который стартует от starter baseline, сначала заполняет Project Intake по `plans/_project_intake_template.md`; feature/refactor/behavior-change реализация начинается только после owner approval по всем обязательным пунктам.
-- Обязательные сведения: миссия, видение, цель, целевая аудитория, `JTBD`, продуктовые ограничения, сценарии использования, метрики успеха, границы core/adapters/profiles, stack/runtime choices, QA/release choices, source-of-truth files и rules/memory ownership.
+- Обязательные сведения: миссия, видение, цель, целевая аудитория, `JTBD`, продуктовые ограничения, сценарии использования, метрики успеха, границы core/adapters/profiles, stack/runtime choices, QA/release choices, agent/eval ownership, source-of-truth files и rules/memory ownership.
 - Каждый пункт intake должен иметь статус `согласовано` или зафиксированный blocker; placeholder, `TBD`, “заполним потом” и несогласованные допущения не считаются готовым bootstrap.
 - После approval ответы из intake переносятся в `.memory-bank/product-charter.md`, `.memory-bank/project-context.md`, `.memory-bank/architecture-map.md`, `.memory-bank/code-rules.md`, `AGENTS.md`, `CODEX_MEMORY.md`, `README.md` и другие релевантные canonical sources.
 - Если по пункту нельзя выбрать безопасный вариант без владельца продукта, ассистент задаёт короткий choice question и рекомендует только charter-safe option.
+
+Eval Gate для AI/agent behavior:
+- Для изменений, влияющих на Plan mode, вопросы/рекомендации ассистента, Product Charter gate, Project Intake Gate, rule-sync owner reports, conversational commands, TRIZ decisions или другой AI/agent behavior, plan file обязан содержать `Eval spec`.
+- `Eval spec` должен фиксировать: agent surface, хороший ответ, провал, критичные edge cases, regression examples/golden prompts, способ сравнения old vs new behavior и minimum pass threshold.
+- Acceptance criteria отвечают “что должно быть возможно для пользователя”; evals отвечают “насколько качественно агент выбирает, объясняет, рекомендует и соблюдает правила”.
+- QA evidence для такого изменения должно включать eval result или явно зафиксированный gap с ближайшей deterministic компенсацией.
 
 ## Language Requirements
 
@@ -65,6 +71,7 @@ Project Intake Gate для нового downstream-проекта:
 - Любое предложение продуктового решения, включая короткий ответ в чате, нельзя оформлять только как `Summary`, `Key Changes`, список implementation steps или технический sketch. Если нужен полный разбор, использовать `Миссия -> Видение -> Цель -> Целевая аудитория -> JTBD`; если пользователь задал короткий вопрос или нужен lightweight-вариант, дать хотя бы один продуктовый якорь из charter до implementation details.
 - В будущих plan files техническая часть начинается ниже верхнего продуктового блока `Миссия -> Видение -> Цель -> Целевая аудитория проекта -> Продуктовая спека`.
 - Новый downstream-проект до feature work проходит Project Intake Gate: все обязательные сведения из `plans/_project_intake_template.md` заполнены, согласованы owner'ом и перенесены в canonical sources.
+- Для AI/agent behavior changes product spec включает `Eval spec`; без него нельзя считать acceptance criteria достаточными.
 - В `Summary`, `TL;DR`, `Миссия`, `Видение`, `Цель`, `Целевая аудитория`, `JTBD`, `Job Story` и `User Stories` не использовать технические термины без твердой необходимости; писать про ситуацию, ценность и ожидаемый результат понятным пользовательским языком.
 - Технические детали добавлять только там, где они помогают понять или реализовать решение. Их можно встроить в текст; если агенту нужен точный implementation context, добавлять отдельный блок `План для агента`.
 - В user-facing ответах не использовать необъяснённый Git/process-жаргон; если термин нужен, сразу давать простой смысл рядом, например `diverged` = “локальная папка и GitHub разошлись”.
@@ -117,15 +124,16 @@ Project Intake Gate для нового downstream-проекта:
 3. Именование плана: `YYYY-MM-DD-HHMM-<short-slug>.md`.
 4. Использовать checkboxes статуса (`[ ] Не начато`, `[ ] В процессе`, `[ ] Завершено`).
 5. Plan file должен содержать продуктовую спеку: проблема / `JTBD`, целевая аудитория изменения, сценарии использования, требования, критерии приемки, метрика успеха и ограничения / что нельзя сломать.
-6. Если при подготовке или уточнении плана нужен choice question, сначала сверить варианты и рекомендацию с `.memory-bank/product-charter.md`; в вопросе кратко показать charter-safe recommendation или объяснить, почему безопасного recommended option нет.
-7. После создания плана остановиться и запросить явное подтверждение пользователя.
-8. Не менять source files до подтверждения.
-9. После подтверждения:
+6. Если задача меняет AI/agent behavior, plan file должен содержать `Eval spec` и QA plan должен включать eval evidence.
+7. Если при подготовке или уточнении плана нужен choice question, сначала сверить варианты и рекомендацию с `.memory-bank/product-charter.md`; в вопросе кратко показать charter-safe recommendation или объяснить, почему безопасного recommended option нет.
+8. После создания плана остановиться и запросить явное подтверждение пользователя.
+9. Не менять source files до подтверждения.
+10. После подтверждения:
    - выполнять шаги по порядку;
    - отмечать завершённые чекбоксы `[x]`;
    - записывать QA execution и results в тот же план.
-10. При material scope change обновлять план и снова просить re-approval.
-11. Перед завершением убедиться, что план содержит финальный статус и список changed files.
+11. При material scope change обновлять план и снова просить re-approval.
+12. Перед завершением убедиться, что план содержит финальный статус и список changed files.
 
 В collaboration mode `Default` этот workflow опционален и применяется только по явному запросу пользователя.
 

@@ -30,6 +30,7 @@ These rules apply to the whole repository.
 - Перед product/feature/behavior/process/governance изменением читать `.memory-bank/product-charter.md` и сверять решение с миссией, видением, целью, целевой аудиторией и `JTBD`.
 - User-facing продуктовые решения формулировать простым языком в порядке `Миссия -> Видение -> Цель -> Целевая аудитория -> JTBD`; product spec в планах включает проблему / `JTBD`, целевую аудиторию изменения, сценарии, требования, критерии приемки, метрику успеха и ограничения; техническую часть планов начинать ниже продуктового блока.
 - Новый downstream-проект сначала проходит Project Intake по `plans/_project_intake_template.md`; все обязательные пункты должны быть заполнены, согласованы owner'ом и перенесены в canonical sources до feature/refactor/behavior-change work.
+- Для AI/agent behavior changes обязателен `Eval spec`: хороший ответ, провал, edge cases, golden prompts, comparison method и pass threshold; QA evidence должно включать eval result или явный gap.
 - В `Summary`, `TL;DR`, `Миссия`, `Видение`, `Цель`, `Целевая аудитория`, `JTBD`, `Job Story` и `User Stories` не использовать технические термины без твердой необходимости.
 - В Plan mode уточняющие вопросы и recommended option должны проходить через Product Charter; charter-конфликтный вариант нельзя подавать как равнозначно рекомендуемый.
 - В user-facing ответах не использовать необъяснённый Git/process-жаргон; если термин нужен, сразу объяснять его простыми словами рядом.

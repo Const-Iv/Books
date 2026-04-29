@@ -11,6 +11,7 @@
 - Core starter не является продуктовым runtime. Новые правила и скрипты должны быть переносимыми baseline-контрактами; product-specific capabilities добавляются поверх starter через adapters/profiles.
 - Перед любым продуктовым решением, feature, behavior, process или governance изменением нужно прочитать `.memory-bank/product-charter.md` целиком и сверить решение с миссией, видением, целью, целевой аудиторией и `JTBD`.
 - Новый downstream-проект сначала проходит Project Intake Gate по `plans/_project_intake_template.md`: недостающие product/governance сведения заполняются, согласуются owner'ом и только затем переносятся в canonical sources и используются для feature work.
+- Agent/eval surfaces starter core: Plan mode questions/recommendations, Product Charter gate, Project Intake Gate, rule-sync owner reports, conversational task commands и TRIZ trigger/decision behavior.
 
 ## Repository Layout
 

@@ -7,6 +7,7 @@
 - Нельзя принимать изменение, которое ослабляет переносимость baseline, deterministic QA, safe task flow, source-of-truth governance или hardcode'ит product-specific поведение в starter core.
 - В Plan mode уточняющие вопросы, варианты выбора и рекомендации ассистента проходят через тот же Product Charter gate: recommended option должен быть charter-safe, а charter-конфликтный вариант нельзя подавать как равнозначно рекомендуемый.
 - Новый downstream-проект сначала проходит Project Intake Gate по `plans/_project_intake_template.md`: миссия, видение, цель, целевая аудитория, `JTBD`, ограничения, сценарии, метрики, stack/runtime, QA/release choices и source-of-truth ownership должны быть заполнены и явно согласованы owner'ом до первой feature/refactor/behavior-change реализации.
+- Для AI/agent behavior changes обязателен `Eval spec`: хороший ответ, провал, критичные edge cases, regression examples/golden prompts, comparison method и minimum pass threshold.
 - `starter-rule-sync` является основным project-local skill для ручного и автоматического rule sync workflow; автоматизации должны вызывать skill, а не дублировать его логику; `rule-sync:*` scripts остаются deterministic execution layer.
 - Rule-sync scan/report должны быть read-only относительно starter source, а apply-plan обязан оставаться approval-safe: только dry-run seed для managed `task:start`, без direct-main edits и без автоприменения правил.
 - Rule-sync default scan window должен идти от `until` последнего saved scan snapshot до текущего запуска; previous-local-day допустим только как fallback, когда валидного snapshot ещё нет.
@@ -32,6 +33,7 @@
 - В будущих plan files техническая часть начинается ниже верхнего продуктового блока `Миссия -> Видение -> Цель -> Целевая аудитория проекта -> Продуктовая спека`.
 - Product spec в plan file для feature/behavior/process changes включает проблему / `JTBD`, целевую аудиторию изменения, сценарии использования, требования, критерии приемки, метрику успеха и ограничения / что нельзя сломать.
 - Для старта нового проекта `plans/_project_intake_template.md` является обязательным bootstrap artifact; каждый пункт должен быть согласован, а несогласованные пункты считаются blocker, а не допустимым placeholder.
+- Acceptance criteria и evals не смешивать: acceptance criteria описывают пользовательский результат, evals описывают качество agent decision/answer behavior на заданных примерах.
 - В `Summary`, `TL;DR`, `Миссия`, `Видение`, `Цель`, `Целевая аудитория`, `JTBD`, `Job Story` и `User Stories` не использовать технические термины без твердой необходимости; писать про ситуацию, ценность и ожидаемый результат.
 - Технические детали добавлять только там, где они помогают понять или реализовать решение. Их можно встроить в текст; если агенту нужен точный implementation context, добавлять отдельный блок `План для агента`.
 - В user-facing ответах не использовать необъяснённый Git/process-жаргон; если термин нужен, сразу объяснять его простыми словами рядом.
@@ -77,6 +79,7 @@
 - Deterministic QA order фиксирован и не должен меняться локально “под задачу”.
 - `qa:agent` — обязательный closing gate для code-changing work.
 - Для задач с plan file фиксировать checks/manual verification/expected/actual results прямо в плане.
+- Для AI/agent behavior changes QA evidence должно включать eval result; если automated eval ещё не существует, план фиксирует manual rubric eval и debt-removal follow-up.
 - `qa:smoke:pr` и `qa:e2e:nightly` должны прогонять реальные process scenarios на temp repos, а не быть no-op wrappers.
 - `qa:coverage:critical` должен ссылаться на явный manifest критичных модулей.
 - `qa:perf:critical` обязан использовать baseline-файл из `Docs/qa-perf-baseline.json`.

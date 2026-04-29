@@ -107,6 +107,19 @@ QA / release choices:
 - Подтвердил:
 - Дата:
 
+Agent / eval choices:
+- Agent surfaces:
+- Хороший ответ:
+- Провал:
+- Критичные edge cases:
+- Regression examples / golden prompts:
+- Minimum pass threshold:
+- Кто владеет eval-набором:
+- Какие evals обязательны перед release:
+- Статус согласования: [ ] Ожидает owner approval [ ] Согласовано [ ] Заблокировано
+- Подтвердил:
+- Дата:
+
 Memory / rules ownership:
 - Кто может менять charter:
 - Кто может менять governance rules:
