@@ -58,6 +58,7 @@
 - Generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) считаются profile/tool output; в starter core нельзя bulk-import'ить их содержимое вместо repo-owned source в `skills/` или переносимой policy.
 - Активные `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` должны оставаться читаемыми; при compaction полный pre-compaction snapshot сохраняется в `Docs/archive/*.md.gz`.
 - Если clean task branch уже содержится в `main` и task commit ещё не записан, finish-flow должен ставить `publishStatus=skipped_already_merged`, писать `PUBLISH_SKIP` и всё равно завершать cleanup через `passed|kept`.
+- Product proposal нельзя подменять `Summary` / `Key Changes` / technical sketch без product-charter якоря; полный вариант идёт через `Связь с charter проекта -> Цель изменения/решения -> JTBD -> Job Stories -> User Stories -> Критерии приемки`, короткий вариант обязан явно опереться хотя бы на один charter anchor.
 
 ## Project Notes
 
