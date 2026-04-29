@@ -27,6 +27,27 @@
 - не трогает конфликтующие или чужие директории;
 - подчищает пустые parent-директории внутри `$CODEX_HOME/skills`, если после unlink они опустели.
 
+### `rule-sync:scan`
+
+- ищет локальные git-проекты под рабочим корнем starter и `$CODEX_HOME/worktrees`;
+- учитывает ignored local config `runtime/rule-sync/config.json` с `roots`, `allowlist`, `ignorelist`;
+- читает task pipeline events/states и governance commits за заданный период;
+- пишет snapshot в `runtime/rule-sync/scans/*.json`;
+- остаётся read-only относительно tracked starter source.
+
+### `rule-sync:report`
+
+- читает последний или явно выбранный scan snapshot;
+- строит русскую owner-facing сводку по секциям `Кандидаты на импорт`, `Требует ручной проверки`, `Пропущено как product-specific`, `Диагностика`;
+- сохраняет traceability: source project, task/commit evidence, changed files, suggested starter target.
+
+### `rule-sync:apply-plan`
+
+- принимает approval JSON с ids подтверждённых candidates;
+- в v1 требует `--dry-run`;
+- возвращает seed и команду для managed `task:start`;
+- не применяет правила, не меняет `main` и не создаёт source edits без отдельного task worktree/plan/QA.
+
 ### Git submodule для shared skills
 
 Downstream проект может держать starter как versioned submodule и не копировать reusable skills вручную:
@@ -44,7 +65,10 @@ node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/n
   "scripts": {
     "skills:link": "node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/new-project-starter/skills",
     "skills:status": "node vendor/new-project-starter/scripts/skills-manage.mjs status --source vendor/new-project-starter/skills",
-    "skills:unlink": "node vendor/new-project-starter/scripts/skills-manage.mjs unlink --source vendor/new-project-starter/skills"
+    "skills:unlink": "node vendor/new-project-starter/scripts/skills-manage.mjs unlink --source vendor/new-project-starter/skills",
+    "rule-sync:scan": "node vendor/new-project-starter/scripts/rule-sync.mjs scan",
+    "rule-sync:report": "node vendor/new-project-starter/scripts/rule-sync.mjs report",
+    "rule-sync:apply-plan": "node vendor/new-project-starter/scripts/rule-sync.mjs apply-plan"
   }
 }
 ```

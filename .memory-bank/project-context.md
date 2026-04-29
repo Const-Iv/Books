@@ -1,14 +1,18 @@
 # Project Context
 
-## Purpose
+## Product Charter
 
-- `new-project-starter` — reusable baseline для старта любых новых проектов в привычной операционной модели: Codex/worktree conveyor, deterministic QA, memory-bank governance, TRIZ escalation и branch-chat rules.
-- JTBD: когда начинается новый проект, дать команде готовую операционную основу с первого дня, чтобы не собирать заново правила работы, QA, task flow и agent governance в каждом репозитории.
+- Миссия: дать команде переносимую операционную основу для старта нового проекта с первого дня: понятные правила работы, безопасный task flow, воспроизводимые проверки, memory-bank governance, TRIZ-эскалацию и разговорное управление задачами без ручной сборки заново.
+- Видение: `new-project-starter` становится базовым слоем для новых репозиториев: команда подключает его как baseline, сразу получает понятный способ заводить, проверять, завершать и публиковать задачи, а продуктовую специфику добавляет поверх через adapters/profiles без изменения core governance.
+- Цель: поддерживать runnable local-first starter baseline, который можно подключать или копировать в downstream проекты, чтобы они сразу имели canonical sources of truth, managed worktrees, deterministic QA, task state/history, operational docs и reusable shared skills.
+- JTBD: когда начинается новый проект, я хочу получить готовую и переносимую операционную основу, чтобы команда сразу работала по ясным правилам, проверяла изменения воспроизводимо и не собирала governance, task flow и QA заново.
 - Core starter не является продуктовым runtime. Новые правила и скрипты должны быть переносимыми baseline-контрактами; product-specific capabilities добавляются поверх starter через adapters/profiles.
+- Перед любым продуктовым решением, feature, behavior, process или governance изменением нужно прочитать `.memory-bank/product-charter.md` целиком и сверить решение с миссией, видением, целью и `JTBD`.
 
 ## Repository Layout
 
 - `scripts/`: канонические conveyor, QA, release и operational-doc entrypoints.
+- `scripts/rule-sync.mjs`: daily governance/rule sync scanner, report renderer и approval-safe apply-plan seam.
 - `scripts/lib/`: shared runtime helpers для task state, history, docs sync и git-safe operations.
 - `skills/`: reusable repo-owned Codex skills, которые можно линковать в `$CODEX_HOME/skills`.
 - `.memory-bank/`: shared knowledge layer для всех агентов.
@@ -30,6 +34,7 @@
 ## Source of Truth
 
 - Governance: `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`.
+- Product charter: `.memory-bank/product-charter.md`.
 - Task state: `.git/codex-task-pipeline/tasks/*.json`.
 - Runtime history: `.git/codex-task-pipeline/history/events.ndjson`.
 - Operational docs: `Docs/qa-implementation-log.md`, `Docs/triz-usage-log.md`, append-only sections of `CODEX_MEMORY.md`.
@@ -44,6 +49,9 @@
 - `npm run skills:link`
 - `npm run skills:status`
 - `npm run skills:unlink`
+- `npm run rule-sync:scan -- --since <date> --until <date>`
+- `npm run rule-sync:report -- --latest`
+- `npm run rule-sync:apply-plan -- --approval <path> --dry-run`
 - `npm run typecheck`
 - `npm test`
 - `npm run build`
@@ -72,6 +80,7 @@
 - Дефолтный implementation path для feature/refactor/bugfix/process/governance задач — отдельный managed worktree и ветка `codex/*`.
 - `task:start` по умолчанию работает с managed worktrees under `$CODEX_HOME/worktrees/<taskId>/`.
 - Reusable starter skills публикуются в `$CODEX_HOME/skills` через symlink-based `skills:link`; после `git pull` существующие ссылки подхватывают обновления сразу, а для новых или переименованных skills нужно повторно запустить `skills:link`.
+- `rule-sync:scan` и `rule-sync:report` остаются read-only относительно starter source; `rule-sync:apply-plan` в v1 только готовит dry-run seed для managed `task:start` и не применяет изменения автоматически.
 - Downstream проекты могут подключать starter как git submodule под `vendor/new-project-starter` и линковать shared skills через `skills-manage.mjs --source vendor/new-project-starter/skills`, чтобы repo фиксировал версию baseline для новых участников.
 - `.system`, plugin-cache и product-specific skills не должны вендориться в starter core.
 - `task:qa:agent` всегда пишет `qaLastPassSha` и `previewPreparedSha`; preview status по умолчанию `not_supported`, пока проект не добавит preview adapter.

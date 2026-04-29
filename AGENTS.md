@@ -2,11 +2,28 @@
 
 These rules apply to the whole repository.
 
-## Project Purpose
+## Product Charter (Mandatory)
 
-- `new-project-starter` — каноническая reusable база для старта любых новых проектов в привычном фреймворке: Codex/worktree conveyor, deterministic QA, memory-bank governance, TRIZ escalation и branch-chat rules.
-- JTBD: когда начинается новый проект, дать команде готовую операционную основу с первого дня, чтобы не собирать заново правила работы, QA, task flow и agent governance в каждом репозитории.
-- При любых изменениях сверяться с этой ролью: правило или скрипт должны быть полезны как baseline для новых проектов, а product-specific поведение добавляется только поверх starter через adapters/profiles и не hardcode'ится в core governance.
+Канонический product source of truth: `.memory-bank/product-charter.md`.
+
+Миссия:
+- Мы даём команде переносимую операционную основу для старта нового проекта с первого дня: понятные правила работы, безопасный task flow, воспроизводимые проверки, memory-bank governance, TRIZ-эскалацию и разговорное управление задачами без ручной сборки заново.
+
+Видение:
+- `new-project-starter` становится базовым слоем для новых репозиториев: команда подключает его как baseline, сразу получает понятный способ заводить, проверять, завершать и публиковать задачи, а продуктовую специфику добавляет поверх через adapters/profiles без изменения core governance.
+
+Цель проекта:
+- Поддерживать runnable local-first starter baseline, который можно подключать или копировать в downstream проекты, чтобы они сразу имели canonical sources of truth, managed worktrees, deterministic QA, task state/history, operational docs и reusable shared skills.
+
+JTBD:
+- Когда начинается новый проект, я хочу получить готовую и переносимую операционную основу, чтобы команда сразу работала по ясным правилам, проверяла изменения воспроизводимо и не собирала governance, task flow и QA заново.
+
+Product Charter Gate:
+- Перед любым продуктовым решением, feature, behavior, process или governance изменением нужно сначала прочитать `.memory-bank/product-charter.md` целиком и сверить решение с миссией, видением, целью и `JTBD`.
+- Feature, behavior, process и governance изменения должны явно показывать, какую часть миссии, видения, цели или `JTBD` они поддерживают. Maintenance-изменения должны явно сохранять charter.
+- Нельзя реализовывать изменение, которое противоречит `.memory-bank/product-charter.md`, ослабляет переносимость baseline, deterministic QA, safe task flow, source-of-truth governance или hardcode'ит product-specific поведение в starter core.
+- Если запрос конфликтует с charter, ассистент обязан остановиться, коротко объяснить конфликт и предложить ближайший безопасный вариант.
+- Product charter нельзя обходить через локальный patch, mirror-файл, temporary exception или ad-hoc script; при изменении charter сначала обновить `.memory-bank/product-charter.md`, `AGENTS.md`, релевантные `.memory-bank/*` и `CODEX_MEMORY.md`.
 - Reusable shared skills можно versioned хранить в `skills/` и публиковать в `$CODEX_HOME/skills` через repo scripts; downstream проекты могут подключать starter как git submodule и линковать skills через `skills-manage.mjs --source vendor/new-project-starter/skills`; `.system`, plugin-managed и product-specific skills не являются частью starter core.
 
 ## Language Requirements
@@ -27,9 +44,10 @@ These rules apply to the whole repository.
 - Файлы с реальными ключами, токенами, паролями и приватными credential-значениями считать read-only.
 - Не удалять, не truncate'ить, не full-overwrite'ить и не rename-replace'ить существующий файл без явного подтверждения и rollback-ready path.
 - Не удалять user data или существующее поведение без явного запроса и rollback-ready notes.
-- Для user-facing планов, вопросов про изменения и предложений продуктовых решений использовать простой продуктовый язык и порядок `Summary -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`; сначала короткий смысл, затем ситуация / желание / ожидаемый результат, затем проверяемый результат.
-- В будущих plan files техническая часть начинается ниже верхнего продуктового блока `Summary -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`.
-- В `Summary`, `TL;DR`, `JTBD / проблема`, `Job Story` и `User Stories` не использовать технические термины без твердой необходимости; писать про ситуацию, ценность и ожидаемый результат понятным пользовательским языком.
+- Для user-facing продуктовых решений использовать простой продуктовый язык и порядок `Миссия -> Видение -> Цель -> JTBD`: сначала зачем существует продукт, затем желаемая картина будущего, практическая цель и пользовательская потребность. `Job Story`, `User Story` и критерии приемки использовать только для конкретных feature/spec задач, когда это помогает команде реализовать и проверить изменение.
+- Любое предложение продуктового решения, включая короткий ответ в чате, нельзя оформлять только как `Summary`, `Key Changes`, список implementation steps или технический sketch. Если нужен полный разбор, использовать `Миссия -> Видение -> Цель -> JTBD`; если пользователь задал короткий вопрос или нужен lightweight-вариант, дать хотя бы один продуктовый якорь из charter до implementation details.
+- В будущих plan files техническая часть начинается ниже верхнего продуктового блока `Миссия -> Видение -> Цель -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`.
+- В `Summary`, `TL;DR`, `Миссия`, `Видение`, `Цель`, `JTBD`, `Job Story` и `User Stories` не использовать технические термины без твердой необходимости; писать про ситуацию, ценность и ожидаемый результат понятным пользовательским языком.
 - Технические детали добавлять только там, где они помогают понять или реализовать решение. Их можно встроить в текст; если агенту нужен точный implementation context, добавлять отдельный блок `План для агента`.
 - Перед refactor сначала искать существующие тесты на затронутый seam и гонять ближайший baseline до/после каждого логического change batch.
 - Для любого code-changing task доказательством корректности считаются только детерминированные проверки.
@@ -48,7 +66,7 @@ These rules apply to the whole repository.
 
 ## Codex-First Governance (Mandatory)
 
-- Обязательные source-of-truth файлы: `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`.
+- Обязательные source-of-truth файлы: `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`; product charter: `.memory-bank/product-charter.md`.
 - `.cursorrules` — compatibility mirror, но не единственный источник обязательных правил.
 - Для любых process/git/QA изменений обновлять Codex-primary source в той же задаче.
 - Для системных багов и high-impact regressions использовать `STAR + profile data + repo-RAG` до выбора финального fix-path:
@@ -228,6 +246,9 @@ High-priority findings для этого starter repo ограничены:
 - `npm run skills:link`
 - `npm run skills:status`
 - `npm run skills:unlink`
+- `npm run rule-sync:scan -- --since <date> --until <date>`
+- `npm run rule-sync:report -- --latest`
+- `npm run rule-sync:apply-plan -- --approval <path> --dry-run`
 - `npm run typecheck`
 - `npm test`
 - `npm run build`

@@ -19,6 +19,7 @@ These rules apply to the whole repository.
 - `AGENTS.md`
 - `.memory-bank/*`
 - `CODEX_MEMORY.md`
+- `.memory-bank/product-charter.md`
 
 `.cursorrules` — compatibility mirror, но не обязательный source.
 
@@ -26,11 +27,13 @@ These rules apply to the whole repository.
 
 - Перед mutating action кратко объяснять, что меняется и почему.
 - Для non-trivial work явно фиксировать assumptions, делать surgical diffs и предпочитать `reproduce -> fix -> verify`.
-- User-facing планы, вопросы про изменения и продуктовые предложения формулировать простым языком в порядке `Summary -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`; техническую часть планов начинать ниже этого блока.
-- В `Summary`, `TL;DR`, `JTBD / проблема`, `Job Story` и `User Stories` не использовать технические термины без твердой необходимости.
+- Перед product/feature/behavior/process/governance изменением читать `.memory-bank/product-charter.md` и сверять решение с миссией, видением, целью и `JTBD`.
+- User-facing продуктовые решения формулировать простым языком в порядке `Миссия -> Видение -> Цель -> JTBD`; `Job Story`, `User Story` и критерии приемки использовать для конкретных feature/spec задач; техническую часть планов начинать ниже продуктового блока.
+- В `Summary`, `TL;DR`, `Миссия`, `Видение`, `Цель`, `JTBD`, `Job Story` и `User Stories` не использовать технические термины без твердой необходимости.
 - Для code-changing work использовать deterministic checks как evidence.
 - `npm run qa:agent` обязателен перед finish / merge / release.
 - Использовать канонические scripts: `task:start`, `task:qa:agent`, `task:finish:core`, `task:merge:main`, `release:local`.
+- Для cross-project rule sync использовать `rule-sync:scan`, `rule-sync:report`, `rule-sync:apply-plan --dry-run`; не применять правила без managed worktree и plan approval.
 - `task:start` разрешён только из clean tree; `--allow-dirty` не считается допустимым bypass.
 - Если используется BMAD: `_bmad/` — canonical install, `_bmad-output/` — uncommitted scratch, BMAD не отменяет conveyor gates.
 - Для bugfixes: reproduction -> root cause -> class-level analysis -> test-first -> systemic fix -> QA matrix.
