@@ -40,19 +40,20 @@ JTBD: когда начинается новый проект, получить 
 ## Быстрый старт
 
 1. Скопируйте этот репозиторий или его содержимое в корень нового проекта.
-2. Адаптируйте доменно-специфичные описания в:
+2. Создайте Project Intake по `plans/_project_intake_template.md`: заполните миссию, видение, цель, целевую аудиторию, `JTBD`, ограничения, сценарии, метрики, stack/runtime, QA/release choices и ownership правил. Каждый пункт должен быть явно согласован owner'ом; `TBD` и “заполним потом” считаются blocker.
+3. После approval перенесите согласованные ответы в:
    - `AGENTS.md`
    - `.memory-bank/product-charter.md`
    - `.memory-bank/project-context.md`
    - `.memory-bank/architecture-map.md`
    - `README.md`
-3. Установите зависимости:
+4. Установите зависимости:
 
 ```bash
 npm ci
 ```
 
-4. Если хотите использовать общие repo-managed skills на этом устройстве, один раз подключите их в глобальный Codex home:
+5. Если хотите использовать общие repo-managed skills на этом устройстве, один раз подключите их в глобальный Codex home:
 
 ```bash
 npm run skills:link
@@ -64,7 +65,7 @@ npm run skills:link
 npm run skills:link -- --adopt
 ```
 
-5. Если проект подключает shared skills через git submodule, добавьте starter как versioned dependency и линкуйте skills из него:
+6. Если проект подключает shared skills через git submodule, добавьте starter как versioned dependency и линкуйте skills из него:
 
 ```bash
 git submodule add <starter-repo-url> vendor/new-project-starter
@@ -74,7 +75,7 @@ node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/n
 
 В таком режиме проект фиксирует конкретный commit starter baseline, а новые люди получают тот же набор skills после `git clone --recurse-submodules` или `git submodule update --init --recursive`.
 
-6. Прогоните baseline QA:
+7. Прогоните baseline QA:
 
 ```bash
 npm run qa:agent

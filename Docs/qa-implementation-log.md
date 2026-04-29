@@ -7,6 +7,8 @@
 - В `.memory-bank/product-charter.md` добавлена целевая аудитория `new-project-starter` и явное правило, что downstream-проекты описывают свою аудиторию отдельно.
 - `plans/_template.md` усилен блоком `Продуктовая спека`: проблема / `JTBD`, целевая аудитория изменения, сценарии использования, требования, критерии приемки, метрика успеха и ограничения / что нельзя сломать.
 - Product Charter gate синхронизирован в `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, mirrors и reference blueprint.
+- Добавлен Project Intake Gate: новый downstream-проект обязан заполнить и согласовать недостающую product/governance информацию до первой feature/refactor/behavior-change реализации.
+- Добавлен `plans/_project_intake_template.md` с owner approval по каждому обязательному пункту.
 
 ### Deterministic checks
 

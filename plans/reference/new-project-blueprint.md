@@ -101,9 +101,9 @@ tests/
 `.memory-bank/product-charter.md`
 
 - канонический product source of truth;
-- содержит миссию, видение, цель и `JTBD`;
+- содержит миссию, видение, цель, целевую аудиторию и `JTBD`;
 - задаёт product charter gate: изменение должно поддерживать charter или явно сохранять совместимость с ним;
-- downstream-проект обязан заменить starter charter своим product-specific charter, сохранив baseline-инварианты.
+- downstream-проект обязан заменить starter charter своим product-specific charter, включая собственную целевую аудиторию и сохранив baseline-инварианты.
 
 `.memory-bank/project-context.md`
 
@@ -138,6 +138,13 @@ tests/
 - верх плана должен идти как `Миссия -> Видение -> Цель -> Целевая аудитория проекта -> Продуктовая спека`;
 - product spec содержит проблему / `JTBD`, целевую аудиторию изменения, сценарии использования, требования, критерии приемки, метрику успеха и ограничения / что нельзя сломать;
 - техническая часть начинается ниже верхнего продуктового блока и содержит scope, out-of-scope, invariant, shared seam, QA plan, risks/rollback, evidence.
+
+`plans/_project_intake_template.md`
+
+- обязательная стартовая карточка нового downstream-проекта;
+- до первой feature/refactor/behavior-change реализации заполняет миссию, видение, цель, целевую аудиторию, `JTBD`, ограничения, сценарии, метрики, stack/runtime, QA/release choices и rules/memory ownership;
+- каждый пункт получает owner approval; placeholder, `TBD` и несогласованные допущения считаются blocker;
+- после approval ответы переносятся в `.memory-bank/product-charter.md`, `.memory-bank/project-context.md`, `.memory-bank/architecture-map.md`, `.memory-bank/code-rules.md`, `.memory-bank/qa-playbook.md`, `AGENTS.md`, `CODEX_MEMORY.md`, `README.md` и другие релевантные sources.
 
 `templates/agent-workspace/*`
 
@@ -396,18 +403,21 @@ TRIZ обязателен, если сработал хотя бы один из
 Используй этот порядок при старте нового репозитория:
 
 1. Создать `AGENTS.md` как главный policy-файл.
-2. Создать `.memory-bank/product-charter.md` и адаптировать миссию, видение, цель, целевую аудиторию и `JTBD` под продукт.
-3. Создать `.memory-bank/` с минимумом из `index`, `project-context`, `architecture-map`, `code-rules`, `qa-playbook`.
-4. Создать `CODEX_MEMORY.md` для short-lived learned rules.
-5. Создать `Docs/` артефакты: ledger, task history, QA baseline, implementation log, TRIZ log.
-6. Создать `plans/_template.md` и `_bugfix_template.md`.
-7. Создать `templates/agent-workspace/` для локальных профилей и памяти.
-8. Добавить канонические QA и conveyor entrypoint'ы.
-9. Зафиксировать branch prefix `codex/`.
-10. Встроить `.git/codex-task-pipeline/` state/history contract.
-11. Настроить `task:start` и `task:finish:core` как единственный допустимый путь для lifecycle задачи.
-12. Проверить, что branch-chat принимает разговорные русские запросы и корректно маппит их на conveyor.
-13. Проверить, что `qa:agent` действительно запускает реальный детерминированный gate.
+2. Создать Project Intake по `plans/_project_intake_template.md` и заполнить все обязательные product/governance пункты.
+3. Получить owner approval по каждому пункту intake; несогласованные пункты считать blocker.
+4. Создать `.memory-bank/product-charter.md` и адаптировать миссию, видение, цель, целевую аудиторию и `JTBD` под продукт.
+5. Создать `.memory-bank/` с минимумом из `index`, `project-context`, `architecture-map`, `code-rules`, `qa-playbook`.
+6. Перенести согласованные ответы intake в `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, `README.md` и релевантные operator-facing docs.
+7. Создать `CODEX_MEMORY.md` для short-lived learned rules.
+8. Создать `Docs/` артефакты: ledger, task history, QA baseline, implementation log, TRIZ log.
+9. Создать `plans/_template.md` и `_bugfix_template.md`.
+10. Создать `templates/agent-workspace/` для локальных профилей и памяти.
+11. Добавить канонические QA и conveyor entrypoint'ы.
+12. Зафиксировать branch prefix `codex/`.
+13. Встроить `.git/codex-task-pipeline/` state/history contract.
+14. Настроить `task:start` и `task:finish:core` как единственный допустимый путь для lifecycle задачи.
+15. Проверить, что branch-chat принимает разговорные русские запросы и корректно маппит их на conveyor.
+16. Проверить, что `qa:agent` действительно запускает реальный детерминированный gate.
 14. Проверить, что TRIZ-trigger записывается в историю и журнал.
 
 ## 12. Definition of Ready для нового проекта
