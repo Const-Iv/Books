@@ -6,6 +6,7 @@
 
 - `AGENTS.md`
 - `.memory-bank/index.md` и релевантных `.memory-bank/*.md`
+- `.memory-bank/product-charter.md`
 - `CODEX_MEMORY.md`
 - `CLAUDE.md`
 
@@ -13,7 +14,8 @@ Mirror rules:
 
 - не добавлять сюда уникальные обязательные правила, которых нет в Codex-primary sources;
 - новые governance/process rules сначала вносить в `AGENTS.md` и/или `.memory-bank/*`, и только потом зеркалить сюда;
-- user-facing планы, вопросы про изменения и продуктовые предложения формулировать простым языком в порядке `Summary -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`;
+- product charter — первичный gate для любых продуктовых решений и feature/behavior/process/governance изменений: `.memory-bank/product-charter.md` нужно прочитать целиком, а миссия, видение, цель и `JTBD` должны проверяться до implementation path;
+- user-facing продуктовые решения формулировать простым языком в порядке `Миссия -> Видение -> Цель -> JTBD`; `Job Story`, `User Story` и критерии приемки использовать только для конкретных feature/spec задач;
 - техническую часть будущих plan files начинать ниже верхнего продуктового блока;
 - в `main` нельзя вносить изменения без явного direct-main разрешения пользователя в текущей задаче;
 - по умолчанию implementation work выполняется в отдельном managed worktree и ветке `codex/*`;
@@ -22,3 +24,4 @@ Mirror rules:
 - если используется BMAD, `_bmad/` — canonical install, `_bmad-output/` — локальный scratch без коммита;
 - `.cursorrules` не заменяет `AGENTS.md` и не считается единственным source of truth;
 - QA и release decisions должны идти через `qa:agent`, `task:*`, `release:local`, а не через ad-hoc shell flow.
+- cross-project rule sync должен идти через `rule-sync:scan`, `rule-sync:report`, `rule-sync:apply-plan --dry-run`; auto-apply без managed worktree и plan approval запрещён.

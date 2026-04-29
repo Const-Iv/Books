@@ -6,11 +6,12 @@
 
 ## 1. Назначение
 
-Этот blueprint нужен не для описания конкретного продукта, а для задания **операционной конституции проекта**:
+Этот blueprint нужен не для описания конкретного продукта, а для задания **операционной конституции проекта** и обязательного product charter, который downstream-проект адаптирует под свою миссию:
 
 JTBD: когда начинается новый проект, дать команде готовую операционную основу с первого дня, чтобы не собирать заново правила работы, QA, task flow и agent governance в каждом репозитории.
 
 - как хранить канонические правила;
+- где хранить миссию, видение, цель и `JTBD`;
 - как заводить и завершать задачи;
 - как проводить QA;
 - когда обязателен TRIZ;
@@ -32,15 +33,16 @@ JTBD: когда начинается новый проект, дать кома
 Эти правила считаются обязательными для любого нового проекта:
 
 1. Сначала simplest viable implementation, потом усложнение.
-2. Перед изменением файлов агент кратко объясняет, что меняется и почему.
-3. Placeholder-реализации нельзя выдавать как finished work.
-4. Секреты, токены, ключи, персональные профили и runtime-данные не коммитятся и не выводятся в логах.
-5. Нельзя удалять пользовательские данные или ломать существующее поведение без явного запроса и заметки про rollback.
-6. Доказательством корректности считаются только детерминированные проверки.
-7. После каждого логического батча изменений надо прогонять хотя бы одну целевую детерминированную проверку.
-8. Для системных багов перед окончательным fix path обязателен `STAR + profile data + repo-RAG`.
-9. Для регрессий исправляется shared seam, а не только симптом; по возможности добавляется reusable guard.
-10. Операционные документы должны быть single-writer артефактами и синхронизироваться только на publish/release-стадии.
+2. Product charter является первичным gate для продуктовых решений и feature/behavior/process/governance изменений.
+3. Перед изменением файлов агент кратко объясняет, что меняется и почему.
+4. Placeholder-реализации нельзя выдавать как finished work.
+5. Секреты, токены, ключи, персональные профили и runtime-данные не коммитятся и не выводятся в логах.
+6. Нельзя удалять пользовательские данные или ломать существующее поведение без явного запроса и заметки про rollback.
+7. Доказательством корректности считаются только детерминированные проверки.
+8. После каждого логического батча изменений надо прогонять хотя бы одну целевую детерминированную проверку.
+9. Для системных багов перед окончательным fix path обязателен `STAR + profile data + repo-RAG`.
+10. Для регрессий исправляется shared seam, а не только симптом; по возможности добавляется reusable guard.
+11. Операционные документы должны быть single-writer артефактами и синхронизироваться только на publish/release-стадии.
 
 ## 3. Обязательный каркас репозитория
 
@@ -51,6 +53,7 @@ AGENTS.md
 CODEX_MEMORY.md
 .memory-bank/
   index.md
+  product-charter.md
   project-context.md
   architecture-map.md
   code-rules.md
@@ -90,10 +93,18 @@ tests/
 
 - точка входа;
 - маршрутизирует, какие memory-файлы читать для feature/bugfix/conveyor/governance work.
+- для любых продуктовых решений и feature/behavior/process/governance изменений направляет сначала в `product-charter.md`.
+
+`.memory-bank/product-charter.md`
+
+- канонический product source of truth;
+- содержит миссию, видение, цель и `JTBD`;
+- задаёт product charter gate: изменение должно поддерживать charter или явно сохранять совместимость с ним;
+- downstream-проект обязан заменить starter charter своим product-specific charter, сохранив baseline-инварианты.
 
 `.memory-bank/project-context.md`
 
-- layout проекта, стек, source of truth, core commands, operational constraints.
+- краткая product-charter выжимка, layout проекта, стек, source of truth, core commands, operational constraints.
 
 `.memory-bank/architecture-map.md`
 
@@ -120,13 +131,18 @@ tests/
 `plans/_template.md`
 
 - стандартная карточка задачи;
-- верх плана должен идти как `Summary -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`;
+- верх плана должен идти как `Миссия -> Видение -> Цель -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`;
 - техническая часть начинается ниже верхнего продуктового блока и содержит scope, out-of-scope, invariant, shared seam, QA plan, risks/rollback, evidence.
 
 `templates/agent-workspace/*`
 
 - безопасные шаблоны локального пространства агента;
 - реальные `SOUL`, `USER`, `MEMORY`, персональные notes и идентификаторы не должны попадать в git.
+
+`skills/starter-rule-sync`
+
+- reusable workflow для регулярного возврата удачных правил из downstream проектов обратно в starter;
+- работает через `rule-sync:*` scripts и manual approval, а не через auto-apply.
 
 ## 4. Каноническая модель conveyor
 
@@ -324,6 +340,9 @@ TRIZ обязателен, если сработал хотя бы один из
     "qa:e2e:nightly": "...",
     "qa:security": "...",
     "qa:coverage:critical": "...",
+    "rule-sync:scan": "...",
+    "rule-sync:report": "...",
+    "rule-sync:apply-plan": "...",
     "task:start": "...",
     "task:qa:agent": "...",
     "task:finish:core": "...",
@@ -346,6 +365,7 @@ TRIZ обязателен, если сработал хотя бы один из
 
 - название;
 - тип задачи: `feature | refactor | behavior-change | bugfix`;
+- mission/vision/goal/JTBD charter mapping;
 - цель;
 - scope / out-of-scope;
 - класс дефекта или системный риск;
@@ -368,18 +388,19 @@ TRIZ обязателен, если сработал хотя бы один из
 Используй этот порядок при старте нового репозитория:
 
 1. Создать `AGENTS.md` как главный policy-файл.
-2. Создать `.memory-bank/` с минимумом из `index`, `project-context`, `architecture-map`, `code-rules`, `qa-playbook`.
-3. Создать `CODEX_MEMORY.md` для short-lived learned rules.
-4. Создать `Docs/` артефакты: ledger, task history, QA baseline, implementation log, TRIZ log.
-5. Создать `plans/_template.md` и `_bugfix_template.md`.
-6. Создать `templates/agent-workspace/` для локальных профилей и памяти.
-7. Добавить канонические QA и conveyor entrypoint'ы.
-8. Зафиксировать branch prefix `codex/`.
-9. Встроить `.git/codex-task-pipeline/` state/history contract.
-10. Настроить `task:start` и `task:finish:core` как единственный допустимый путь для lifecycle задачи.
-11. Проверить, что branch-chat принимает разговорные русские запросы и корректно маппит их на conveyor.
-12. Проверить, что `qa:agent` действительно запускает реальный детерминированный gate.
-13. Проверить, что TRIZ-trigger записывается в историю и журнал.
+2. Создать `.memory-bank/product-charter.md` и адаптировать миссию, видение, цель и `JTBD` под продукт.
+3. Создать `.memory-bank/` с минимумом из `index`, `project-context`, `architecture-map`, `code-rules`, `qa-playbook`.
+4. Создать `CODEX_MEMORY.md` для short-lived learned rules.
+5. Создать `Docs/` артефакты: ledger, task history, QA baseline, implementation log, TRIZ log.
+6. Создать `plans/_template.md` и `_bugfix_template.md`.
+7. Создать `templates/agent-workspace/` для локальных профилей и памяти.
+8. Добавить канонические QA и conveyor entrypoint'ы.
+9. Зафиксировать branch prefix `codex/`.
+10. Встроить `.git/codex-task-pipeline/` state/history contract.
+11. Настроить `task:start` и `task:finish:core` как единственный допустимый путь для lifecycle задачи.
+12. Проверить, что branch-chat принимает разговорные русские запросы и корректно маппит их на conveyor.
+13. Проверить, что `qa:agent` действительно запускает реальный детерминированный gate.
+14. Проверить, что TRIZ-trigger записывается в историю и журнал.
 
 ## 12. Definition of Ready для нового проекта
 

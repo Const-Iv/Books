@@ -19,6 +19,12 @@
       ]
     },
     {
+      "module": "scripts/rule-sync.mjs",
+      "tests": [
+        "tests/unit/rule-sync.test.mjs"
+      ]
+    },
+    {
       "module": "scripts/worktree-start.mjs",
       "tests": [
         "tests/e2e/pr-smoke.test.mjs"

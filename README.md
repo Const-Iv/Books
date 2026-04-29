@@ -10,9 +10,12 @@
 - TRIZ escalation by trigger;
 - single-writer operational docs;
 - shared memory-bank governance;
+- product charter for mission/vision/goal/JTBD;
 - local-first `release:local`.
 
-JTBD: когда начинается новый проект, дать команде готовую операционную основу с первого дня, чтобы не собирать заново правила работы, QA, task flow и agent governance в каждом репозитории.
+Миссия starter: дать команде переносимую операционную основу для старта нового проекта с первого дня.
+
+JTBD: когда начинается новый проект, получить готовую и переносимую основу, чтобы команда сразу работала по ясным правилам, проверяла изменения воспроизводимо и не собирала governance, task flow и QA заново.
 
 Любое изменение starter нужно сверять с этой ролью: оно должно быть полезно как переносимый baseline для новых проектов. Продуктовую специфику добавляйте поверх starter через adapters/profiles, а не в core governance.
 
@@ -21,9 +24,11 @@ JTBD: когда начинается новый проект, дать кома
 - `AGENTS.md` — канонический договор для Codex.
 - `CLAUDE.md` и `.cursorrules` — cross-agent mirrors.
 - `.memory-bank/` — shared long-lived knowledge.
+- `.memory-bank/product-charter.md` — миссия, видение, цель и JTBD проекта.
 - `CODEX_MEMORY.md` — оперативная память Codex.
 - `scripts/` — реальные process entrypoints, а не только README-контракты.
 - `skills/` — versioned reusable Codex skills, которые можно подключить глобально через symlink.
+- `scripts/rule-sync.mjs` и `skills/starter-rule-sync/` — регулярный контур поиска reusable правил в downstream проектах и подготовки approved импорта в starter.
 - `tests/` — unit/integration/e2e проверки самого starter baseline.
 - `Docs/` — process evidence, baselines и review guidance.
 - `research/triz/` — канонический TRIZ pack.
@@ -35,6 +40,7 @@ JTBD: когда начинается новый проект, дать кома
 1. Скопируйте этот репозиторий или его содержимое в корень нового проекта.
 2. Адаптируйте доменно-специфичные описания в:
    - `AGENTS.md`
+   - `.memory-bank/product-charter.md`
    - `.memory-bank/project-context.md`
    - `.memory-bank/architecture-map.md`
    - `README.md`
@@ -95,6 +101,9 @@ npm run qa:perf:critical
 - `npm run skills:link`
 - `npm run skills:status`
 - `npm run skills:unlink`
+- `npm run rule-sync:scan -- --since <date> --until <date>`
+- `npm run rule-sync:report -- --latest`
+- `npm run rule-sync:apply-plan -- --approval <path> --dry-run`
 - `npm run typecheck`
 - `npm test`
 - `npm run build`
