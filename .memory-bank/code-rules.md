@@ -14,6 +14,8 @@
 - Rule-sync owner report должен сначала показывать decision proposals через `Связь с charter проекта -> Цель решения -> JTBD -> Job Stories -> User Stories -> Критерии приемки`; candidate ids используются как traceability, а не как основной decision interface.
 - `starter-rule-share` является основным project-local skill для outbound sharing текущего подтверждённого starter baseline в выбранные active downstream проекты; `rule-share:*` scripts остаются deterministic execution layer.
 - Rule-share scan/report должны быть read-only относительно downstream source, список проектов берётся из ignored `runtime/rule-share/config.json`, а apply-plan обязан оставаться approval-safe: только per-project dry-run task seeds без direct edits и без bulk-copy во все локальные проекты.
+- Rule-share manual review для проектов с неполными starter baseline signals должен объяснять, каких сигналов не хватает, и предлагать только safe bootstrap path: downstream-specific product charter / Project Intake или versioned `vendor/new-project-starter`, managed task worktree и deterministic QA.
+- Rule-share one-run mode допустим только по явному запросу owner'а или ignored standing approval в `runtime/rule-share/config.json`; он может автоматически пройти scan/report/apply-plan и выполнить перенос в downstream managed task worktrees с deterministic QA, но не имеет права редактировать downstream main worktree, трогать manual-review/blocked проекты или finish/merge/publish без отдельного явного разрешения.
 - Не использовать TypeScript `any` в новом или изменённом typed code / JSDoc contracts.
 - Не глушить ошибки пустыми `catch {}`.
 - Для bugfixes избегать unrelated refactors.
