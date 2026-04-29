@@ -59,7 +59,15 @@ test("repo exposes starter-rule-sync as a managed project skill", async () => {
   const discovered = await discoverRepoSkills(repoRoot);
   assert.deepEqual(
     discovered.map((skill) => skill.relativeDir),
-    ["starter-rule-share", "starter-rule-sync", "worktree-create", "worktree-finish"]
+    [
+      "codebase-recon",
+      "gh-address-comments",
+      "gh-fix-ci",
+      "starter-rule-share",
+      "starter-rule-sync",
+      "worktree-create",
+      "worktree-finish"
+    ]
   );
 });
 

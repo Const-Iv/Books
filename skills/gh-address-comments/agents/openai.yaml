@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub PR Comments"
+  short_description: "Summarize PR review threads"
+  default_prompt: "Use $gh-address-comments to fetch GitHub PR comments and plan selected fixes."

@@ -40,7 +40,7 @@
 ### `rule-sync:report`
 
 - читает последний или явно выбранный scan snapshot;
-- строит русскую owner-facing сводку, которая начинается с decision proposals в формате `Миссия -> Видение -> Цель -> JTBD -> Job Story -> User Stories -> Критерии приемки`;
+- строит русскую owner-facing сводку, которая начинается с decision proposals в формате `Связь с charter проекта -> Цель решения -> JTBD -> Job Stories -> User Stories -> Критерии приемки`;
 - ниже decision proposals оставляет raw секции `Кандидаты на импорт`, `Требует ручной проверки`, `Пропущено как product-specific`, `Диагностика`;
 - сохраняет traceability: source project, task/commit evidence, changed files, suggested starter target.
 
