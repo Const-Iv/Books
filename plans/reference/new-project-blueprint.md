@@ -135,7 +135,7 @@ tests/
 `plans/_template.md`
 
 - стандартная карточка задачи;
-- верх плана должен идти как `Миссия -> Видение -> Цель -> Целевая аудитория проекта -> Продуктовая спека`;
+- верх плана должен идти как `Связь с charter проекта -> Цель изменения -> Целевая аудитория проекта -> Продуктовая спека`; `Миссия` и `Видение` не создаются для задач;
 - product spec содержит проблему / `JTBD`, целевую аудиторию изменения, сценарии использования, требования, критерии приемки, метрику успеха и ограничения / что нельзя сломать;
 - для AI/agent behavior changes содержит `Eval spec`: хороший ответ, провал, critical edge cases, regression examples / golden prompts, old vs new comparison method и minimum pass threshold;
 - техническая часть начинается ниже верхнего продуктового блока и содержит scope, out-of-scope, invariant, shared seam, QA plan, risks/rollback, evidence.
@@ -380,7 +380,7 @@ TRIZ обязателен, если сработал хотя бы один из
 
 - название;
 - тип задачи: `feature | refactor | behavior-change | bugfix`;
-- mission/vision/goal/target-audience/JTBD charter mapping;
+- связь с project charter: какая часть mission/vision/goal/target-audience/JTBD проекта поддержана без создания task-level mission/vision;
 - product spec: проблема / `JTBD`, целевая аудитория изменения, сценарии использования, требования, критерии приемки, метрика успеха, ограничения;
 - eval spec для AI/agent behavior changes: good answer, failure, edge cases, golden prompts, comparison method, pass threshold;
 - цель;

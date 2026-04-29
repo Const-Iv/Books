@@ -159,7 +159,7 @@ const SECRET_PATTERN = /(token|secret|password|credential|api[_-]?key|private ke
  * @typedef {Object} DecisionProposal
  * @property {string} title
  * @property {"import"|"rewrite"|"reject"|"review"} recommendation
- * @property {string} jobStory
+ * @property {string[]} jobStories
  * @property {string[]} userStories
  * @property {string[]} acceptanceCriteria
  * @property {RuleCandidate[]} candidates
@@ -961,15 +961,16 @@ export function buildDecisionProposals(snapshot) {
     proposals.push({
       title: "Сделать rule-sync report пригодным для решения",
       recommendation: "import",
-      jobStory:
-        "Когда владелец starter смотрит найденные правила, я хочу сначала видеть пользовательскую ценность и ожидаемый результат, чтобы принять approve/reject без расшифровки candidate ids.",
+      jobStories: [
+        "Когда владелец starter смотрит найденные правила, я хочу сначала видеть пользовательскую ценность и ожидаемый результат, чтобы принять approve/reject без расшифровки candidate ids."
+      ],
       userStories: [
         "Как владелец starter, я хочу получать rule-sync summary в формате решения, а не списка технических идентификаторов.",
         "Как агент, я хочу оставлять candidate ids только как traceability после продуктового предложения."
       ],
       acceptanceCriteria: [
-        "Report начинается с `Миссия -> Видение -> Цель -> JTBD`.",
-        "Каждая группа содержит `Job Story`, `User Stories`, `Критерии приемки`, рекомендацию и traceability.",
+        "Report начинается с `Связь с charter проекта -> Цель решения -> JTBD`.",
+        "Каждая группа содержит `Job Stories`, `User Stories`, `Критерии приемки`, рекомендацию и traceability.",
         "Сырые candidate ids не являются основным интерфейсом для решения."
       ],
       candidates: productPlanning
@@ -980,8 +981,9 @@ export function buildDecisionProposals(snapshot) {
     proposals.push({
       title: "Импортировать из QA/TRIZ логов только reusable invariant",
       recommendation: "rewrite",
-      jobStory:
-        "Когда downstream проект фиксирует QA/TRIZ опыт, я хочу переносить в starter только повторяемое правило, чтобы не засорять baseline частными инцидентами.",
+      jobStories: [
+        "Когда downstream проект фиксирует QA/TRIZ опыт, я хочу переносить в starter только повторяемое правило, чтобы не засорять baseline частными инцидентами."
+      ],
       userStories: [
         "Как maintainer, я хочу видеть QA/TRIZ логи как evidence для формулировки правила, а не как готовый импорт.",
         "Как downstream команда, я хочу, чтобы проектные симптомы оставались в исходном проекте."
@@ -999,8 +1001,9 @@ export function buildDecisionProposals(snapshot) {
     proposals.push({
       title: "Сверить защиту main/worktree без дублирования",
       recommendation: "review",
-      jobStory:
-        "Когда downstream усиливает защиту `main`, я хочу понять, содержит ли starter уже такой guard, чтобы улучшить wording без дублирования правил.",
+      jobStories: [
+        "Когда downstream усиливает защиту `main`, я хочу понять, содержит ли starter уже такой guard, чтобы улучшить wording без дублирования правил."
+      ],
       userStories: [
         "Как maintainer, я хочу parity-check между downstream wording и текущими `AGENTS.md` / `.memory-bank/*`.",
         "Как агент, я хочу не создавать вторую версию уже существующего правила."
@@ -1018,8 +1021,9 @@ export function buildDecisionProposals(snapshot) {
     proposals.push({
       title: "Отклонить product-specific runtime docs из starter core",
       recommendation: "reject",
-      jobStory:
-        "Когда найденное правило связано с конкретным ботом, календарём, базой или доменной интеграцией, я хочу оставить его в исходном проекте, чтобы starter оставался переносимым.",
+      jobStories: [
+        "Когда найденное правило связано с конкретным ботом, календарём, базой или доменной интеграцией, я хочу оставить его в исходном проекте, чтобы starter оставался переносимым."
+      ],
       userStories: [
         "Как maintainer starter, я хочу импортировать только baseline behavior, а не product runtime commands.",
         "Как downstream команда, я хочу сохранять свои product-specific инструкции в своём README/profile."
@@ -1037,8 +1041,9 @@ export function buildDecisionProposals(snapshot) {
     proposals.push({
       title: "Не импортировать generated skill trees, извлекать только source-of-truth policy",
       recommendation: "rewrite",
-      jobStory:
-        "Когда downstream меняет BMAD или generated skills, я хочу переносить только правило о canonical skill source, чтобы не копировать большие generated trees в starter.",
+      jobStories: [
+        "Когда downstream меняет BMAD или generated skills, я хочу переносить только правило о canonical skill source, чтобы не копировать большие generated trees в starter."
+      ],
       userStories: [
         "Как maintainer, я хочу хранить reusable starter skills в `skills/`, а generated teammate entrypoints держать вне starter core.",
         "Как агент, я хочу отличать source-of-truth policy от bulk skill artifacts."
@@ -1080,9 +1085,8 @@ function renderDecisionProposals(proposals) {
   const lines = [
     "## Предложения к решению",
     "",
-    "Миссия: переносить в starter только правила, которые помогают новым проектам стартовать с ясным process baseline.",
-    "Видение: rule-sync report должен помогать принять решение, а не заставлять владельца расшифровывать технические ids.",
-    "Цель: сгруппировать найденные изменения в approve/rewrite/reject решения с понятными критериями.",
+    "Связь с charter проекта: предложения должны сохранять переносимую starter-основу, deterministic QA, safe task flow и reusable shared skills.",
+    "Цель решения: сгруппировать найденные изменения в approve/rewrite/reject решения с понятными критериями.",
     "JTBD: когда я смотрю найденные правила, я хочу понимать, что именно импортировать и зачем, чтобы быстро принять безопасное решение."
   ];
 
@@ -1094,7 +1098,10 @@ function renderDecisionProposals(proposals) {
   for (const [index, proposal] of proposals.entries()) {
     lines.push("", `### ${index + 1}. ${proposal.title}`);
     lines.push(`Рекомендация: ${recommendationTitle(proposal.recommendation)}.`);
-    lines.push(`Job Story: ${proposal.jobStory}`);
+    lines.push("Job Stories:");
+    for (const story of proposal.jobStories) {
+      lines.push(`- ${story}`);
+    }
     lines.push("User Stories:");
     for (const story of proposal.userStories) {
       lines.push(`- ${story}`);

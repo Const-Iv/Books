@@ -23,11 +23,10 @@ Charter fit: reusable rule sync supports the mission and JTBD by letting downstr
    - `npm run rule-sync:scan -- --since <YYYY-MM-DD> --until <YYYY-MM-DD>`
    - `npm run rule-sync:report -- --latest`
 5. Start the owner-facing response from decision proposals, not candidate ids:
-   - `Миссия`
-   - `Видение`
-   - `Цель`
+   - `Связь с charter проекта`
+   - `Цель решения`
    - `JTBD`
-   - `Job Story`
+   - `Job Stories`
    - `User Stories`
    - `Критерии приемки`
    - `Рекомендация`
@@ -80,7 +79,7 @@ Use these sections:
 - `Пропущено как product-specific`
 - `Диагностика`
 
-Each proposal must include `Job Story`, `User Stories`, `Критерии приемки`, recommendation, and traceability. For every approved candidate, preserve source project, task/commit evidence, changed files, proposed starter target, and QA result after implementation.
+Each proposal must include `Связь с charter проекта`, `Цель решения`, `JTBD`, `Job Stories`, `User Stories`, `Критерии приемки`, recommendation, and traceability. For every approved candidate, preserve source project, task/commit evidence, changed files, proposed starter target, and QA result after implementation.
 
 ## Safety Rules
 

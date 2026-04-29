@@ -157,8 +157,10 @@ test("rule-sync report renders required sections", () => {
   assert.match(text, /Требует ручной проверки/);
   assert.match(text, /Пропущено как product-specific/);
   assert.match(text, /Предложения к решению/);
-  assert.match(text, /Миссия:/);
-  assert.match(text, /Job Story:/);
+  assert.doesNotMatch(text, /Миссия:/);
+  assert.doesNotMatch(text, /Видение:/);
+  assert.match(text, /Связь с charter проекта:/);
+  assert.match(text, /Job Stories:/);
   assert.match(text, /User Stories:/);
   assert.match(text, /Критерии приемки:/);
   assert.match(text, /Диагностика/);
@@ -199,7 +201,7 @@ test("rule-sync decision proposals group product planning candidates", () => {
   assert.equal(proposals.length, 1);
   assert.equal(proposals[0].recommendation, "import");
   assert.equal(proposals[0].candidates[0].id, "rs-plan");
-  assert.match(proposals[0].jobStory, /candidate ids/);
+  assert.match(proposals[0].jobStories.join("\n"), /candidate ids/);
 });
 
 test("rule-sync apply-plan builds safe task-start seed", () => {

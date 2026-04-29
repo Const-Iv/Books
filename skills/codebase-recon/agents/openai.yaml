@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codebase Recon"
+  short_description: "Map git history risk areas"
+  default_prompt: "Use $codebase-recon to analyze git history before reading an unfamiliar repository."
