@@ -51,6 +51,7 @@
 - Reusable starter skills должны жить в repo `skills/` и подключаться в `$CODEX_HOME/skills` через symlink-based `skills:link`; после `git pull` existing links обновляются сами, а для новых/renamed skills нужно повторно запустить link.
 - Finish-flow не должен reuse task QA для dirty worktree перед commit: если есть незакоммиченные task changes, сначала фиксируется task commit/checkpoint, затем прогоняется QA уже на этом committed `HEAD`.
 - Для командного multi-project reuse shared skills downstream repo может держать starter как git submodule и линковать skills через `skills-manage.mjs --source vendor/new-project-starter/skills`, чтобы новые участники получали зафиксированную версию baseline.
+- Product proposal нельзя подменять `Summary` / `Key Changes` / technical sketch без product-charter якоря; полный вариант идёт через `Миссия -> Видение -> Цель -> JTBD`, короткий вариант обязан явно опереться хотя бы на один charter anchor.
 
 ## Project Notes
 
@@ -59,3 +60,5 @@
 - Preview в core starter помечается `not_supported`; продуктовые проекты поверх starter могут добавить свой preview adapter без изменения базового task state contract.
 - Governance baseline стартера синхронизирован с более свежими правилами Карпаты, BMAD и clean-tree worktree flow, чтобы новый проект стартовал уже с актуальным process-contract.
 - Starter теперь может versioned хранить reusable shared skills вроде `worktree-create` и `worktree-finish`, чтобы их можно было коммитить в git и использовать на нескольких устройствах через один bootstrap link.
+- Starter теперь содержит собственный `.memory-bank/product-charter.md` как переносимый baseline-паттерн; downstream проекты должны заменить или расширить charter под свою миссию, не ослабляя core governance.
+- Starter содержит `starter-rule-sync` skill и `rule-sync:*` commands как approval-safe контур регулярного переноса reusable правил из downstream проектов обратно в baseline.

@@ -43,3 +43,27 @@
 - Changes: skills source ownership is separated from local Codex activation through `--source <skills-root>`, so downstream repos can pin starter as `vendor/new-project-starter` while `$CODEX_HOME/skills` keeps symlink activation.
 - Guard: `tests/unit/skills-manager.test.mjs` covers linking from a submodule source path.
 
+## 2026-04-29T08:41:36.205Z 20260429-083348-74bc
+
+- Branch: `codex/20260429-083348-74bc-agent-const`
+- Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
+
+## 2026-04-29T08:42:00.000Z 20260429-083348-74bc — TRIZ_APPLIED
+
+- Principle: separation in space / mediator
+- Changes: Agent_Const product-charter approach is moved into starter as a reusable charter pattern and gate, while starter keeps its own baseline mission and explicitly requires downstream projects to replace or extend the charter with product-specific content through adapters/profiles instead of hardcoding it into core governance.
+- Guard: `rg` parity checks verify that old `Summary -> JTBD` rules are gone from canonical docs and that `product-charter` / `Миссия -> Видение -> Цель -> JTBD` are present across `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, mirrors, plan template, blueprint, and README; `npm run qa:agent` and `npm run task:qa:agent` passed.
+
+## 2026-04-29T09:21:19.197Z 20260429-083348-74bc
+
+- Branch: `codex/20260429-083348-74bc-agent-const`
+- Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
+
+## 2026-04-29T09:22:00.000Z 20260429-083348-74bc — TRIZ_APPLIED
+
+- Principle: preliminary action / mediator
+- Changes: cross-project rule discovery is separated from rule application through `rule-sync:scan`, `rule-sync:report`, and `rule-sync:apply-plan --dry-run`; scan/report can run on a schedule, while actual source edits still require owner approval, managed worktree, plan file, and QA.
+- Guard: `tests/unit/rule-sync.test.mjs` covers discovery, reusable/product-specific classification, report rendering, and safe apply-plan seed generation; `tests/coverage-critical.manifest.json` tracks `scripts/rule-sync.mjs` as critical coverage.
+
