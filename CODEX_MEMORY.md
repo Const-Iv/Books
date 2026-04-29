@@ -52,6 +52,9 @@
 - Finish-flow не должен reuse task QA для dirty worktree перед commit: если есть незакоммиченные task changes, сначала фиксируется task commit/checkpoint, затем прогоняется QA уже на этом committed `HEAD`.
 - Для командного multi-project reuse shared skills downstream repo может держать starter как git submodule и линковать skills через `skills-manage.mjs --source vendor/new-project-starter/skills`, чтобы новые участники получали зафиксированную версию baseline.
 - Product proposal нельзя подменять `Summary` / `Key Changes` / technical sketch без product-charter якоря; полный вариант идёт через `Миссия -> Видение -> Цель -> JTBD`, короткий вариант обязан явно опереться хотя бы на один charter anchor.
+- Generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) считаются profile/tool output; в starter core нельзя bulk-import'ить их содержимое вместо repo-owned source в `skills/` или переносимой policy.
+- Активные `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` должны оставаться читаемыми; при compaction полный pre-compaction snapshot сохраняется в `Docs/archive/*.md.gz`.
+- Если clean task branch уже содержится в `main` и task commit ещё не записан, finish-flow должен ставить `publishStatus=skipped_already_merged`, писать `PUBLISH_SKIP` и всё равно завершать cleanup через `passed|kept`.
 
 ## Project Notes
 
@@ -62,3 +65,4 @@
 - Starter теперь может versioned хранить reusable shared skills вроде `worktree-create` и `worktree-finish`, чтобы их можно было коммитить в git и использовать на нескольких устройствах через один bootstrap link.
 - Starter теперь содержит собственный `.memory-bank/product-charter.md` как переносимый baseline-паттерн; downstream проекты должны заменить или расширить charter под свою миссию, не ослабляя core governance.
 - Starter содержит `starter-rule-sync` skill и `rule-sync:*` commands как approval-safe контур регулярного переноса reusable правил из downstream проектов обратно в baseline.
+- Starter содержит `starter-rule-sync` как основной project-local skill для ручного и автоматического rule sync workflow; scheduled automations должны вызывать этот skill, а не дублировать его scan/report логику. `rule-sync:*` commands остаются approval-safe execution layer, default scan window идёт от последнего saved scan snapshot до текущего запуска, а owner report начинается с decision proposals вместо raw candidate ids.

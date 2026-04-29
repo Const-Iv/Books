@@ -72,4 +72,3 @@
 - Branch: `codex/20260429-083348-74bc-agent-const`
 - Reasons: historical_recurrence
 - Status: trigger recorded
-
