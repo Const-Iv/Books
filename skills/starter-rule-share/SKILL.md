@@ -1,9 +1,9 @@
 ---
 name: starter-rule-share
-description: Primary project-local skill for sharing the current approved new-project-starter governance baseline outward to owner-approved active downstream projects. Use after starter-rule-sync has imported and verified reusable rules in New Project Starter, when Codex needs to propose target projects, require owner approval, and prepare approval-safe per-project task seeds for updating starter references or importing reusable baseline rules without overwriting downstream product-specific governance.
+description: Primary project-local skill for sharing the current approved new-project-starter governance baseline outward to owner-approved active downstream projects. Use after starter-rule-sync has imported and verified reusable rules in New Project Starter, when Codex needs to propose target projects, require owner approval, run guarded one-run sharing when explicitly requested, and prepare or execute approval-safe per-project task updates without overwriting downstream product-specific governance.
 ---
 
-# Starter Rule Share
+# starter-rule-share
 
 Use this skill after `new-project-starter` has received approved reusable rules and passed deterministic QA. The skill shares the updated baseline outward only to owner-approved active projects. It must never bulk-copy rules into every local repository and must never overwrite downstream product-specific charter, adapters, profiles, private notes, or local state.
 
@@ -35,6 +35,7 @@ Charter fit: outbound sharing supports the mission and JTBD by letting active do
    - `Требует ручной проверки`
    - `Заблокировано`
    - `Диагностика`
+   For `Требует ручной проверки`, explain the missing starter signals before recommending any next step.
 6. Ask the owner to approve the target project list before apply-plan. Use project ids only as traceability after the project names and recommended actions are clear.
 7. After explicit approval, write an ignored approval JSON such as `runtime/rule-share/approvals/<date>-approval.json`:
    ```json
@@ -53,11 +54,61 @@ Charter fit: outbound sharing supports the mission and JTBD by letting active do
    - run the target project's deterministic QA;
    - finish/publish through the target project's normal conveyor.
 
+## One-Run Mode
+
+Use one-run mode only when the owner explicitly asks for automatic sharing in the current request, or when ignored local config contains standing approval for the selected projects. One-run mode reduces chat turns; it does not bypass safety gates.
+
+Allowed standing approval shape in `runtime/rule-share/config.json`:
+
+```json
+{
+  "autoShare": {
+    "enabled": true,
+    "approvedProjects": ["Agent_Const"],
+    "readyOnly": true,
+    "stopBeforePublish": true
+  }
+}
+```
+
+When one-run mode is active:
+
+1. Run `npm run rule-share:scan` and `npm run rule-share:report -- --latest`.
+2. Select only `ready` projects that are both in the allowlist and explicitly approved by the current request or `autoShare.approvedProjects`.
+3. Skip `manual_review`, `blocked`, dirty, archived, paused, or unclear projects and report the reason.
+4. Write ignored approval JSON for the selected ready projects.
+5. Run `npm run rule-share:apply-plan -- --approval <path> --dry-run`.
+6. For each returned task seed, run the target project's managed `task:start`.
+7. In each target task worktree, apply only reusable baseline updates:
+   - for `update_starter_reference`, update `vendor/new-project-starter` to the approved starter HEAD and check shared skills;
+   - for `prepare_rule_import`, compare canonical files and make surgical diffs, preserving downstream product charter wording, adapters, profiles and local rules.
+8. Run the target project's deterministic QA and record evidence in the target plan or response.
+9. Stop before finish/merge/publish unless the owner explicitly requested that stage and the target project has PASS QA plus its normal cleanup/publish approvals.
+
+If any target becomes ambiguous during import, stop that target and continue only with other ready targets. The final response must list `updated`, `skipped`, `blocked`, QA status, and the target worktree paths.
+
 ## Delivery Modes
 
 - `update_starter_reference`: for projects that keep starter under `vendor/new-project-starter`; update that versioned reference and check shared skills.
 - `prepare_rule_import`: for copied starter-baseline projects; compare starter canonical files and import only reusable governance/rules with surgical diffs.
-- `manual_review`: for projects without a clean managed task flow, without starter baseline signals, or with conflicts requiring owner judgment.
+- `manual_review`: for projects without a clean managed task flow, without complete starter baseline signals, or with conflicts requiring owner judgment.
+
+## Manual Review Path
+
+Treat a project as starter-connected only when one of these signals is present:
+
+- Versioned starter reference exists under `vendor/new-project-starter`.
+- Copied-baseline signals exist: `AGENTS.md`, `.memory-bank/product-charter.md`, `CODEX_MEMORY.md`, and managed `task:start`.
+
+For a partially connected project, explain which signals are missing. Example: a project with `task:start`, `AGENTS.md`, and `CODEX_MEMORY.md`, but no `.memory-bank/product-charter.md` and no `vendor/new-project-starter`, is not ready for outbound sharing because Codex cannot distinguish reusable baseline rules from downstream product-specific governance.
+
+Recommended safe paths:
+
+- If the project should become starter-based, create a managed task in that project to complete its Project Intake and add a downstream-specific `.memory-bank/product-charter.md` before importing reusable baseline rules.
+- If the project should track starter as a versioned baseline, add `vendor/new-project-starter` in a managed task, then link shared skills and run the target project's deterministic QA.
+- If the project is archived, paused, dirty, lacks managed task flow, or has unresolved product/governance conflicts, keep it in `Требует ручной проверки` or `Заблокировано`.
+
+Never turn manual review into direct copy. After the missing signals are fixed and QA passes in the downstream project, rerun `npm run rule-share:scan` and present a new owner report.
 
 ## Safety Rules
 
@@ -67,4 +118,5 @@ Charter fit: outbound sharing supports the mission and JTBD by letting active do
 - Never overwrite downstream product charter or product-specific instructions.
 - Never copy `.system`, plugin-managed, generated skill trees, credentials, runtime state, or private local files.
 - Treat `rule-share:apply-plan` output as preparation, not implementation. Real downstream edits still require the target project's managed worktree and QA.
+- In one-run mode, the skill may execute those downstream managed task updates automatically, but never directly in the downstream main worktree.
 - If a project is archived, paused, unclear, or not starter-based, leave it in `Требует ручной проверки` or `Заблокировано`.

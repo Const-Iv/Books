@@ -1,4 +1,4 @@
 interface:
-  display_name: "Starter Rule Share"
+  display_name: "starter-rule-share"
   short_description: "Share starter rules to approved projects"
-  default_prompt: "Use $starter-rule-share to propose active downstream projects and prepare approval-safe task seeds for sharing the current starter baseline."
+  default_prompt: "Use $starter-rule-share to propose or run guarded one-run sharing for approved downstream projects."
