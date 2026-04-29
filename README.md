@@ -5,15 +5,18 @@
 - `codex/*` managed worktrees;
 - conversational branch-chat;
 - deterministic QA;
+- eval gate for AI/agent behavior changes;
 - Karpathy-style execution discipline;
 - BMAD-ready governance;
 - TRIZ escalation by trigger;
 - single-writer operational docs;
 - shared memory-bank governance;
-- product charter for mission/vision/goal/JTBD;
+- product charter for mission/vision/goal/target-audience/JTBD;
 - local-first `release:local`.
 
 Миссия starter: дать команде переносимую операционную основу для старта нового проекта с первого дня.
+
+Целевая аудитория starter: команды, которые начинают новый проект или репозиторий, технические и продуктовые лиды, инженеры и agent-operators, а также downstream maintainers, которые подключают starter как baseline.
 
 JTBD: когда начинается новый проект, получить готовую и переносимую основу, чтобы команда сразу работала по ясным правилам, проверяла изменения воспроизводимо и не собирала governance, task flow и QA заново.
 
@@ -24,13 +27,13 @@ JTBD: когда начинается новый проект, получить 
 - `AGENTS.md` — канонический договор для Codex.
 - `CLAUDE.md` и `.cursorrules` — cross-agent mirrors.
 - `.memory-bank/` — shared long-lived knowledge.
-- `.memory-bank/product-charter.md` — миссия, видение, цель и JTBD проекта.
+- `.memory-bank/product-charter.md` — миссия, видение, цель, целевая аудитория и JTBD проекта.
 - `CODEX_MEMORY.md` — оперативная память Codex.
 - `scripts/` — реальные process entrypoints, а не только README-контракты.
 - `skills/` — versioned reusable Codex skills, которые можно подключить глобально через symlink.
 - `skills/starter-rule-sync/` — основной project-local skill для ручного и автоматического поиска reusable правил в downstream проектах; `scripts/rule-sync.mjs` остаётся детерминированным execution layer для scan/report/apply-plan.
 - `tests/` — unit/integration/e2e проверки самого starter baseline.
-- `Docs/` — process evidence, baselines и review guidance.
+- `Docs/` — process evidence, baselines, eval evidence и review guidance.
 - `research/triz/` — канонический TRIZ pack.
 - `templates/agent-workspace/` — безопасные локальные шаблоны без коммита личных данных.
 - `templates/shared-skills-submodule/` — готовый downstream contract для подключения starter skills через git submodule.
@@ -38,19 +41,20 @@ JTBD: когда начинается новый проект, получить 
 ## Быстрый старт
 
 1. Скопируйте этот репозиторий или его содержимое в корень нового проекта.
-2. Адаптируйте доменно-специфичные описания в:
+2. Создайте Project Intake по `plans/_project_intake_template.md`: заполните миссию, видение, цель, целевую аудиторию, `JTBD`, ограничения, сценарии, метрики, stack/runtime, QA/release choices, agent/eval choices и ownership правил. Каждый пункт должен быть явно согласован owner'ом; `TBD` и “заполним потом” считаются blocker.
+3. После approval перенесите согласованные ответы в:
    - `AGENTS.md`
    - `.memory-bank/product-charter.md`
    - `.memory-bank/project-context.md`
    - `.memory-bank/architecture-map.md`
    - `README.md`
-3. Установите зависимости:
+4. Установите зависимости:
 
 ```bash
 npm ci
 ```
 
-4. Если хотите использовать общие repo-managed skills на этом устройстве, один раз подключите их в глобальный Codex home:
+5. Если хотите использовать общие repo-managed skills на этом устройстве, один раз подключите их в глобальный Codex home:
 
 ```bash
 npm run skills:link
@@ -62,7 +66,7 @@ npm run skills:link
 npm run skills:link -- --adopt
 ```
 
-5. Если проект подключает shared skills через git submodule, добавьте starter как versioned dependency и линкуйте skills из него:
+6. Если проект подключает shared skills через git submodule, добавьте starter как versioned dependency и линкуйте skills из него:
 
 ```bash
 git submodule add <starter-repo-url> vendor/new-project-starter
@@ -72,7 +76,7 @@ node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/n
 
 В таком режиме проект фиксирует конкретный commit starter baseline, а новые люди получают тот же набор skills после `git clone --recurse-submodules` или `git submodule update --init --recursive`.
 
-6. Прогоните baseline QA:
+7. Прогоните baseline QA:
 
 ```bash
 npm run qa:agent

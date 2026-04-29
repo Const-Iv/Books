@@ -14,10 +14,13 @@ Mirror rules:
 
 - не добавлять сюда уникальные обязательные правила, которых нет в Codex-primary sources;
 - новые governance/process rules сначала вносить в `AGENTS.md` и/или `.memory-bank/*`, и только потом зеркалить сюда;
-- product charter — первичный gate для любых продуктовых решений и feature/behavior/process/governance изменений: `.memory-bank/product-charter.md` нужно прочитать целиком, а миссия, видение, цель и `JTBD` должны проверяться до implementation path;
-- user-facing продуктовые решения формулировать простым языком в порядке `Миссия -> Видение -> Цель -> JTBD`; `Job Story`, `User Story` и критерии приемки использовать только для конкретных feature/spec задач;
+- product charter — первичный gate для любых продуктовых решений и feature/behavior/process/governance изменений: `.memory-bank/product-charter.md` нужно прочитать целиком, а миссия, видение, цель, целевая аудитория и `JTBD` должны проверяться до implementation path;
+- user-facing продуктовые решения формулировать простым языком в порядке `Миссия -> Видение -> Цель -> Целевая аудитория -> JTBD`; product spec в планах включает проблему / `JTBD`, целевую аудиторию изменения, сценарии, требования, критерии приемки, метрику успеха и ограничения;
+- новый downstream-проект сначала проходит Project Intake по `plans/_project_intake_template.md`; все обязательные пункты должны быть заполнены, согласованы owner'ом и перенесены в canonical sources до feature/refactor/behavior-change work;
+- для AI/agent behavior changes обязателен `Eval spec`: хороший ответ, провал, edge cases, golden prompts, comparison method и pass threshold; QA evidence должно включать eval result или явный gap;
 - user-facing ответы не должны использовать необъяснённый Git/process-жаргон; если термин нужен, рядом даётся простой смысл;
 - техническую часть будущих plan files начинать ниже верхнего продуктового блока;
+- в Plan mode уточняющие вопросы и recommended option должны проходить через Product Charter; charter-конфликтный вариант нельзя подавать как равнозначно рекомендуемый;
 - в `main` нельзя вносить изменения без явного direct-main разрешения пользователя в текущей задаче;
 - по умолчанию implementation work выполняется в отдельном managed worktree и ветке `codex/*`;
 - conversational branch-chat должен маппиться на канонические repo scripts;

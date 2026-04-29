@@ -44,10 +44,36 @@ Dependency preflight обязателен перед запуском gate:
 - Если relevant tests нет, явно фиксировать gap и компенсировать ближайшей более широкой deterministic check.
 - `qa:agent` остаётся обязательным final gate.
 
+## Eval Gate For Agent Behavior
+
+Eval обязателен для изменений, которые влияют на:
+
+- Plan mode questions/recommendations;
+- Product Charter gate или Project Intake Gate;
+- rule-sync owner reports;
+- conversational commands;
+- TRIZ trigger/decision behavior;
+- другой AI/agent response quality.
+
+Минимальный `Eval spec`:
+
+- agent surface;
+- good answer rubric;
+- failure rubric;
+- critical edge cases;
+- regression examples / golden prompts;
+- old vs new comparison method;
+- minimum pass threshold.
+
+Acceptance criteria проверяют пользовательский результат. Eval проверяет качество выбора, объяснения, рекомендации и соблюдения правил агентом.
+
+До появления automated eval runner допустим manual rubric eval как deterministic evidence, если plan фиксирует точные prompts/cases, expected behavior, actual result и pass/fail по каждому case. Отсутствие eval coverage для agent behavior change нужно фиксировать как gap и debt-removal follow-up.
+
 ## Evidence Capture
 
 - Записывать точные команды и PASS/FAIL.
 - Для bugfixes фиксировать defect class, invariant и shared seam.
+- Для AI/agent behavior changes записывать eval cases, expected behavior, actual behavior и pass/fail.
 - Для temporary fixtures/worktrees cleanup result тоже является QA evidence.
 - Для process/conveyor задач фиксировать task state/history changes как часть acceptance evidence.
 - `task:finish:core` не должен publish'ить commit, который не прошёл task QA: если finish стартует из dirty task tree, сначала нужен task commit/checkpoint, затем новый QA checkpoint уже на committed `HEAD`.

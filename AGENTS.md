@@ -15,18 +15,39 @@ These rules apply to the whole repository.
 Цель проекта:
 - Поддерживать runnable local-first starter baseline, который можно подключать или копировать в downstream проекты, чтобы они сразу имели canonical sources of truth, managed worktrees, deterministic QA, task state/history, operational docs и reusable shared skills.
 
+Целевая аудитория:
+- Команды, которые начинают новый проект или новый репозиторий и хотят с первого дня работать по понятным правилам без ручной сборки governance заново.
+- Технические и продуктовые лиды, которые отвечают за переносимую операционную основу: task flow, проверки, правила, память проекта и безопасное завершение задач.
+- Инженеры и agent-operators, которые ведут задачи через Codex/worktree conveyor и должны получать воспроизводимый, проверяемый процесс.
+- Downstream maintainers, которые подключают starter как baseline и добавляют продуктовую специфику поверх него через adapters/profiles.
+- Конечные пользователи downstream-продуктов не являются целевой аудиторией starter core; их аудитория должна быть отдельно описана в product charter и product specs downstream-проекта.
+
 JTBD:
 - Когда начинается новый проект, я хочу получить готовую и переносимую операционную основу, чтобы команда сразу работала по ясным правилам, проверяла изменения воспроизводимо и не собирала governance, task flow и QA заново.
 
 Product Charter Gate:
-- Перед любым продуктовым решением, feature, behavior, process или governance изменением нужно сначала прочитать `.memory-bank/product-charter.md` целиком и сверить решение с миссией, видением, целью и `JTBD`.
-- Feature, behavior, process и governance изменения должны явно показывать, какую часть миссии, видения, цели или `JTBD` они поддерживают. Maintenance-изменения должны явно сохранять charter.
+- Перед любым продуктовым решением, feature, behavior, process или governance изменением нужно сначала прочитать `.memory-bank/product-charter.md` целиком и сверить решение с миссией, видением, целью, целевой аудиторией и `JTBD`.
+- Feature, behavior, process и governance изменения должны явно показывать, какую часть миссии, видения, цели, целевой аудитории или `JTBD` они поддерживают. Maintenance-изменения должны явно сохранять charter.
 - Нельзя реализовывать изменение, которое противоречит `.memory-bank/product-charter.md`, ослабляет переносимость baseline, deterministic QA, safe task flow, source-of-truth governance или hardcode'ит product-specific поведение в starter core.
+- В Plan mode все уточняющие вопросы, варианты выбора и рекомендации ассистента должны быть отфильтрованы через Product Charter; recommended option обязан явно сохранять или усиливать миссию, видение, цель, целевую аудиторию и `JTBD`, а charter-конфликтный вариант нельзя подавать как равнозначно рекомендуемый.
 - Если запрос конфликтует с charter, ассистент обязан остановиться, коротко объяснить конфликт и предложить ближайший безопасный вариант.
 - Product charter нельзя обходить через локальный patch, mirror-файл, temporary exception или ad-hoc script; при изменении charter сначала обновить `.memory-bank/product-charter.md`, `AGENTS.md`, релевантные `.memory-bank/*` и `CODEX_MEMORY.md`.
 - Reusable shared skills можно versioned хранить в `skills/` и публиковать в `$CODEX_HOME/skills` через repo scripts; downstream проекты могут подключать starter как git submodule и линковать skills через `skills-manage.mjs --source vendor/new-project-starter/skills`; `.system`, plugin-managed, product-specific skills и generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) не являются частью starter core и не импортируются bulk-copy.
 - `skills/starter-rule-sync/` — основной project-local skill для ручного и автоматического rule sync workflow; автоматизации должны вызывать этот skill, а не дублировать scan/report логику. `rule-sync:*` commands остаются deterministic execution layer, default scan window идёт от последнего saved scan snapshot до текущего запуска, а импорт reusable правил требует owner approval, managed worktree и QA.
-- Rule-sync owner report должен начинаться с decision proposals через `Миссия -> Видение -> Цель -> JTBD -> Job Story -> User Stories -> Критерии приемки`; candidate ids допустимы только как traceability для approval JSON.
+- Rule-sync owner report должен начинаться с decision proposals через `Миссия -> Видение -> Цель -> Целевая аудитория -> JTBD -> Job Story -> User Stories -> Критерии приемки`; candidate ids допустимы только как traceability для approval JSON.
+
+Project Intake Gate для нового downstream-проекта:
+- Новый проект, который стартует от starter baseline, сначала заполняет Project Intake по `plans/_project_intake_template.md`; feature/refactor/behavior-change реализация начинается только после owner approval по всем обязательным пунктам.
+- Обязательные сведения: миссия, видение, цель, целевая аудитория, `JTBD`, продуктовые ограничения, сценарии использования, метрики успеха, границы core/adapters/profiles, stack/runtime choices, QA/release choices, agent/eval ownership, source-of-truth files и rules/memory ownership.
+- Каждый пункт intake должен иметь статус `согласовано` или зафиксированный blocker; placeholder, `TBD`, “заполним потом” и несогласованные допущения не считаются готовым bootstrap.
+- После approval ответы из intake переносятся в `.memory-bank/product-charter.md`, `.memory-bank/project-context.md`, `.memory-bank/architecture-map.md`, `.memory-bank/code-rules.md`, `AGENTS.md`, `CODEX_MEMORY.md`, `README.md` и другие релевантные canonical sources.
+- Если по пункту нельзя выбрать безопасный вариант без владельца продукта, ассистент задаёт короткий choice question и рекомендует только charter-safe option.
+
+Eval Gate для AI/agent behavior:
+- Для изменений, влияющих на Plan mode, вопросы/рекомендации ассистента, Product Charter gate, Project Intake Gate, rule-sync owner reports, conversational commands, TRIZ decisions или другой AI/agent behavior, plan file обязан содержать `Eval spec`.
+- `Eval spec` должен фиксировать: agent surface, хороший ответ, провал, критичные edge cases, regression examples/golden prompts, способ сравнения old vs new behavior и minimum pass threshold.
+- Acceptance criteria отвечают “что должно быть возможно для пользователя”; evals отвечают “насколько качественно агент выбирает, объясняет, рекомендует и соблюдает правила”.
+- QA evidence для такого изменения должно включать eval result или явно зафиксированный gap с ближайшей deterministic компенсацией.
 
 ## Language Requirements
 
@@ -46,10 +67,12 @@ Product Charter Gate:
 - Файлы с реальными ключами, токенами, паролями и приватными credential-значениями считать read-only.
 - Не удалять, не truncate'ить, не full-overwrite'ить и не rename-replace'ить существующий файл без явного подтверждения и rollback-ready path.
 - Не удалять user data или существующее поведение без явного запроса и rollback-ready notes.
-- Для user-facing продуктовых решений использовать простой продуктовый язык и порядок `Миссия -> Видение -> Цель -> JTBD`: сначала зачем существует продукт, затем желаемая картина будущего, практическая цель и пользовательская потребность. `Job Story`, `User Story` и критерии приемки использовать только для конкретных feature/spec задач, когда это помогает команде реализовать и проверить изменение.
-- Любое предложение продуктового решения, включая короткий ответ в чате, нельзя оформлять только как `Summary`, `Key Changes`, список implementation steps или технический sketch. Если нужен полный разбор, использовать `Миссия -> Видение -> Цель -> JTBD`; если пользователь задал короткий вопрос или нужен lightweight-вариант, дать хотя бы один продуктовый якорь из charter до implementation details.
-- В будущих plan files техническая часть начинается ниже верхнего продуктового блока `Миссия -> Видение -> Цель -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`.
-- В `Summary`, `TL;DR`, `Миссия`, `Видение`, `Цель`, `JTBD`, `Job Story` и `User Stories` не использовать технические термины без твердой необходимости; писать про ситуацию, ценность и ожидаемый результат понятным пользовательским языком.
+- Для user-facing продуктовых решений использовать простой продуктовый язык и порядок `Миссия -> Видение -> Цель -> Целевая аудитория -> JTBD`: сначала зачем существует продукт, затем желаемая картина будущего, практическая цель, кто получает результат и пользовательская потребность. `Job Story`, `User Story` и критерии приемки использовать только для конкретных feature/spec задач, когда это помогает команде реализовать и проверить изменение.
+- Любое предложение продуктового решения, включая короткий ответ в чате, нельзя оформлять только как `Summary`, `Key Changes`, список implementation steps или технический sketch. Если нужен полный разбор, использовать `Миссия -> Видение -> Цель -> Целевая аудитория -> JTBD`; если пользователь задал короткий вопрос или нужен lightweight-вариант, дать хотя бы один продуктовый якорь из charter до implementation details.
+- В будущих plan files техническая часть начинается ниже верхнего продуктового блока `Миссия -> Видение -> Цель -> Целевая аудитория проекта -> Продуктовая спека`.
+- Новый downstream-проект до feature work проходит Project Intake Gate: все обязательные сведения из `plans/_project_intake_template.md` заполнены, согласованы owner'ом и перенесены в canonical sources.
+- Для AI/agent behavior changes product spec включает `Eval spec`; без него нельзя считать acceptance criteria достаточными.
+- В `Summary`, `TL;DR`, `Миссия`, `Видение`, `Цель`, `Целевая аудитория`, `JTBD`, `Job Story` и `User Stories` не использовать технические термины без твердой необходимости; писать про ситуацию, ценность и ожидаемый результат понятным пользовательским языком.
 - Технические детали добавлять только там, где они помогают понять или реализовать решение. Их можно встроить в текст; если агенту нужен точный implementation context, добавлять отдельный блок `План для агента`.
 - В user-facing ответах не использовать необъяснённый Git/process-жаргон; если термин нужен, сразу давать простой смысл рядом, например `diverged` = “локальная папка и GitHub разошлись”.
 - Перед refactor сначала искать существующие тесты на затронутый seam и гонять ближайший baseline до/после каждого логического change batch.
@@ -100,14 +123,17 @@ Product Charter Gate:
 2. До любых code edits создать план-файл в `plans/` по шаблону `plans/_template.md`.
 3. Именование плана: `YYYY-MM-DD-HHMM-<short-slug>.md`.
 4. Использовать checkboxes статуса (`[ ] Не начато`, `[ ] В процессе`, `[ ] Завершено`).
-5. После создания плана остановиться и запросить явное подтверждение пользователя.
-6. Не менять source files до подтверждения.
-7. После подтверждения:
+5. Plan file должен содержать продуктовую спеку: проблема / `JTBD`, целевая аудитория изменения, сценарии использования, требования, критерии приемки, метрика успеха и ограничения / что нельзя сломать.
+6. Если задача меняет AI/agent behavior, plan file должен содержать `Eval spec` и QA plan должен включать eval evidence.
+7. Если при подготовке или уточнении плана нужен choice question, сначала сверить варианты и рекомендацию с `.memory-bank/product-charter.md`; в вопросе кратко показать charter-safe recommendation или объяснить, почему безопасного recommended option нет.
+8. После создания плана остановиться и запросить явное подтверждение пользователя.
+9. Не менять source files до подтверждения.
+10. После подтверждения:
    - выполнять шаги по порядку;
    - отмечать завершённые чекбоксы `[x]`;
    - записывать QA execution и results в тот же план.
-8. При material scope change обновлять план и снова просить re-approval.
-9. Перед завершением убедиться, что план содержит финальный статус и список changed files.
+11. При material scope change обновлять план и снова просить re-approval.
+12. Перед завершением убедиться, что план содержит финальный статус и список changed files.
 
 В collaboration mode `Default` этот workflow опционален и применяется только по явному запросу пользователя.
 
