@@ -35,6 +35,7 @@ Product Charter Gate:
 - Reusable shared skills можно versioned хранить в `skills/` и публиковать в `$CODEX_HOME/skills` через repo scripts; downstream проекты могут подключать starter как git submodule и линковать skills через `skills-manage.mjs --source vendor/new-project-starter/skills`; `.system`, plugin-managed, product-specific skills и generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) не являются частью starter core и не импортируются bulk-copy.
 - `skills/starter-rule-sync/` — основной project-local skill для ручного и автоматического rule sync workflow; автоматизации должны вызывать этот skill, а не дублировать scan/report логику. `rule-sync:*` commands остаются deterministic execution layer, default scan window идёт от последнего saved scan snapshot до текущего запуска, а импорт reusable правил требует owner approval, managed worktree и QA.
 - Rule-sync owner report должен начинаться с decision proposals через `Миссия -> Видение -> Цель -> Целевая аудитория -> JTBD -> Job Story -> User Stories -> Критерии приемки`; candidate ids допустимы только как traceability для approval JSON.
+- `skills/starter-rule-share/` — основной project-local skill для outbound sharing текущего подтверждённого starter baseline в выбранные активные downstream проекты. `rule-share:*` commands остаются approval-safe execution layer: scan/report read-only, apply-plan только dry-run task seeds, список проектов берётся из ignored `runtime/rule-share/config.json`, а direct bulk-copy во все локальные проекты запрещён.
 
 Project Intake Gate для нового downstream-проекта:
 - Новый проект, который стартует от starter baseline, сначала заполняет Project Intake по `plans/_project_intake_template.md`; feature/refactor/behavior-change реализация начинается только после owner approval по всем обязательным пунктам.
@@ -44,7 +45,7 @@ Project Intake Gate для нового downstream-проекта:
 - Если по пункту нельзя выбрать безопасный вариант без владельца продукта, ассистент задаёт короткий choice question и рекомендует только charter-safe option.
 
 Eval Gate для AI/agent behavior:
-- Для изменений, влияющих на Plan mode, вопросы/рекомендации ассистента, Product Charter gate, Project Intake Gate, rule-sync owner reports, conversational commands, TRIZ decisions или другой AI/agent behavior, plan file обязан содержать `Eval spec`.
+- Для изменений, влияющих на Plan mode, вопросы/рекомендации ассистента, Product Charter gate, Project Intake Gate, rule-sync owner reports, rule-share owner reports, conversational commands, TRIZ decisions или другой AI/agent behavior, plan file обязан содержать `Eval spec`.
 - `Eval spec` должен фиксировать: agent surface, хороший ответ, провал, критичные edge cases, regression examples/golden prompts, способ сравнения old vs new behavior и minimum pass threshold.
 - Acceptance criteria отвечают “что должно быть возможно для пользователя”; evals отвечают “насколько качественно агент выбирает, объясняет, рекомендует и соблюдает правила”.
 - QA evidence для такого изменения должно включать eval result или явно зафиксированный gap с ближайшей deterministic компенсацией.
@@ -280,6 +281,9 @@ High-priority findings для этого starter repo ограничены:
 - `npm run rule-sync:scan -- --since <date> --until <date>`
 - `npm run rule-sync:report -- --latest`
 - `npm run rule-sync:apply-plan -- --approval <path> --dry-run`
+- `npm run rule-share:scan`
+- `npm run rule-share:report -- --latest`
+- `npm run rule-share:apply-plan -- --approval <path> --dry-run`
 - `npm run typecheck`
 - `npm test`
 - `npm run build`

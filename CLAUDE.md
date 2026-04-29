@@ -38,6 +38,7 @@ These rules apply to the whole repository.
 - `npm run qa:agent` обязателен перед finish / merge / release.
 - Использовать канонические scripts: `task:start`, `task:qa:agent`, `task:finish:core`, `task:merge:main`, `release:local`.
 - Для cross-project rule sync использовать project-local skill `starter-rule-sync`; автоматизации тоже должны вызывать этот skill. `rule-sync:scan`, `rule-sync:report`, `rule-sync:apply-plan --dry-run` остаются execution layer. Default scan window идёт от последнего saved scan snapshot до текущего запуска. Owner report начинается с decision proposals, candidate ids — только traceability. Не применять правила без managed worktree и plan approval.
+- Для outbound sharing обновлённого starter baseline использовать project-local skill `starter-rule-share`. `rule-share:scan`, `rule-share:report`, `rule-share:apply-plan --dry-run` остаются execution layer; список проектов берётся из ignored `runtime/rule-share/config.json`; bulk-copy во все локальные проекты и direct edits запрещены.
 - `task:start` разрешён только из clean tree; `--allow-dirty` не считается допустимым bypass.
 - `task:finish:core` пропускает publish для clean task branch, чей `HEAD` уже есть в `main` и где task commit ещё не записан; записывает `publishStatus=skipped_already_merged`, `PUBLISH_SKIP` и доводит cleanup до `passed|kept`.
 - `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` остаются активными читаемыми логами; большие pre-compaction snapshots сохраняются в `Docs/archive/*.md.gz`.

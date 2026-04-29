@@ -51,6 +51,7 @@ Eval обязателен для изменений, которые влияют
 - Plan mode questions/recommendations;
 - Product Charter gate или Project Intake Gate;
 - rule-sync owner reports;
+- rule-share owner reports;
 - conversational commands;
 - TRIZ trigger/decision behavior;
 - другой AI/agent response quality.

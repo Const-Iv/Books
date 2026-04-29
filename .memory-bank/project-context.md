@@ -17,9 +17,11 @@
 
 - `scripts/`: канонические conveyor, QA, release и operational-doc entrypoints.
 - `scripts/rule-sync.mjs`: deterministic scanner, report renderer и approval-safe apply-plan seam для starter rule sync.
+- `scripts/rule-share.mjs`: deterministic scanner, report renderer и approval-safe apply-plan seam для outbound sharing текущего starter baseline в выбранные active downstream проекты.
 - `scripts/lib/`: shared runtime helpers для task state, history, docs sync и git-safe operations.
 - `skills/`: reusable repo-owned Codex skills, которые можно линковать в `$CODEX_HOME/skills`.
 - `skills/starter-rule-sync/`: primary project-local skill для ручного и автоматического rule sync workflow; `rule-sync:*` scripts остаются execution layer.
+- `skills/starter-rule-share/`: primary project-local skill для approval-safe outbound rule sharing после успешного starter import.
 - `.memory-bank/`: shared knowledge layer для всех агентов.
 - `Docs/`: human-readable process evidence и baselines.
 - `plans/`: plan и bugfix templates плюс reference blueprint.
@@ -57,6 +59,9 @@
 - `npm run rule-sync:scan -- --since <date> --until <date>`
 - `npm run rule-sync:report -- --latest`
 - `npm run rule-sync:apply-plan -- --approval <path> --dry-run`
+- `npm run rule-share:scan`
+- `npm run rule-share:report -- --latest`
+- `npm run rule-share:apply-plan -- --approval <path> --dry-run`
 - `npm run typecheck`
 - `npm test`
 - `npm run build`
@@ -88,6 +93,8 @@
 - `starter-rule-sync` — основной Codex entrypoint для быстрого ручного запуска rule sync вне расписания и для scheduled automation; он показывает decision proposals до raw ids и сохраняет owner approval, managed worktree и deterministic QA gates.
 - `rule-sync:scan` и `rule-sync:report` остаются read-only относительно starter source; `rule-sync:apply-plan` в v1 только готовит dry-run seed для managed `task:start` и не применяет изменения автоматически.
 - Default `rule-sync:scan` window идёт от `until` последнего saved scan snapshot до текущего запуска; fallback на previous local day используется только при отсутствии валидного snapshot.
+- `starter-rule-share` — основной Codex entrypoint для outbound sharing уже обновлённого starter baseline в выбранные active downstream проекты; `runtime/rule-share/config.json` хранит локальный allowlist/ignorelist и не коммитится.
+- `rule-share:scan` и `rule-share:report` read-only относительно downstream source; `rule-share:apply-plan` в v1 только готовит per-project dry-run task seeds и не делает direct edits.
 - Downstream проекты могут подключать starter как git submodule под `vendor/new-project-starter` и линковать shared skills через `skills-manage.mjs --source vendor/new-project-starter/skills`, чтобы repo фиксировал версию baseline для новых участников.
 - `.system`, plugin-cache и product-specific skills не должны вендориться в starter core.
 - Generated skill trees вроде `.agents/skills`, `.claude/skills` и `.cursor/skills` считаются output'ом профиля или инструмента; starter импортирует только reusable source policy или repo-owned skills under `skills/`, а не bulk generated trees.

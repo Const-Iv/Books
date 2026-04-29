@@ -13,6 +13,8 @@
 - `scripts/release-local.mjs`: local-first release gate.
 - `skills/starter-rule-sync/SKILL.md`: primary Codex workflow for manual and automated reusable rule sync.
 - `scripts/rule-sync.mjs`: deterministic cross-project governance scan/report/apply-plan execution seam for reusable starter rules.
+- `skills/starter-rule-share/SKILL.md`: primary Codex workflow for approval-safe outbound sharing of the current starter baseline.
+- `scripts/rule-share.mjs`: deterministic target-project scan/report/apply-plan execution seam for outbound starter rule sharing.
 
 ## Runtime Data Flow
 
@@ -33,6 +35,8 @@
 - flaky perf/security/coverage gates, которые выглядят “включёнными”, но не дают надёжного evidence.
 - rule-sync classifier drift, из-за которого product-specific правила могут попасть в starter core.
 - rule-sync window drift, из-за которого scheduled automation пропускает правила после missed run вместо catch-up от последнего saved scan snapshot.
+- rule-share allowlist drift, из-за которого устаревший или paused проект может быть ошибочно предложен к обновлению.
+- rule-share delivery drift, из-за которого downstream product-specific charter может быть перезаписан вместо reusable baseline import.
 
 ## Change Impact Checklist
 
@@ -55,6 +59,13 @@
 - проверить `tests/unit/rule-sync.test.mjs`;
 - проверить, что scan/report read-only, а apply-plan не меняет starter source без managed worktree.
 - проверить, что default scan window идёт от последнего saved scan snapshot, а previous-local-day остаётся только fallback.
+
+Когда меняется rule-share:
+
+- проверить `skills/starter-rule-share/SKILL.md`;
+- проверить `scripts/rule-share.mjs`;
+- проверить `tests/unit/rule-share.test.mjs`;
+- проверить, что scan/report read-only, apply-plan остаётся dry-run, а проекты берутся только из локального allowlist.
 
 Когда меняются operational docs helpers:
 

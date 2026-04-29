@@ -25,6 +25,12 @@
       ]
     },
     {
+      "module": "scripts/rule-share.mjs",
+      "tests": [
+        "tests/unit/rule-share.test.mjs"
+      ]
+    },
+    {
       "module": "scripts/worktree-start.mjs",
       "tests": [
         "tests/e2e/pr-smoke.test.mjs"
