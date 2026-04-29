@@ -28,7 +28,7 @@ JTBD: когда начинается новый проект, получить 
 - `CODEX_MEMORY.md` — оперативная память Codex.
 - `scripts/` — реальные process entrypoints, а не только README-контракты.
 - `skills/` — versioned reusable Codex skills, которые можно подключить глобально через symlink.
-- `scripts/rule-sync.mjs` и `skills/starter-rule-sync/` — регулярный контур поиска reusable правил в downstream проектах и подготовки approved импорта в starter.
+- `skills/starter-rule-sync/` — основной project-local skill для ручного и автоматического поиска reusable правил в downstream проектах; `scripts/rule-sync.mjs` остаётся детерминированным execution layer для scan/report/apply-plan.
 - `tests/` — unit/integration/e2e проверки самого starter baseline.
 - `Docs/` — process evidence, baselines и review guidance.
 - `research/triz/` — канонический TRIZ pack.
@@ -92,6 +92,8 @@ npm run qa:perf:critical
 - `previewPreparedSha` остаётся обязательным checkpoint even when preview status = `not_supported`.
 - `qaLastPassSha` должен позволять reuse task-QA на неизменившемся `HEAD`.
 - Shared operational docs и generated history snapshots должны оставаться single-writer и синхронизироваться только на publish/release stage.
+- Активные QA/TRIZ логи должны оставаться читаемыми: большие pre-compaction snapshots уходят в `Docs/archive/*.md.gz`, а текущие `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` держат компактный хвост.
+- Finish-flow должен уметь no-op завершение: если clean task branch уже содержится в `main`, publish пропускается с `publishStatus=skipped_already_merged`, но cleanup всё равно фиксируется.
 
 ## Канонические команды
 
@@ -128,8 +130,9 @@ npm run qa:perf:critical
 
 - Core starter не содержит продуктовый UI/API runtime. Smoke/nightly здесь проверяют process-level сценарии на временных git repos.
 - Repo-managed shared skills обновляются на устройстве обычным `git pull`, если symlink уже был создан. Для новых или переименованных skills повторно запускайте `npm run skills:link`.
+- `starter-rule-sync` — основной ручной и автоматический вход для быстрого подключения reusable rule updates; автоматизации должны вызывать этот skill, а не дублировать его логику. Report начинается с decision proposals, candidate ids остаются traceability. Default scan window идёт от последнего сохранённого scan snapshot до текущего запуска и всё равно требует owner approval перед импортом.
 - Для multi-project командного использования предпочтителен git submodule: downstream repo хранит starter под `vendor/new-project-starter`, а `skills-manage.mjs --source vendor/new-project-starter/skills` создаёт symlink'и в локальный `$CODEX_HOME/skills`.
-- В starter core стоит хранить только reusable shared skills. `.system`, plugin-managed и product-specific skills должны жить вне этой baseline-папки.
+- В starter core стоит хранить только reusable shared skills. `.system`, plugin-managed, product-specific skills и generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) должны жить вне этой baseline-папки и не переноситься bulk-copy.
 - `task:qa:agent` всё равно создаёт `previewPreparedSha`, но по умолчанию preview status = `not_supported`. Когда реальный проект добавит preview adapter, contract уже будет готов.
 - `release:local` — обязательный core publish path. Deploy-to-server и `db:prod:*` контуры должны добавляться как optional profile поверх этой базы.
 - Если вы подключаете BMAD поверх starter, не делайте `_bmad-output/` источником истины для conveyor state, shared docs или committed plans.

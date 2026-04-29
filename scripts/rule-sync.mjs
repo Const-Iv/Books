@@ -156,6 +156,16 @@ const SECRET_PATTERN = /(token|secret|password|credential|api[_-]?key|private ke
  */
 
 /**
+ * @typedef {Object} DecisionProposal
+ * @property {string} title
+ * @property {"import"|"rewrite"|"reject"|"review"} recommendation
+ * @property {string} jobStory
+ * @property {string[]} userStories
+ * @property {string[]} acceptanceCriteria
+ * @property {RuleCandidate[]} candidates
+ */
+
+/**
  * @param {string} input
  * @returns {string}
  */
@@ -239,6 +249,24 @@ export function previousLocalDayWindow(now = new Date()) {
   const since = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0, 0);
   const until = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
   return { since, until };
+}
+
+/**
+ * @param {string} repoRoot
+ * @param {Date} [now]
+ * @returns {Promise<{since: Date, until: Date, source: "latest_scan"|"previous_local_day"}>}
+ */
+export async function defaultScanWindow(repoRoot, now = new Date()) {
+  const scanPath = await latestScanPath(repoRoot);
+  if (scanPath) {
+    const snapshot = await readSnapshot(scanPath).catch(() => null);
+    const latestUntil = snapshot ? new Date(snapshot.until) : null;
+    if (latestUntil && !Number.isNaN(latestUntil.getTime()) && latestUntil.getTime() <= now.getTime()) {
+      return { since: latestUntil, until: now, source: "latest_scan" };
+    }
+  }
+
+  return { ...previousLocalDayWindow(now), source: "previous_local_day" };
 }
 
 /**
@@ -858,6 +886,230 @@ function categoryTitle(category) {
 }
 
 /**
+ * @param {RuleCandidate} candidate
+ * @returns {boolean}
+ */
+function isProductPlanningCandidate(candidate) {
+  return (
+    !isOperationalEvidenceCandidate(candidate) &&
+    !isProductSpecificCandidate(candidate) &&
+    (candidate.classifierReasons.some((reason) => reason.includes("plan template")) ||
+      candidate.paths.some((item) => item === "plans/_template.md"))
+  );
+}
+
+/**
+ * @param {RuleCandidate} candidate
+ * @returns {boolean}
+ */
+function isOperationalEvidenceCandidate(candidate) {
+  return candidate.paths.some((item) => item === "Docs/qa-implementation-log.md" || item === "Docs/triz-usage-log.md");
+}
+
+/**
+ * @param {RuleCandidate} candidate
+ * @returns {boolean}
+ */
+function isMainProtectionCandidate(candidate) {
+  const searchable = `${candidate.title} ${candidate.summary} ${candidate.snippets.join(" ")}`.toLowerCase();
+  return searchable.includes("main worktree") || searchable.includes("protect main") || searchable.includes("direct `main`");
+}
+
+/**
+ * @param {RuleCandidate} candidate
+ * @returns {boolean}
+ */
+function isProductSpecificCandidate(candidate) {
+  return candidate.classifierReasons.some((reason) => reason.startsWith("product:"));
+}
+
+/**
+ * @param {RuleCandidate} candidate
+ * @returns {boolean}
+ */
+function isSharedSkillCandidate(candidate) {
+  return (
+    candidate.paths.some((item) => item.startsWith(".agents/skills/") || item.startsWith(".claude/skills/") || item.startsWith(".cursor/skills/")) ||
+    candidate.classifierReasons.some((reason) => reason === "reusable:skill" || reason === "reusable:skills")
+  );
+}
+
+/**
+ * @param {RuleCandidate[]} candidates
+ * @param {(candidate: RuleCandidate) => boolean} predicate
+ * @returns {RuleCandidate[]}
+ */
+function matchingCandidates(candidates, predicate) {
+  return candidates.filter(predicate).sort((left, right) => left.id.localeCompare(right.id));
+}
+
+/**
+ * @param {RuleSyncSnapshot} snapshot
+ * @returns {DecisionProposal[]}
+ */
+export function buildDecisionProposals(snapshot) {
+  const candidates = snapshot.candidates;
+  /** @type {DecisionProposal[]} */
+  const proposals = [];
+  const productPlanning = matchingCandidates(candidates, isProductPlanningCandidate);
+  const operationalEvidence = matchingCandidates(candidates, isOperationalEvidenceCandidate);
+  const mainProtection = matchingCandidates(candidates, isMainProtectionCandidate);
+  const productSpecific = matchingCandidates(candidates, isProductSpecificCandidate);
+  const sharedSkills = matchingCandidates(candidates, isSharedSkillCandidate);
+
+  if (productPlanning.length > 0) {
+    proposals.push({
+      title: "Сделать rule-sync report пригодным для решения",
+      recommendation: "import",
+      jobStory:
+        "Когда владелец starter смотрит найденные правила, я хочу сначала видеть пользовательскую ценность и ожидаемый результат, чтобы принять approve/reject без расшифровки candidate ids.",
+      userStories: [
+        "Как владелец starter, я хочу получать rule-sync summary в формате решения, а не списка технических идентификаторов.",
+        "Как агент, я хочу оставлять candidate ids только как traceability после продуктового предложения."
+      ],
+      acceptanceCriteria: [
+        "Report начинается с `Миссия -> Видение -> Цель -> JTBD`.",
+        "Каждая группа содержит `Job Story`, `User Stories`, `Критерии приемки`, рекомендацию и traceability.",
+        "Сырые candidate ids не являются основным интерфейсом для решения."
+      ],
+      candidates: productPlanning
+    });
+  }
+
+  if (operationalEvidence.length > 0) {
+    proposals.push({
+      title: "Импортировать из QA/TRIZ логов только reusable invariant",
+      recommendation: "rewrite",
+      jobStory:
+        "Когда downstream проект фиксирует QA/TRIZ опыт, я хочу переносить в starter только повторяемое правило, чтобы не засорять baseline частными инцидентами.",
+      userStories: [
+        "Как maintainer, я хочу видеть QA/TRIZ логи как evidence для формулировки правила, а не как готовый импорт.",
+        "Как downstream команда, я хочу, чтобы проектные симптомы оставались в исходном проекте."
+      ],
+      acceptanceCriteria: [
+        "Task ids, branch names, project symptoms and UI/domain details do not enter starter core.",
+        "Imported text is rewritten as a portable governance invariant.",
+        "Evidence remains traceable through candidate ids and source commits."
+      ],
+      candidates: operationalEvidence
+    });
+  }
+
+  if (mainProtection.length > 0) {
+    proposals.push({
+      title: "Сверить защиту main/worktree без дублирования",
+      recommendation: "review",
+      jobStory:
+        "Когда downstream усиливает защиту `main`, я хочу понять, содержит ли starter уже такой guard, чтобы улучшить wording без дублирования правил.",
+      userStories: [
+        "Как maintainer, я хочу parity-check между downstream wording и текущими `AGENTS.md` / `.memory-bank/*`.",
+        "Как агент, я хочу не создавать вторую версию уже существующего правила."
+      ],
+      acceptanceCriteria: [
+        "If starter already contains the behavior, no new rule is imported.",
+        "If downstream wording is clearer, only wording is updated.",
+        "The rule still points to managed worktree flow for routine work."
+      ],
+      candidates: mainProtection
+    });
+  }
+
+  if (productSpecific.length > 0) {
+    proposals.push({
+      title: "Отклонить product-specific runtime docs из starter core",
+      recommendation: "reject",
+      jobStory:
+        "Когда найденное правило связано с конкретным ботом, календарём, базой или доменной интеграцией, я хочу оставить его в исходном проекте, чтобы starter оставался переносимым.",
+      userStories: [
+        "Как maintainer starter, я хочу импортировать только baseline behavior, а не product runtime commands.",
+        "Как downstream команда, я хочу сохранять свои product-specific инструкции в своём README/profile."
+      ],
+      acceptanceCriteria: [
+        "Telegram, bot supervisor, DB catalog, calendar and Gantt details do not enter starter core.",
+        "Reusable ideas may be rewritten only as adapter/profile guidance.",
+        "The report marks these candidates as reject or manual rewrite, not direct import."
+      ],
+      candidates: productSpecific
+    });
+  }
+
+  if (sharedSkills.length > 0) {
+    proposals.push({
+      title: "Не импортировать generated skill trees, извлекать только source-of-truth policy",
+      recommendation: "rewrite",
+      jobStory:
+        "Когда downstream меняет BMAD или generated skills, я хочу переносить только правило о canonical skill source, чтобы не копировать большие generated trees в starter.",
+      userStories: [
+        "Как maintainer, я хочу хранить reusable starter skills в `skills/`, а generated teammate entrypoints держать вне starter core.",
+        "Как агент, я хочу отличать source-of-truth policy от bulk skill artifacts."
+      ],
+      acceptanceCriteria: [
+        "Generated `.agents/skills`, `.claude/skills`, and `.cursor/skills` trees are not bulk-imported.",
+        "Only portable source-of-truth policy can be imported.",
+        "Product-specific or tool-generated files stay in their source project/profile."
+      ],
+      candidates: sharedSkills
+    });
+  }
+
+  return proposals;
+}
+
+/**
+ * @param {"import"|"rewrite"|"reject"|"review"} recommendation
+ * @returns {string}
+ */
+function recommendationTitle(recommendation) {
+  if (recommendation === "import") {
+    return "Импортировать";
+  }
+  if (recommendation === "rewrite") {
+    return "Переработать перед импортом";
+  }
+  if (recommendation === "reject") {
+    return "Отклонить для starter core";
+  }
+  return "Ручная сверка";
+}
+
+/**
+ * @param {DecisionProposal[]} proposals
+ * @returns {string[]}
+ */
+function renderDecisionProposals(proposals) {
+  const lines = [
+    "## Предложения к решению",
+    "",
+    "Миссия: переносить в starter только правила, которые помогают новым проектам стартовать с ясным process baseline.",
+    "Видение: rule-sync report должен помогать принять решение, а не заставлять владельца расшифровывать технические ids.",
+    "Цель: сгруппировать найденные изменения в approve/rewrite/reject решения с понятными критериями.",
+    "JTBD: когда я смотрю найденные правила, я хочу понимать, что именно импортировать и зачем, чтобы быстро принять безопасное решение."
+  ];
+
+  if (proposals.length === 0) {
+    lines.push("", "- Нет предложений к решению.");
+    return lines;
+  }
+
+  for (const [index, proposal] of proposals.entries()) {
+    lines.push("", `### ${index + 1}. ${proposal.title}`);
+    lines.push(`Рекомендация: ${recommendationTitle(proposal.recommendation)}.`);
+    lines.push(`Job Story: ${proposal.jobStory}`);
+    lines.push("User Stories:");
+    for (const story of proposal.userStories) {
+      lines.push(`- ${story}`);
+    }
+    lines.push("Критерии приемки:");
+    for (const criterion of proposal.acceptanceCriteria) {
+      lines.push(`- ${criterion}`);
+    }
+    lines.push(`Traceability: ${proposal.candidates.map((candidate) => candidate.id).join(", ")}.`);
+  }
+
+  return lines;
+}
+
+/**
  * @param {RuleSyncSnapshot} snapshot
  * @returns {string}
  */
@@ -869,6 +1121,8 @@ export function renderRuleSyncReport(snapshot) {
     `Проектов проверено: ${snapshot.projects.length}`,
     `Кандидатов найдено: ${snapshot.candidates.length}`
   ];
+
+  lines.push("", ...renderDecisionProposals(buildDecisionProposals(snapshot)));
 
   for (const category of /** @type {RuleCategory[]} */ (["import_candidate", "needs_review", "product_specific"])) {
     const items = snapshot.candidates.filter((candidate) => candidate.category === category);
@@ -1000,7 +1254,7 @@ async function main() {
   }
 
   if (command === "scan") {
-    const defaultWindow = previousLocalDayWindow();
+    const defaultWindow = await defaultScanWindow(repoRoot);
     const since = typeof flags.since === "string" ? parseBoundaryDate(flags.since, "start") : defaultWindow.since;
     const until = typeof flags.until === "string" ? parseBoundaryDate(flags.until, "end") : defaultWindow.until;
     const snapshot = await scanRuleSync({ repoRoot, since, until });
@@ -1008,6 +1262,9 @@ async function main() {
     const payload = {
       status: "ok",
       outputPath,
+      windowSource: typeof flags.since === "string" || typeof flags.until === "string" ? "explicit" : defaultWindow.source,
+      since: snapshot.since,
+      until: snapshot.until,
       projects: snapshot.projects.length,
       candidates: snapshot.candidates.length,
       importCandidates: snapshot.candidates.filter((candidate) => candidate.category === "import_candidate").length,

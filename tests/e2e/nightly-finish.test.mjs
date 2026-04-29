@@ -164,6 +164,33 @@ test("Nightly: finish cleanup prunes the empty managed task root and records cle
   }
 });
 
+test("Nightly: finish skips publish when the task branch HEAD is already in main", async () => {
+  const fixture = await createTempStarterRepo({ installDependencies: true });
+  try {
+    const env = buildEnv(fixture);
+    const started = startTask(fixture.repoRoot, env, "Finish already merged no-op");
+
+    const finished = runStarterScript(started.worktreePath, ["scripts/worktree-finish-core.mjs", "--cleanup", "2"], {
+      env
+    });
+    assert.equal(finished.status, 0);
+
+    const state = await loadTaskStateByBranch(fixture.repoRoot, started.branch);
+    assert.ok(state?.commitSha);
+    assert.equal(state?.publishStatus, "skipped_already_merged");
+    assert.equal(state?.cleanupDecision, "no");
+    assert.equal(state?.cleanupStatus, "kept");
+
+    const events = await readNdjson(getHistoryPath(fixture.repoRoot));
+    const skipEvent = getLatestEvent(events, "PUBLISH_SKIP", started.branch);
+    assert.equal(skipEvent.payload.publishStatus, "skipped_already_merged");
+    assert.equal(events.some((event) => event.type === "MERGE_MAIN" && event.branch === started.branch), false);
+    assert.equal(events.some((event) => event.type === "PUSH_MAIN" && event.branch === started.branch), false);
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
 test("Nightly: finish accepts numeric cleanup choices", async () => {
   const fixture = await createTempStarterRepo({ installDependencies: true });
   try {

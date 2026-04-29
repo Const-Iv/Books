@@ -43,6 +43,8 @@ JTBD: когда начинается новый проект, дать кома
 9. Для системных багов перед окончательным fix path обязателен `STAR + profile data + repo-RAG`.
 10. Для регрессий исправляется shared seam, а не только симптом; по возможности добавляется reusable guard.
 11. Операционные документы должны быть single-writer артефактами и синхронизироваться только на publish/release-стадии.
+12. Активные QA/TRIZ логи должны оставаться читаемыми; полный старый evidence snapshot при compaction хранится в `Docs/archive/*.md.gz`.
+13. User-facing ответы не должны требовать знания Git/process-жаргона без объяснения рядом.
 
 ## 3. Обязательный каркас репозитория
 
@@ -59,6 +61,7 @@ CODEX_MEMORY.md
   code-rules.md
   qa-playbook.md
 Docs/
+  archive/          # compressed pre-compaction operational snapshots
   change-ledger.md
   task-history.md
   qa-baseline.md
@@ -127,6 +130,7 @@ tests/
 - human-readable operational snapshots;
 - ledger, task history, baseline debt, implementation log, TRIZ journal;
 - это не место для произвольных заметок, а для воспроизводимого process evidence.
+- `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` остаются активными читаемыми логами; большие pre-compaction snapshots складываются в `Docs/archive/*.md.gz`.
 
 `plans/_template.md`
 
@@ -141,8 +145,10 @@ tests/
 
 `skills/starter-rule-sync`
 
-- reusable workflow для регулярного возврата удачных правил из downstream проектов обратно в starter;
-- работает через `rule-sync:*` scripts и manual approval, а не через auto-apply.
+- основной reusable skill для ручного и автоматического возврата удачных правил из downstream проектов обратно в starter;
+- работает через `rule-sync:*` scripts и manual approval, а не через auto-apply;
+- подходит для быстрых owner-triggered запусков вне расписания, если нужно подключить reusable правило раньше;
+- scheduled automation вызывает этот skill и использует default window от последнего saved scan snapshot до текущего запуска.
 
 ## 4. Каноническая модель conveyor
 

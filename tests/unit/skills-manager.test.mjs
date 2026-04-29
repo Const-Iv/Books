@@ -5,6 +5,7 @@ import { lstat, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from "node:f
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import {
   discoverRepoSkills,
@@ -52,6 +53,15 @@ async function createSkillFixture() {
     }
   };
 }
+
+test("repo exposes starter-rule-sync as a managed project skill", async () => {
+  const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+  const discovered = await discoverRepoSkills(repoRoot);
+  assert.deepEqual(
+    discovered.map((skill) => skill.relativeDir),
+    ["starter-rule-sync", "worktree-create", "worktree-finish"]
+  );
+});
 
 test("skills manager discovers repo skills and links them into CODEX_HOME", async () => {
   const fixture = await createSkillFixture();

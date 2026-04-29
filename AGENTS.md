@@ -24,7 +24,9 @@ Product Charter Gate:
 - Нельзя реализовывать изменение, которое противоречит `.memory-bank/product-charter.md`, ослабляет переносимость baseline, deterministic QA, safe task flow, source-of-truth governance или hardcode'ит product-specific поведение в starter core.
 - Если запрос конфликтует с charter, ассистент обязан остановиться, коротко объяснить конфликт и предложить ближайший безопасный вариант.
 - Product charter нельзя обходить через локальный patch, mirror-файл, temporary exception или ad-hoc script; при изменении charter сначала обновить `.memory-bank/product-charter.md`, `AGENTS.md`, релевантные `.memory-bank/*` и `CODEX_MEMORY.md`.
-- Reusable shared skills можно versioned хранить в `skills/` и публиковать в `$CODEX_HOME/skills` через repo scripts; downstream проекты могут подключать starter как git submodule и линковать skills через `skills-manage.mjs --source vendor/new-project-starter/skills`; `.system`, plugin-managed и product-specific skills не являются частью starter core.
+- Reusable shared skills можно versioned хранить в `skills/` и публиковать в `$CODEX_HOME/skills` через repo scripts; downstream проекты могут подключать starter как git submodule и линковать skills через `skills-manage.mjs --source vendor/new-project-starter/skills`; `.system`, plugin-managed, product-specific skills и generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) не являются частью starter core и не импортируются bulk-copy.
+- `skills/starter-rule-sync/` — основной project-local skill для ручного и автоматического rule sync workflow; автоматизации должны вызывать этот skill, а не дублировать scan/report логику. `rule-sync:*` commands остаются deterministic execution layer, default scan window идёт от последнего saved scan snapshot до текущего запуска, а импорт reusable правил требует owner approval, managed worktree и QA.
+- Rule-sync owner report должен начинаться с decision proposals через `Миссия -> Видение -> Цель -> JTBD -> Job Story -> User Stories -> Критерии приемки`; candidate ids допустимы только как traceability для approval JSON.
 
 ## Language Requirements
 
@@ -49,6 +51,7 @@ Product Charter Gate:
 - В будущих plan files техническая часть начинается ниже верхнего продуктового блока `Миссия -> Видение -> Цель -> JTBD / проблема -> Job Story -> User Stories -> Критерии приемки -> Метрика успеха`.
 - В `Summary`, `TL;DR`, `Миссия`, `Видение`, `Цель`, `JTBD`, `Job Story` и `User Stories` не использовать технические термины без твердой необходимости; писать про ситуацию, ценность и ожидаемый результат понятным пользовательским языком.
 - Технические детали добавлять только там, где они помогают понять или реализовать решение. Их можно встроить в текст; если агенту нужен точный implementation context, добавлять отдельный блок `План для агента`.
+- В user-facing ответах не использовать необъяснённый Git/process-жаргон; если термин нужен, сразу давать простой смысл рядом, например `diverged` = “локальная папка и GitHub разошлись”.
 - Перед refactor сначала искать существующие тесты на затронутый seam и гонять ближайший baseline до/после каждого логического change batch.
 - Для любого code-changing task доказательством корректности считаются только детерминированные проверки.
 - После каждого логического change batch нужно прогонять хотя бы одну релевантную deterministic check.
@@ -143,6 +146,7 @@ Product Charter Gate:
 - перед commit/merge/publish task QA должен быть PASS;
 - если `HEAD == qaLastPassSha`, переиспользовать QA checkpoint вместо повторного full task QA;
 - если finish стартует из dirty task tree, `task:finish:core` должен сначала зафиксировать task commit/checkpoint, затем прогнать task QA уже на committed `HEAD`, и только после этого переходить к publish stage;
+- если task branch не получила собственного task commit, её `HEAD` уже содержится в `main`, а worktree clean, `task:finish:core` должен пропустить publish stage, записать `publishStatus=skipped_already_merged` и всё равно довести cleanup до `passed|kept`;
 - shared operational docs сначала capture'ить из task branch, а sync'ить обратно только на publish/release stage как single-writer artifacts;
 - `task:finish:core` не должен спрашивать legacy `--preview ok|skip`;
 - для cleanup/publish resume из `main` использовать `--task-id <id>` как канонический селектор, `--branch codex/<task-branch>` оставить совместимым fallback;
@@ -194,6 +198,7 @@ Product Charter Gate:
 - `qaLastPassSha` и `previewPreparedSha` — обязательные reuse checkpoints.
 - `cleanupStatus` и `cleanupTargets` — обязательные finish-cleanup markers; отсутствие `cleanupStatus` означает, что cleanup ещё может требовать resume.
 - Shared operational snapshots (`Docs/qa-implementation-log.md`, `Docs/triz-usage-log.md`, append-only sections `CODEX_MEMORY.md`) — single-writer artifacts.
+- `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` должны оставаться активными читаемыми логами; при разрастании sync сохраняет полный pre-compaction snapshot в `Docs/archive/*.md.gz`, а в активном файле оставляет компактный текущий хвост.
 - Task branches должны использовать `task:operational-docs:capture`, а publish/release stage — `task:operational-docs:sync`.
 
 ## Codex Code Review Severity Policy (Mandatory)
