@@ -62,6 +62,7 @@
 - Governance/rule-sync ответы пользователю должны сначала объяснять человеческий смысл, решение и следующий шаг; raw ids, snippets and file lists идут только как traceability.
 - QA/TRIZ logs для rule-sync import являются evidence, а не готовым rule text: import должен быть переписан как portable starter invariant без source-project details.
 - Performance/state-safety changes должны сохранять user data и public behavior contracts; read-only/internal automatic updates не считаются user changes без user interaction или real entity changes.
+- `cleanupStatus=passed` для delete cleanup валиден только после проверки exact `state.worktreePath`, отсутствия этого пути в `git worktree list`, удаления `$CODEX_HOME/worktrees/<taskId>/` и отсутствия task-scoped leftovers; похожие worktrees других задач нужно сообщать как отдельный pending cleanup с новым выбором `1. Удалить` / `2. Оставить`.
 
 ## Project Notes
 

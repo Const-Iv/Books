@@ -102,3 +102,9 @@
 - Branch: `codex/20260429-162316-4a71-teach-starter-rule-share-downstream-import-evidence`
 - Reasons: historical_recurrence
 - Status: trigger recorded
+
+## 2026-04-30T08:35:50.121Z 20260430-082858-2709
+
+- Branch: `codex/20260430-082858-2709-require-exact-cleanup-verification-in-worktree-finish`
+- Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
