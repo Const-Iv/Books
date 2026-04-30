@@ -86,6 +86,19 @@ function normalizeAllowedCleanupPath(state, candidatePath) {
 }
 
 /**
+ * @param {string} worktreePath
+ * @param {string} taskId
+ * @returns {string | null}
+ */
+function getManagedTaskRoot(worktreePath, taskId) {
+  const taskRoot = path.resolve(getCodexHome(), "worktrees", taskId);
+  if (isWithinRoot(path.resolve(worktreePath), taskRoot)) {
+    return taskRoot;
+  }
+  return null;
+}
+
+/**
  * @param {string} hookStdout
  * @returns {CleanupHookPayload}
  */
@@ -365,11 +378,18 @@ export async function executeTaskCleanup(repoRoot, state, mainWorktreePath) {
 
   if (blocked.length === 0 && errors.length === 0) {
     for (const targetPath of orderedTargets) {
+      const wasRegistered = await isRegisteredWorktree(mainWorktreePath, targetPath);
       if (!existsSync(targetPath)) {
+        if (wasRegistered) {
+          runCommand(mainWorktreePath, "git", ["worktree", "prune"], { allowFailure: true });
+          if (await isRegisteredWorktree(mainWorktreePath, targetPath)) {
+            remainingPaths.push(targetPath);
+            errors.push(`Git worktree remains registered after cleanup: ${targetPath}`);
+          }
+        }
         continue;
       }
 
-      const wasRegistered = await isRegisteredWorktree(mainWorktreePath, targetPath);
       if (wasRegistered) {
         process.chdir(path.dirname(repoRoot));
         runCommand(mainWorktreePath, "git", ["worktree", "remove", targetPath, "--force"], { allowFailure: true });
@@ -411,6 +431,12 @@ export async function executeTaskCleanup(repoRoot, state, mainWorktreePath) {
     } catch (error) {
       errors.push(`Failed to prune managed task root: ${error instanceof Error ? error.message : String(error)}`);
     }
+
+    const managedTaskRoot = getManagedTaskRoot(state.worktreePath, state.taskId);
+    if (managedTaskRoot && existsSync(managedTaskRoot)) {
+      remainingPaths.push(managedTaskRoot);
+      errors.push(`Managed task root remains after cleanup: ${managedTaskRoot}`);
+    }
   }
 
   let branchRemoved = false;
@@ -429,7 +455,7 @@ export async function executeTaskCleanup(repoRoot, state, mainWorktreePath) {
     status,
     cleanupTargets,
     removedPaths: uniqueStrings(removedPaths),
-    remainingPaths: uniqueStrings(remainingPaths.filter((entry) => existsSync(entry))),
+    remainingPaths: uniqueStrings(remainingPaths),
     blocked,
     errors,
     notes,
