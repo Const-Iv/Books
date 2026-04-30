@@ -15,6 +15,7 @@
 - `scripts/rule-sync.mjs`: deterministic cross-project governance scan/report/apply-plan execution seam for reusable starter rules.
 - `skills/starter-rule-share/SKILL.md`: primary Codex workflow for approval-safe outbound sharing of the current starter baseline.
 - `scripts/rule-share.mjs`: deterministic target-project scan/report/apply-plan execution seam for outbound starter rule sharing.
+- `rule-share:apply-plan` task seeds are the copied-baseline import contract: preserve downstream product boundaries, sync canonical/mirror rule surfaces, require QA/TRIZ evidence and stop before finish/merge/publish unless explicitly approved.
 
 ## Runtime Data Flow
 

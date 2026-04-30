@@ -206,6 +206,53 @@ test("rule-share apply-plan builds safe per-project task seeds", () => {
   assert.match(plan.tasks[0].seedMessage, /Share after starter QA/);
 });
 
+test("rule-share copied-baseline task seed includes evidence and stop-before-publish checklist", () => {
+  const snapshot = /** @type {Parameters<typeof buildShareApplyPlan>[0]} */ ({
+    schemaVersion: 1,
+    generatedAt: "2026-04-29T10:00:00.000Z",
+    repoRoot: "/tmp/starter",
+    starterHead: "abcdef",
+    starterDirty: false,
+    allowlistConfigured: true,
+    diagnostics: [],
+    projects: [
+      {
+        id: "rsh-agent-const",
+        label: "Agent_Const",
+        repoRoot: "/tmp/agent",
+        status: "ready",
+        recommendedAction: "prepare_rule_import",
+        reasons: ["copied baseline"],
+        dirty: false,
+        hasTaskFlow: true,
+        hasStarterSubmodule: false,
+        starterPath: "vendor/new-project-starter",
+        currentStarterHead: null,
+        targetFiles: [
+          "AGENTS.md",
+          ".memory-bank/index.md",
+          "CODEX_MEMORY.md",
+          ".cursorrules",
+          "CLAUDE.md",
+          "README.md"
+        ]
+      }
+    ]
+  });
+
+  const plan = buildShareApplyPlan(snapshot, {
+    approvedProjects: ["rsh-agent-const"]
+  });
+
+  assert.equal(plan.status, "ready");
+  assert.equal(plan.tasks.length, 1);
+  assert.match(plan.tasks[0].seedMessage, /остан[оа]виться перед finish\/merge\/publish/);
+  assert.match(plan.tasks[0].seedMessage, /AGENTS\.md, \.memory-bank\/\*, CODEX_MEMORY\.md, README\.md, \.cursorrules и CLAUDE\.md/);
+  assert.match(plan.tasks[0].seedMessage, /Docs\/qa-implementation-log\.md, Docs\/triz-usage-log\.md/);
+  assert.match(plan.tasks[0].seedMessage, /starter source, starter HEAD, approved project/);
+  assert.match(plan.tasks[0].seedMessage, /TRIZ_APPLIED/);
+});
+
 test("rule-share apply-plan rejects non-ready approvals", () => {
   const snapshot = /** @type {Parameters<typeof buildShareApplyPlan>[0]} */ ({
     schemaVersion: 1,

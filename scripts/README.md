@@ -71,6 +71,7 @@
 - принимает approval JSON с ids подтверждённых проектов;
 - в v1 требует `--dry-run`;
 - возвращает per-project task seeds и команды для managed `task:start` внутри выбранных downstream проектов;
+- для copied-baseline `prepare_rule_import` seed включает полный downstream implementation contract: canonical/mirror sync, сохранение product-specific wording, QA/TRIZ evidence и stop-before-publish gate;
 - не редактирует downstream source, не обновляет submodule напрямую и не делает bulk-copy правил.
 
 ### Git submodule для shared skills
