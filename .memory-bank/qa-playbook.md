@@ -75,6 +75,10 @@ Acceptance criteria проверяют пользовательский резу
 - Записывать точные команды и PASS/FAIL.
 - Для bugfixes фиксировать defect class, invariant и shared seam.
 - Для AI/agent behavior changes записывать eval cases, expected behavior, actual behavior и pass/fail.
+- Для rule-sync/rule-share imports считать QA/TRIZ logs evidence, а не готовым rule text: итоговое правило должно быть переписано как portable invariant и сохранять source traceability.
+- Для performance и state-safety fixes фиксировать, что user data и public behavior contracts сохранены; read-only/internal automatic updates не должны считаться user changes без user interaction или real entity changes.
+- Если defect class связан с потерей пользовательского состояния, evidence должно включать root-cause summary и reusable regression guard или явно зафиксированный exception.
+- Для complex behavior changes evidence должно включать deterministic checks and operational-doc capture.
 - Для temporary fixtures/worktrees cleanup result тоже является QA evidence.
 - Для process/conveyor задач фиксировать task state/history changes как часть acceptance evidence.
 - `task:finish:core` не должен publish'ить commit, который не прошёл task QA: если finish стартует из dirty task tree, сначала нужен task commit/checkpoint, затем новый QA checkpoint уже на committed `HEAD`.
