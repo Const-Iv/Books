@@ -35,6 +35,8 @@ Product Charter Gate:
 - Reusable shared skills можно versioned хранить в `skills/` и публиковать в `$CODEX_HOME/skills` через repo scripts; downstream проекты могут подключать starter как git submodule и линковать skills через `skills-manage.mjs --source vendor/new-project-starter/skills`; `.system`, plugin-managed, product-specific skills и generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) не являются частью starter core и не импортируются bulk-copy.
 - `skills/starter-rule-sync/` — основной project-local skill для ручного и автоматического rule sync workflow; автоматизации должны вызывать этот skill, а не дублировать scan/report логику. `rule-sync:*` commands остаются deterministic execution layer, default scan window идёт от последнего saved scan snapshot до текущего запуска, а импорт reusable правил требует owner approval, managed worktree и QA.
 - Rule-sync owner report должен начинаться с decision proposals через `Связь с charter проекта -> Цель решения -> JTBD -> Job Stories -> User Stories -> Критерии приемки`; candidate ids допустимы только как traceability для approval JSON.
+- Rule-sync import не должен переносить сырой QA/TRIZ log как готовое правило: logs используются как evidence, а import text переписывается в portable starter invariant с source traceability.
+- Owner-facing reports должны сначала давать человеческий смысл, решение и следующий шаг; candidate ids, commits, task ids и source snippets используются только как проверяемая traceability и не заменяют summary.
 - `skills/starter-rule-share/` — основной project-local skill для outbound sharing текущего подтверждённого starter baseline в выбранные активные downstream проекты. `rule-share:*` commands остаются approval-safe execution layer: scan/report read-only, apply-plan только dry-run task seeds, список проектов берётся из ignored `runtime/rule-share/config.json`, а direct bulk-copy во все локальные проекты запрещён. Guarded one-run mode допустим только по явному owner request или ignored standing approval: перенос идёт через downstream managed task worktrees и deterministic QA, manual-review/blocked проекты пропускаются, finish/merge/publish не выполняются без отдельного явного разрешения.
 
 Project Intake Gate для нового downstream-проекта:
@@ -70,6 +72,7 @@ Eval Gate для AI/agent behavior:
 - Не удалять user data или существующее поведение без явного запроса и rollback-ready notes.
 - Для user-facing продуктовых решений использовать простой продуктовый язык: сначала показать связь с существующим project charter, затем цель изменения, `JTBD`, Job Stories, User Stories и критерии приемки. `Миссия` и `Видение` нельзя создавать для конкретной задачи: они существуют только на уровне проекта и берутся из `.memory-bank/product-charter.md` или Project Intake нового downstream-проекта.
 - Любое предложение продуктового решения, включая короткий ответ в чате, нельзя оформлять только как `Summary`, `Key Changes`, список implementation steps или технический sketch. Если нужен полный разбор, использовать `Связь с charter проекта -> Цель изменения/решения -> JTBD -> Job Stories -> User Stories -> Критерии приемки`; если пользователь задал короткий вопрос или нужен lightweight-вариант, дать хотя бы один charter anchor до implementation details.
+- User-facing ответы по governance/rule-sync решениям должны быть charter-anchored и коротко объяснять “что это значит” до технических деталей; нельзя оставлять владельцу только raw ids, snippets или список файлов.
 - В будущих plan files техническая часть начинается ниже верхнего продуктового блока `Связь с charter проекта -> Цель изменения -> Целевая аудитория проекта -> Продуктовая спека`.
 - Новый downstream-проект до feature work проходит Project Intake Gate: все обязательные сведения из `plans/_project_intake_template.md` заполнены, согласованы owner'ом и перенесены в canonical sources.
 - Для AI/agent behavior changes product spec включает `Eval spec`; без него нельзя считать acceptance criteria достаточными.
@@ -217,6 +220,9 @@ Eval Gate для AI/agent behavior:
 - Перед finish / merge / release обязателен полный PASS `npm run qa:agent`.
 - Для bugfix-задач без planning mode эквивалентное QA evidence нужно фиксировать в ответе по задаче и в `Docs/qa-implementation-log.md`.
 - Для process/governance implementation полезно дописывать в `Docs/qa-implementation-log.md` stage history, failures, fixes и rollback notes.
+- Performance и state-safety fixes должны явно сохранять пользовательские данные и публичные behavior contracts; read-only/internal automatic updates не считаются user changes без пользовательского действия или реального entity change.
+- Риск потери пользовательского состояния требует root-cause анализа и reusable regression guard; локальное reasoning-only исправление без guard допустимо только как зафиксированный exception.
+- Для complex behavior changes QA evidence должно включать deterministic checks и operational-doc capture; QA/TRIZ logs являются evidence для формулировки правила, а не готовым source text для governance import.
 
 ## Operational Docs and Task State
 

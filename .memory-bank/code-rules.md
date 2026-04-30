@@ -12,6 +12,8 @@
 - Rule-sync scan/report должны быть read-only относительно starter source, а apply-plan обязан оставаться approval-safe: только dry-run seed для managed `task:start`, без direct-main edits и без автоприменения правил.
 - Rule-sync default scan window должен идти от `until` последнего saved scan snapshot до текущего запуска; previous-local-day допустим только как fallback, когда валидного snapshot ещё нет.
 - Rule-sync owner report должен сначала показывать decision proposals через `Связь с charter проекта -> Цель решения -> JTBD -> Job Stories -> User Stories -> Критерии приемки`; candidate ids используются как traceability, а не как основной decision interface.
+- Rule-sync import использует QA/TRIZ logs только как evidence: перед импортом candidate нужно переписать в portable starter invariant, сохранить source traceability и убрать source-project symptoms, branch names, task ids and domain details from rule text.
+- Owner-facing reports должны сначала объяснять смысл, решение и следующий шаг понятным языком; raw ids, commits, task ids, snippets and file lists допустимы только как traceability.
 - `starter-rule-share` является основным project-local skill для outbound sharing текущего подтверждённого starter baseline в выбранные active downstream проекты; `rule-share:*` scripts остаются deterministic execution layer.
 - Rule-share scan/report должны быть read-only относительно downstream source, список проектов берётся из ignored `runtime/rule-share/config.json`, а apply-plan обязан оставаться approval-safe: только per-project dry-run task seeds без direct edits и без bulk-copy во все локальные проекты.
 - Rule-share manual review для проектов с неполными starter baseline signals должен объяснять, каких сигналов не хватает, и предлагать только safe bootstrap path: downstream-specific product charter / Project Intake или versioned `vendor/new-project-starter`, managed task worktree и deterministic QA.
@@ -34,6 +36,7 @@
 - Не удалять user data или существующее поведение без explicit instruction и rollback-ready path.
 - Для user-facing продуктовых решений использовать простой продуктовый язык: сначала показать связь с существующим project charter, затем цель изменения, `JTBD`, Job Stories, User Stories и критерии приемки. `Миссия` и `Видение` нельзя создавать для конкретной задачи: они существуют только на уровне проекта и берутся из `.memory-bank/product-charter.md` или Project Intake нового downstream-проекта.
 - Любое предложение продуктового решения, включая короткий ответ в чате, нельзя оформлять только как `Summary`, `Key Changes`, список implementation steps или технический sketch. Если нужен полный разбор, использовать `Связь с charter проекта -> Цель изменения/решения -> JTBD -> Job Stories -> User Stories -> Критерии приемки`; если пользователь задал короткий вопрос или нужен lightweight-вариант, дать хотя бы один charter anchor до implementation details.
+- Governance/rule-sync ответы пользователю должны быть charter-anchored и сначала объяснять “что это значит” и recommended decision, а technical traceability размещать ниже.
 - В будущих plan files техническая часть начинается ниже верхнего продуктового блока `Связь с charter проекта -> Цель изменения -> Целевая аудитория проекта -> Продуктовая спека`.
 - Product spec в plan file для feature/behavior/process changes включает проблему / `JTBD`, целевую аудиторию изменения, сценарии использования, требования, критерии приемки, метрику успеха и ограничения / что нельзя сломать.
 - Для старта нового проекта `plans/_project_intake_template.md` является обязательным bootstrap artifact; каждый пункт должен быть согласован, а несогласованные пункты считаются blocker, а не допустимым placeholder.
@@ -91,6 +94,9 @@
 - `qa:security` должен содержать минимум secret scan + dependency audit.
 - Dependency preflight — общий seam для `task:start`, `task:test` и `qa:agent`.
 - Для bugfix без formal plan QA evidence всё равно фиксируется в ответе по задаче и в `Docs/qa-implementation-log.md`.
+- Performance и state-safety changes должны сохранять user data и public behavior contracts; read-only/internal automatic updates нельзя учитывать как user changes без user interaction или real entity changes.
+- Если есть риск потери пользовательского состояния, финальный fix-path требует root-cause analysis и reusable regression guard, если это practically possible.
+- Complex behavior changes требуют deterministic QA evidence и operational-doc capture; QA/TRIZ evidence не импортируется дословно в governance rules.
 
 ## Contracts and Boundaries
 
