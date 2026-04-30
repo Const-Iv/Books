@@ -24,14 +24,18 @@ const SKIP_DIRS = new Set([
 ]);
 const CANONICAL_IMPORT_TARGETS = [
   "AGENTS.md",
+  ".memory-bank/index.md",
   ".memory-bank/product-charter.md",
   ".memory-bank/project-context.md",
   ".memory-bank/architecture-map.md",
   ".memory-bank/code-rules.md",
   ".memory-bank/qa-playbook.md",
   "CODEX_MEMORY.md",
+  ".cursorrules",
+  "CLAUDE.md",
   "README.md"
 ];
+const DOWNSTREAM_EVIDENCE_TARGETS = ["Docs/qa-implementation-log.md", "Docs/triz-usage-log.md"];
 
 /**
  * @typedef {"ready"|"needs_review"|"blocked"} RuleShareStatus
@@ -562,7 +566,8 @@ function buildProjectTaskSeed(snapshot, project, approval) {
     "- создать managed task worktree в target project;",
     "- не затирать product-specific charter, adapters, profiles или локальные правила проекта;",
     "- переносить только reusable baseline governance/rules;",
-    "- прогнать deterministic QA target project и зафиксировать evidence."
+    "- прогнать deterministic QA target project и зафиксировать evidence;",
+    "- остановиться перед finish/merge/publish, если владелец явно не запросил эту стадию."
   ];
   if (project.recommendedAction === "update_starter_reference") {
     lines.push(
@@ -578,7 +583,12 @@ function buildProjectTaskSeed(snapshot, project, approval) {
       "Действие для copied-baseline проекта:",
       `- сравнить starter canonical files: ${project.targetFiles.join(", ")};`,
       "- подготовить surgical diff с reusable правилами;",
-      "- оставлять downstream product wording в его product charter/specs."
+      "- оставлять downstream product wording в его product charter/specs;",
+      "- синхронизировать обязательное правило во всех downstream canonical/mirror surfaces: AGENTS.md, .memory-bank/*, CODEX_MEMORY.md, README.md, .cursorrules и CLAUDE.md;",
+      `- зафиксировать evidence в downstream operational docs: ${DOWNSTREAM_EVIDENCE_TARGETS.join(", ")};`,
+      "- evidence должен включать starter source, starter HEAD, approved project, imported reusable rules, skipped product-specific areas, changed canonical files и deterministic QA result;",
+      "- если task QA пишет TRIZ_TRIGGER, выполнить TRIZ-pass и добавить TRIZ_APPLIED запись до финального ответа;",
+      "- после всех source edits повторить target task QA, чтобы checkpoint относился к финальному diff."
     );
   }
   const note = approval.notes?.[project.id];

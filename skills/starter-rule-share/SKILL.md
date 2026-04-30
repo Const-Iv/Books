@@ -52,7 +52,7 @@ Charter fit: outbound sharing supports the mission and JTBD by letting active do
    - run the target project's managed `task:start` from that project's root;
    - apply the appropriate update inside the target task worktree;
    - run the target project's deterministic QA;
-   - finish/publish through the target project's normal conveyor.
+   - stop before finish/merge/publish unless the owner explicitly requested that stage.
 
 ## One-Run Mode
 
@@ -82,6 +82,8 @@ When one-run mode is active:
 7. In each target task worktree, apply only reusable baseline updates:
    - for `update_starter_reference`, update `vendor/new-project-starter` to the approved starter HEAD and check shared skills;
    - for `prepare_rule_import`, compare canonical files and make surgical diffs, preserving downstream product charter wording, adapters, profiles and local rules.
+   - for copied-baseline imports, sync the reusable rule across downstream canonical and mirror surfaces when relevant: `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, `README.md`, `.cursorrules`, and `CLAUDE.md`.
+   - record downstream evidence in `Docs/qa-implementation-log.md` and `Docs/triz-usage-log.md` when TRIZ triggers. Evidence must include starter source, starter HEAD, approved project, imported reusable rules, skipped product-specific areas, changed canonical files, deterministic QA result and any TRIZ decision.
 8. Run the target project's deterministic QA and record evidence in the target plan or response.
 9. Stop before finish/merge/publish unless the owner explicitly requested that stage and the target project has PASS QA plus its normal cleanup/publish approvals.
 
@@ -90,8 +92,29 @@ If any target becomes ambiguous during import, stop that target and continue onl
 ## Delivery Modes
 
 - `update_starter_reference`: for projects that keep starter under `vendor/new-project-starter`; update that versioned reference and check shared skills.
-- `prepare_rule_import`: for copied starter-baseline projects; compare starter canonical files and import only reusable governance/rules with surgical diffs.
+- `prepare_rule_import`: for copied starter-baseline projects; compare starter canonical files and import only reusable governance/rules with surgical diffs, including downstream canonical/mirror parity and QA/TRIZ evidence capture.
 - `manual_review`: for projects without a clean managed task flow, without complete starter baseline signals, or with conflicts requiring owner judgment.
+
+## Copied-Baseline Import Checklist
+
+For `prepare_rule_import`, the task seed from `rule-share:apply-plan` is the implementation contract. Do not treat it as a reminder to do a manual ad-hoc sync.
+
+Required actions inside the downstream managed worktree:
+
+1. Read the downstream product charter first and preserve its wording.
+2. Compare starter canonical files against downstream files listed in the task seed.
+3. Import only reusable baseline governance; do not copy product-specific starter text over downstream product decisions.
+4. Keep mandatory rules in parity across `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, `README.md`, `.cursorrules`, and `CLAUDE.md` when those surfaces exist.
+5. Record evidence in downstream operational docs:
+   - starter source and HEAD;
+   - approved target project;
+   - imported reusable rules;
+   - skipped product-specific areas;
+   - changed canonical files;
+   - deterministic QA result;
+   - TRIZ trigger/decision when applicable.
+6. Run downstream deterministic QA after the final diff.
+7. Stop with a clear status report and target worktree path. Finish/merge/publish is a separate explicit owner gate.
 
 ## Manual Review Path
 

@@ -72,3 +72,21 @@
 - Branch: `codex/20260429-083348-74bc-agent-const`
 - Reasons: historical_recurrence
 - Status: trigger recorded
+
+## 2026-04-29T16:26:17.873Z 20260429-162316-4a71
+
+- Branch: `codex/20260429-162316-4a71-teach-starter-rule-share-downstream-import-evidence`
+- Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
+
+## 2026-04-29T16:27:00.000Z 20260429-162316-4a71 — TRIZ_APPLIED
+
+- Principle: preliminary action / standard interface / separation by stage.
+- Changes: `rule-share:apply-plan` now puts the copied-baseline import checklist into the generated downstream task seed instead of relying on the operator to remember manual follow-up steps. The skill keeps implementation in a downstream managed worktree, requires canonical/mirror parity and QA/TRIZ evidence, and explicitly stops before finish/merge/publish unless that stage was separately approved.
+- Guard: `tests/unit/rule-share.test.mjs` covers the copied-baseline seed content, including evidence docs, canonical/mirror surfaces, `TRIZ_APPLIED` and stop-before-publish wording; `npm run qa:agent` and `npm run task:qa:agent` passed.
+
+## 2026-04-29T16:27:50.253Z 20260429-162316-4a71
+
+- Branch: `codex/20260429-162316-4a71-teach-starter-rule-share-downstream-import-evidence`
+- Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded

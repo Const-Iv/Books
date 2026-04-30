@@ -114,6 +114,45 @@
 
 - PASS
 
+## 2026-04-29 — starter-rule-share copied-baseline import contract
+
+### Scope
+
+- `starter-rule-share` now turns the manual Agent_Const rule-share follow-up into the generated `prepare_rule_import` task seed.
+- The seed now includes canonical/mirror parity, downstream QA/TRIZ evidence requirements and a stop-before-finish/merge/publish gate.
+- Charter mapping: this supports starter's mission and JTBD by making outbound reusable governance sharing repeatable, deterministic and safe for downstream product boundaries.
+
+### Fix
+
+- `scripts/rule-share.mjs`: expanded copied-baseline target files to include `.memory-bank/index.md`, `.cursorrules` and `CLAUDE.md`; added downstream evidence targets and explicit stop-before-publish wording to generated task seeds.
+- `skills/starter-rule-share/SKILL.md`: documented the copied-baseline import checklist as the implementation contract, not an ad-hoc reminder.
+- Canonical docs updated: `AGENTS.md`, `.memory-bank/*`, `README.md`, `scripts/README.md`, `CODEX_MEMORY.md`.
+
+### Eval evidence
+
+- Agent surface: `starter-rule-share` one-run / `prepare_rule_import` generated task seed.
+- Good response: generated seed tells the downstream agent to preserve product charter wording, sync `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, README, `.cursorrules`, `CLAUDE.md`, record QA/TRIZ evidence and stop before publish.
+- Failure mode: seed only says "compare canonical files" and leaves CODEX_MEMORY, mirrors, operational docs or publish gate to manual memory.
+- Golden prompt: "поделиться baseline new-project-starter с copied-baseline Agent_Const и не затирать product charter".
+- Result: PASS via `tests/unit/rule-share.test.mjs` copied-baseline seed test.
+
+### Deterministic checks
+
+- `node --test tests/unit/rule-share.test.mjs` — PASS, 7 tests.
+- `npm run qa:agent` — PASS: lint, lint:fix:changed, lint recheck, typecheck, test, build.
+- `npm run task:qa:agent` — PASS; reasons: `cross_module_conflict`, `historical_recurrence`.
+
+### TRIZ
+
+- Trigger: `cross_module_conflict`, `historical_recurrence`.
+- Applied: preliminary action / standard interface / separation by stage.
+- Устранено: manual follow-up drift in copied-baseline outbound sharing and accidental publish without a separate owner gate.
+- Fallback/долг: future guarded one-run automation can execute the generated seed, but publish/cleanup must remain a separate explicit gate.
+
+### Status
+
+- PASS: implementation and QA completed in task worktree; finish/merge/publish intentionally not run.
+
 ## `<YYYY-MM-DD>` — Bootstrap
 
 ### Scope
