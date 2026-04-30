@@ -59,6 +59,9 @@
 - Активные `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` должны оставаться читаемыми; при compaction полный pre-compaction snapshot сохраняется в `Docs/archive/*.md.gz`.
 - Если clean task branch уже содержится в `main` и task commit ещё не записан, finish-flow должен ставить `publishStatus=skipped_already_merged`, писать `PUBLISH_SKIP` и всё равно завершать cleanup через `passed|kept`.
 - Product proposal нельзя подменять `Summary` / `Key Changes` / technical sketch без product-charter якоря; полный вариант идёт через `Связь с charter проекта -> Цель изменения/решения -> JTBD -> Job Stories -> User Stories -> Критерии приемки`, короткий вариант обязан явно опереться хотя бы на один charter anchor.
+- Governance/rule-sync ответы пользователю должны сначала объяснять человеческий смысл, решение и следующий шаг; raw ids, snippets and file lists идут только как traceability.
+- QA/TRIZ logs для rule-sync import являются evidence, а не готовым rule text: import должен быть переписан как portable starter invariant без source-project details.
+- Performance/state-safety changes должны сохранять user data и public behavior contracts; read-only/internal automatic updates не считаются user changes без user interaction или real entity changes.
 
 ## Project Notes
 
