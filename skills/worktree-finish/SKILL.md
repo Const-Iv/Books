@@ -22,7 +22,7 @@ Use this skill to close a task worktree consistently across projects while still
 3. Execute the canonical repo finish flow.
 4. Run the repo's required deterministic QA gates before merge or push when the contract requires them.
 5. Ask for cleanup explicitly before deleting any local branch or worktree.
-6. Verify the final state from task state/history, not just from exit code: merged or not, pushed or not, and `cleanupStatus` passed, kept, or failed.
+6. Verify the final state from task state/history and filesystem, not just from exit code: merged or not, pushed or not, and `cleanupStatus` passed, kept, or failed.
 
 ## Cleanup Choice
 
@@ -35,12 +35,24 @@ Map that choice onto the repo's actual flags or commands. In starter-derived rep
 
 If cleanup fails or remains incomplete, prefer canonical resume through `task:finish:core -- --task-id <id> --cleanup 1` when the repo supports `--task-id`.
 
+## Cleanup Verification
+
+Before telling the user a worktree was removed, verify the exact task from its recorded state:
+
+1. The exact `state.worktreePath` for the finished task no longer exists and is no longer registered in `git worktree list`.
+2. The managed task root `$CODEX_HOME/worktrees/<taskId>/` no longer exists after delete cleanup.
+3. Task-scoped leftovers reported by `cleanupTargets`, cleanup hooks, or the managed task root check are gone.
+4. The task state/history records `cleanupStatus = "passed"` for deletion or `cleanupStatus = "kept"` for an intentional keep.
+
+Do not infer cleanup from a similar project name, branch name, or another worktree under `$CODEX_HOME/worktrees`. If a different stale worktree remains, report it as a separate pending cleanup and ask its own fixed choice (`1. Удалить`, `2. Оставить`) before touching it.
+
 ## Guardrails
 
 - Do not delete a local worktree or branch without an explicit user choice.
 - Do not skip repo QA gates when the finish contract requires them.
 - Do not bypass script-driven finish flows with ad-hoc merge commands if the repo already defines a canonical conveyor.
 - Do not treat a zero exit code as sufficient when the repo writes explicit cleanup markers such as `cleanupStatus`, `CLEANUP`, or `FINISH`.
+- Do not say cleanup passed until the exact recorded worktree path, git worktree registration, managed task root, and task-scoped leftovers were checked.
 - Do not replace repo cleanup scripts with manual `git worktree remove` / `git branch -D` when the repo defines `task:finish:core` and optional cleanup hooks.
 - If the branch was not created through the repo's documented flow and no task state exists, say that the canonical finish path is unavailable before doing a careful manual merge.
 
@@ -63,7 +75,7 @@ npm run task:finish:core
 
 Then confirm the recorded cleanup result:
 
-- `cleanupStatus = "passed"` means the worktree, branch, and task-scoped leftovers were removed.
+- `cleanupStatus = "passed"` means the exact worktree path, git worktree registration, branch, managed task root, and task-scoped leftovers were removed.
 - `cleanupStatus = "kept"` means the user intentionally kept the local worktree/branch.
 - `cleanupStatus = "failed"` means finish is not complete yet; resume from `main` with `--task-id` when available.
 

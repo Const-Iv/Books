@@ -185,7 +185,9 @@ Eval Gate для AI/agent behavior:
   `1. Удалить`
   `2. Оставить`
   Ответ `1` маппится на удаление локального worktree/branch, ответ `2` — на сохранение.
-- finish считается успешно завершённым только когда `cleanupStatus` в task state/history стал `passed` или `kept`; одного `cleanupDecision` недостаточно.
+- delete cleanup считается успешно завершённым только когда `cleanupStatus` в task state/history стал `passed` и проверено, что exact `state.worktreePath` исчез из filesystem и `git worktree list`, managed task root `$CODEX_HOME/worktrees/<taskId>/` удалён, а task-scoped leftovers отсутствуют; одного `cleanupDecision`, похожего имени папки или exit code недостаточно.
+- keep cleanup считается завершённым только когда `cleanupStatus` стал `kept` после явного выбора `2. Оставить`.
+- если после finish найден похожий worktree другого `taskId`, branch или проекта, сообщать его как отдельный pending cleanup и снова задавать фиксированный выбор `1. Удалить` / `2. Оставить`; нельзя засчитывать или удалять его как cleanup текущей задачи.
 - optional repo script `task:finish:cleanup` может добавить только task-scoped `extraPaths` и/или вернуть `blocked`; starter core не делает глобальный sweep вне текущего task scope.
 
 ### Merge Semantic Command
@@ -229,7 +231,7 @@ Eval Gate для AI/agent behavior:
 - Task state canonical path: `.git/codex-task-pipeline/tasks/*.json`.
 - Runtime history canonical path: `.git/codex-task-pipeline/history/events.ndjson`.
 - `qaLastPassSha` и `previewPreparedSha` — обязательные reuse checkpoints.
-- `cleanupStatus` и `cleanupTargets` — обязательные finish-cleanup markers; отсутствие `cleanupStatus` означает, что cleanup ещё может требовать resume.
+- `cleanupStatus` и `cleanupTargets` — обязательные finish-cleanup markers; отсутствие `cleanupStatus` означает, что cleanup ещё может требовать resume, а `cleanupStatus=passed` допустим только после exact worktree, git worktree registration, managed task root и task-scoped leftovers verification.
 - Shared operational snapshots (`Docs/qa-implementation-log.md`, `Docs/triz-usage-log.md`, append-only sections `CODEX_MEMORY.md`) — single-writer artifacts.
 - `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` должны оставаться активными читаемыми логами; при разрастании sync сохраняет полный pre-compaction snapshot в `Docs/archive/*.md.gz`, а в активном файле оставляет компактный текущий хвост.
 - Task branches должны использовать `task:operational-docs:capture`, а publish/release stage — `task:operational-docs:sync`.

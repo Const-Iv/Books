@@ -136,7 +136,8 @@ node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/n
 - пишет `QA_REUSE`, `COMMIT_PUSH`, `CLEANUP`, `FINISH`;
 - требует явное решение `--cleanup 1|2` как canonical path; legacy `yes|no` остаётся совместимым.
 - branch-chat cleanup gate задаётся фиксированно как `1. Удалить` / `2. Оставить`; ответ `1` маппится на `--cleanup yes`, ответ `2` — на `--cleanup no`.
-- успешный finish требует итоговый `cleanupStatus = passed|kept`; один `cleanupDecision` не считается доказательством фактической уборки.
+- успешный delete cleanup требует `cleanupStatus = passed` только после проверки exact `state.worktreePath`, отсутствия этого пути в `git worktree list`, удаления `$CODEX_HOME/worktrees/<taskId>/` и отсутствия task-scoped leftovers; один `cleanupDecision`, похожий worktree name или exit code не считается доказательством фактической уборки.
+- если похожий worktree относится к другому `taskId`, branch или проекту, он сообщается как отдельный pending cleanup и не удаляется без нового выбора `1. Удалить` / `2. Оставить`.
 - optional repo hook `task:finish:cleanup` может вернуть task-scoped `extraPaths`, `blocked` и `notes`; starter core удаляет только пути внутри текущего task scope.
 
 ### `task:merge:main`

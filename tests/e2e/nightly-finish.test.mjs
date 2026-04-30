@@ -164,6 +164,43 @@ test("Nightly: finish cleanup prunes the empty managed task root and records cle
   }
 });
 
+test("Nightly: finish cleanup fails when the managed task root still has unreported leftovers", async () => {
+  const fixture = await createTempStarterRepo({ installDependencies: true });
+  try {
+    const env = buildEnv(fixture);
+    const started = startTask(fixture.repoRoot, env, "Finish cleanup leftover guard");
+    const taskRoot = path.dirname(started.worktreePath);
+    const leftoverPath = path.join(taskRoot, "unreported-leftover", "store.json");
+
+    await mkdir(path.dirname(leftoverPath), { recursive: true });
+    await writeFile(leftoverPath, "{}\n", "utf8");
+    await appendReadmeLine(started.worktreePath, "Validated cleanup leftover guard.");
+    runQaCheckpoint(started.worktreePath, env);
+
+    const failed = runStarterScript(started.worktreePath, ["scripts/worktree-finish-core.mjs", "--cleanup", "1"], {
+      env,
+      allowFailure: true
+    });
+    assert.notEqual(failed.status, 0);
+    assert.equal(existsSync(started.worktreePath), false);
+    assert.equal(existsSync(taskRoot), true);
+    assert.equal(existsSync(leftoverPath), true);
+
+    const state = await loadTaskStateByBranch(fixture.repoRoot, started.branch);
+    assert.equal(state?.cleanupDecision, "yes");
+    assert.equal(state?.cleanupStatus, "failed");
+
+    const events = await readNdjson(getHistoryPath(fixture.repoRoot));
+    const cleanupEvent = getLatestEvent(events, "CLEANUP", started.branch);
+    assert.equal(cleanupEvent.payload.status, "failed");
+    assert.ok(Array.isArray(cleanupEvent.payload.remainingPaths));
+    assert.ok(cleanupEvent.payload.remainingPaths.includes(taskRoot));
+    assert.match(`${failed.stderr}\n${failed.stdout}`, /Managed task root remains after cleanup/);
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
 test("Nightly: finish skips publish when the task branch HEAD is already in main", async () => {
   const fixture = await createTempStarterRepo({ installDependencies: true });
   try {
