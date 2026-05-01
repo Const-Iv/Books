@@ -64,6 +64,7 @@
 - Performance/state-safety changes должны сохранять user data и public behavior contracts; read-only/internal automatic updates не считаются user changes без user interaction или real entity changes.
 - `cleanupStatus=passed` для delete cleanup валиден только после проверки exact `state.worktreePath`, отсутствия этого пути в `git worktree list`, удаления `$CODEX_HOME/worktrees/<taskId>/` и отсутствия task-scoped leftovers; похожие worktrees других задач нужно сообщать как отдельный pending cleanup с новым выбором `1. Удалить` / `2. Оставить`.
 - GitHub CI failures нужно разбирать через repo-owned `gh-fix-ci`: recent Actions audit группирует повторы по repo/workflow/branch scope/failure class, а `account_billing_blocker` считается owner/platform action, не code regression.
+- `rule-sync:report --latest` должен fallback'иться с короткого нулевого follow-up probe на предшествующий meaningful scan и показывать traceability; настоящий нулевой scan за полный период нельзя подменять старым результатом.
 
 ## Project Notes
 
