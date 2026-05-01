@@ -128,6 +128,135 @@ Memory / rules ownership:
 - Подтвердил:
 - Дата:
 
+Capability decisions (заполнять, если применимо):
+
+Правило:
+- Каждый блок ниже сначала получает статус `применимо` или `не применимо`.
+- Если блок применим, owner согласует ответы до первой feature/refactor/behavior-change реализации в этой capability area.
+- Нельзя переносить provider-specific или stack-specific рецепт в core baseline без отдельного adapter/profile boundary.
+
+Auth / user identity:
+- Статус применимости: [ ] Применимо [ ] Не применимо [ ] Заблокировано
+- Кто входит в продукт и зачем:
+- Provider / identity source:
+- Token/session storage strategy:
+- Refresh / rotation / revocation policy:
+- Logout / account disconnect behavior:
+- CSRF / OAuth state / replay protection:
+- Sensitive data boundaries:
+- Required QA scenarios:
+- Статус согласования: [ ] Ожидает owner approval [ ] Согласовано [ ] Заблокировано
+- Подтвердил:
+- Дата:
+
+Payments / billing:
+- Статус применимости: [ ] Применимо [ ] Не применимо [ ] Заблокировано
+- Что пользователь покупает:
+- Currency / market assumptions:
+- Provider selection rule:
+- Webhook verification strategy:
+- Idempotency key / transaction id policy:
+- Refund / cancellation behavior:
+- Audit trail:
+- Required QA scenarios:
+- Статус согласования: [ ] Ожидает owner approval [ ] Согласовано [ ] Заблокировано
+- Подтвердил:
+- Дата:
+
+Credits / limits:
+- Статус применимости: [ ] Применимо [ ] Не применимо [ ] Заблокировано
+- Что измеряется и почему:
+- Balance source of truth:
+- Precision / rounding policy:
+- Pre-execution check:
+- Spend / refund / correction policy:
+- Race condition protection:
+- User-visible balance / history:
+- Required QA scenarios:
+- Статус согласования: [ ] Ожидает owner approval [ ] Согласовано [ ] Заблокировано
+- Подтвердил:
+- Дата:
+
+Analytics / consent:
+- Статус применимости: [ ] Применимо [ ] Не применимо [ ] Заблокировано
+- Какие решения нужно измерять:
+- Event catalog owner:
+- Consent / cookie policy:
+- Provider selection rule:
+- Failure isolation policy:
+- Data retention / privacy boundaries:
+- Reject / accept / withdrawal scenarios:
+- Required QA scenarios:
+- Статус согласования: [ ] Ожидает owner approval [ ] Согласовано [ ] Заблокировано
+- Подтвердил:
+- Дата:
+
+i18n / localization:
+- Статус применимости: [ ] Применимо [ ] Не применимо [ ] Заблокировано
+- Supported locales:
+- Default locale / fallback rule:
+- Locale selection strategy:
+- Translation source of truth:
+- Metadata / SEO / routing policy:
+- Translation completeness check:
+- Required QA scenarios:
+- Статус согласования: [ ] Ожидает owner approval [ ] Согласовано [ ] Заблокировано
+- Подтвердил:
+- Дата:
+
+Async jobs / workers:
+- Статус применимости: [ ] Применимо [ ] Не применимо [ ] Заблокировано
+- Какие операции долгие или отложенные:
+- Job lifecycle statuses:
+- Retry / backoff policy:
+- Cancellation policy:
+- Idempotency / duplicate handling:
+- Concurrency / locking choice:
+- User-visible progress:
+- Failure alerting:
+- Required QA scenarios:
+- Статус согласования: [ ] Ожидает owner approval [ ] Согласовано [ ] Заблокировано
+- Подтвердил:
+- Дата:
+
+API documentation:
+- Статус применимости: [ ] Применимо [ ] Не применимо [ ] Заблокировано
+- API audience:
+- Documentation source of truth:
+- Human-readable docs path:
+- Agent-readable docs path:
+- Freshness / generation policy:
+- Public / private boundary:
+- Required QA scenarios:
+- Статус согласования: [ ] Ожидает owner approval [ ] Согласовано [ ] Заблокировано
+- Подтвердил:
+- Дата:
+
+Service layout:
+- Статус применимости: [ ] Применимо [ ] Не применимо [ ] Заблокировано
+- Product code layout:
+- Service boundaries:
+- Shared package boundaries:
+- Worker / cron / background process boundaries:
+- Governance-root files that must stay at repo root:
+- Required QA scenarios:
+- Статус согласования: [ ] Ожидает owner approval [ ] Согласовано [ ] Заблокировано
+- Подтвердил:
+- Дата:
+
+Runtime-specific rules:
+- Статус применимости: [ ] Применимо [ ] Не применимо [ ] Заблокировано
+- Runtime / language:
+- Dependency manager:
+- Type / lint expectations:
+- Runtime safety checks:
+- Official docs / integration source:
+- What must remain adapter/profile-specific:
+- Required QA scenarios:
+- Статус согласования: [ ] Ожидает owner approval [ ] Согласовано [ ] Заблокировано
+- Подтвердил:
+- Дата:
+
 Перенос в canonical sources:
 - [ ] `.memory-bank/product-charter.md`
 - [ ] `.memory-bank/project-context.md`

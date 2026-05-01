@@ -44,6 +44,33 @@ Dependency preflight обязателен перед запуском gate:
 - Если relevant tests нет, явно фиксировать gap и компенсировать ближайшей более широкой deterministic check.
 - `qa:agent` остаётся обязательным final gate.
 
+## Behavior-Focused Test Quality
+
+Тесты должны доказывать пользовательское или contract-level поведение, а не повторять implementation details.
+
+Для новых или изменённых capability areas выбирать релевантные сценарии:
+
+- happy path;
+- empty / missing / boundary inputs;
+- validation and error paths;
+- permission / auth / role boundaries;
+- retry, timeout and cancellation behavior;
+- idempotency and duplicate handling;
+- concurrency / race-sensitive behavior;
+- state transitions and rollback;
+- external provider failure isolation;
+- user-visible empty/loading/error/success states.
+
+Quality guardrails:
+
+- bugfix требует regression test или явно зафиксированный gap с ближайшей deterministic компенсацией;
+- не оставлять `test.skip`, `it.only` или эквивалентные focused/skipped tests в committed baseline;
+- не использовать arbitrary sleeps/timeouts как доказательство async behavior, если есть deterministic wait/signal;
+- не писать tests, которые проходят независимо от реализации;
+- не тестировать private implementation details, если публичный contract можно проверить напрямую;
+- shared mutable test state должен сбрасываться между cases;
+- snapshot tests допустимы только для стабильных структур; для behavior prefer explicit assertions.
+
 ## Eval Gate For Agent Behavior
 
 Eval обязателен для изменений, которые влияют на:

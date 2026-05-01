@@ -16,7 +16,8 @@ Mirror rules:
 - новые governance/process rules сначала вносить в `AGENTS.md` и/или `.memory-bank/*`, и только потом зеркалить сюда;
 - product charter — первичный gate для любых продуктовых решений и feature/behavior/process/governance изменений: `.memory-bank/product-charter.md` нужно прочитать целиком, а миссия, видение, цель, целевая аудитория и `JTBD` должны проверяться до implementation path;
 - user-facing продуктовые решения формулировать простым языком в порядке `Миссия -> Видение -> Цель -> Целевая аудитория -> JTBD`; product spec в планах включает проблему / `JTBD`, целевую аудиторию изменения, сценарии, требования, критерии приемки, метрику успеха и ограничения;
-- новый downstream-проект сначала проходит Project Intake по `plans/_project_intake_template.md`; все обязательные пункты должны быть заполнены, согласованы owner'ом и перенесены в canonical sources до feature/refactor/behavior-change work;
+- новый downstream-проект сначала проходит Project Intake по `plans/_project_intake_template.md`; все обязательные пункты и applicable capability decisions должны быть заполнены, согласованы owner'ом и перенесены в canonical sources до feature/refactor/behavior-change work в соответствующей зоне;
+- capability decisions заполняются only-if-applicable: auth, payments, credits, analytics/consent, i18n, async jobs, API docs, service layout и runtime-specific rules. Provider/stack-specific решения не становятся starter core defaults и живут в downstream adapters/profiles;
 - для AI/agent behavior changes обязателен `Eval spec`: хороший ответ, провал, edge cases, golden prompts, comparison method и pass threshold; QA evidence должно включать eval result или явный gap;
 - user-facing ответы не должны использовать необъяснённый Git/process-жаргон; если термин нужен, рядом даётся простой смысл;
 - техническую часть будущих plan files начинать ниже верхнего продуктового блока;
@@ -28,6 +29,7 @@ Mirror rules:
 - если используется BMAD, `_bmad/` — canonical install, `_bmad-output/` — локальный scratch без коммита;
 - `.cursorrules` не заменяет `AGENTS.md` и не считается единственным source of truth;
 - QA и release decisions должны идти через `qa:agent`, `task:*`, `release:local`, а не через ad-hoc shell flow.
+- test quality evidence должно быть behavior-focused; skipped/focused tests, arbitrary sleeps и tests that pass regardless of implementation не считаются trustworthy QA.
 - cross-project rule sync должен идти через project-local skill `starter-rule-sync`; автоматизации тоже должны вызывать этот skill; `rule-sync:scan`, `rule-sync:report`, `rule-sync:apply-plan --dry-run` остаются execution layer; default scan window идёт от последнего saved scan snapshot до текущего запуска; owner report начинается с decision proposals, а candidate ids остаются traceability; auto-apply без managed worktree и plan approval запрещён.
 - outbound sharing обновлённого starter baseline должен идти через project-local skill `starter-rule-share`; `rule-share:scan`, `rule-share:report`, `rule-share:apply-plan --dry-run` остаются execution layer; список проектов берётся из ignored `runtime/rule-share/config.json`; direct edits и bulk-copy во все локальные проекты запрещены.
 - `task:finish:core` пропускает publish для clean task branch, чей `HEAD` уже есть в `main`, записывает `publishStatus=skipped_already_merged` / `PUBLISH_SKIP` и всё равно завершает cleanup.

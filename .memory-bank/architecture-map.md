@@ -38,6 +38,7 @@
 - rule-sync window drift, из-за которого scheduled automation пропускает правила после missed run вместо catch-up от последнего saved scan snapshot.
 - rule-share allowlist drift, из-за которого устаревший или paused проект может быть ошибочно предложен к обновлению.
 - rule-share delivery drift, из-за которого downstream product-specific charter может быть перезаписан вместо reusable baseline import.
+- capability profile drift, из-за которого product-specific provider, locale, stack, auth, billing, analytics, jobs или API-docs decisions могут ошибочно попасть в starter core вместо downstream adapters/profiles.
 
 ## Change Impact Checklist
 

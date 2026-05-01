@@ -29,12 +29,15 @@ These rules apply to the whole repository.
 - Для non-trivial work явно фиксировать assumptions, делать surgical diffs и предпочитать `reproduce -> fix -> verify`.
 - Перед product/feature/behavior/process/governance изменением читать `.memory-bank/product-charter.md` и сверять решение с миссией, видением, целью, целевой аудиторией и `JTBD`.
 - User-facing продуктовые решения формулировать простым языком в порядке `Миссия -> Видение -> Цель -> Целевая аудитория -> JTBD`; product spec в планах включает проблему / `JTBD`, целевую аудиторию изменения, сценарии, требования, критерии приемки, метрику успеха и ограничения; техническую часть планов начинать ниже продуктового блока.
-- Новый downstream-проект сначала проходит Project Intake по `plans/_project_intake_template.md`; все обязательные пункты должны быть заполнены, согласованы owner'ом и перенесены в canonical sources до feature/refactor/behavior-change work.
+- Новый downstream-проект сначала проходит Project Intake по `plans/_project_intake_template.md`; все обязательные пункты и applicable capability decisions должны быть заполнены, согласованы owner'ом и перенесены в canonical sources до feature/refactor/behavior-change work в соответствующей зоне.
+- Capability decisions заполняются only-if-applicable: auth, payments, credits, analytics/consent, i18n, async jobs, API docs, service layout и runtime-specific rules. Provider/stack-specific решения не становятся starter core defaults и должны жить в downstream adapters/profiles.
+- Для external libraries, integrations and provider setup проверять актуальную official documentation или доступный docs connector; конкретный docs tool не является обязательной зависимостью starter.
 - Для AI/agent behavior changes обязателен `Eval spec`: хороший ответ, провал, edge cases, golden prompts, comparison method и pass threshold; QA evidence должно включать eval result или явный gap.
 - В `Summary`, `TL;DR`, `Миссия`, `Видение`, `Цель`, `Целевая аудитория`, `JTBD`, `Job Story` и `User Stories` не использовать технические термины без твердой необходимости.
 - В Plan mode уточняющие вопросы и recommended option должны проходить через Product Charter; charter-конфликтный вариант нельзя подавать как равнозначно рекомендуемый.
 - В user-facing ответах не использовать необъяснённый Git/process-жаргон; если термин нужен, сразу объяснять его простыми словами рядом.
 - Для code-changing work использовать deterministic checks как evidence.
+- Test quality evidence должно быть behavior-focused; skipped/focused tests, arbitrary sleeps и tests that pass regardless of implementation не считаются trustworthy QA.
 - `npm run qa:agent` обязателен перед finish / merge / release.
 - Использовать канонические scripts: `task:start`, `task:qa:agent`, `task:finish:core`, `task:merge:main`, `release:local`.
 - Для cross-project rule sync использовать project-local skill `starter-rule-sync`; автоматизации тоже должны вызывать этот skill. `rule-sync:scan`, `rule-sync:report`, `rule-sync:apply-plan --dry-run` остаются execution layer. Default scan window идёт от последнего saved scan snapshot до текущего запуска. Owner report начинается с decision proposals, candidate ids — только traceability. Не применять правила без managed worktree и plan approval.

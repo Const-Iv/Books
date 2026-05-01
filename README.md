@@ -42,7 +42,7 @@ JTBD: когда начинается новый проект, получить 
 ## Быстрый старт
 
 1. Скопируйте этот репозиторий или его содержимое в корень нового проекта.
-2. Создайте Project Intake по `plans/_project_intake_template.md`: заполните миссию, видение, цель, целевую аудиторию, `JTBD`, ограничения, сценарии, метрики, stack/runtime, QA/release choices, agent/eval choices и ownership правил. Каждый пункт должен быть явно согласован owner'ом; `TBD` и “заполним потом” считаются blocker.
+2. Создайте Project Intake по `plans/_project_intake_template.md`: заполните миссию, видение, цель, целевую аудиторию, `JTBD`, ограничения, сценарии, метрики, stack/runtime, QA/release choices, agent/eval choices, ownership правил и applicable capability decisions. Capability-блоки вроде auth, payments, credits, analytics/consent, i18n, async jobs, API documentation, service layout и runtime-specific rules заполняются только если применимы к продукту. Каждый применимый пункт должен быть явно согласован owner'ом; `TBD` и “заполним потом” считаются blocker.
 3. После approval перенесите согласованные ответы в:
    - `AGENTS.md`
    - `.memory-bank/product-charter.md`
@@ -137,6 +137,7 @@ npm run qa:perf:critical
 ## Что важно понимать
 
 - Core starter не содержит продуктовый UI/API runtime. Smoke/nightly здесь проверяют process-level сценарии на временных git repos.
+- Capability decisions в Project Intake не являются core defaults: starter не мандатит конкретный frontend stack, identity provider, payment provider, fixed locales, Python-only decorators, database queue или worker model. Такие решения downstream выбирает через adapters/profiles и owner approval.
 - Repo-managed shared skills обновляются на устройстве обычным `git pull`, если symlink уже был создан. Для новых или переименованных skills повторно запускайте `npm run skills:link`.
 - `starter-rule-sync` — основной ручной и автоматический вход для быстрого подключения reusable rule updates; автоматизации должны вызывать этот skill, а не дублировать его логику. Report начинается с decision proposals, candidate ids остаются traceability. Default scan window идёт от последнего сохранённого scan snapshot до текущего запуска и всё равно требует owner approval перед импортом.
 - `starter-rule-share` — основной вход для outbound sharing после того, как starter уже обновлён и проверен. Список проектов берётся из ignored `runtime/rule-share/config.json`; report требует owner approval по проектам; apply-plan готовит только per-project task seeds и не делает direct edits. Для copied-baseline проектов seed содержит полный import contract: сохранить downstream charter, синхронизировать canonical/mirror surfaces, записать QA/TRIZ evidence и остановиться перед publish. По явному запросу или standing approval skill может пройти весь guarded one-run flow: scan/report, approval JSON, apply-plan, downstream `task:start`, reusable-rule import и QA; finish/merge/publish остаются отдельным явным gate.

@@ -144,8 +144,23 @@ tests/
 
 - обязательная стартовая карточка нового downstream-проекта;
 - до первой feature/refactor/behavior-change реализации заполняет миссию, видение, цель, целевую аудиторию, `JTBD`, ограничения, сценарии, метрики, stack/runtime, QA/release choices, agent/eval choices и rules/memory ownership;
+- дополнительно фиксирует applicable capability decisions: auth, payments, credits, analytics/consent, i18n, async jobs, API documentation, service layout и runtime-specific rules;
+- capability decisions заполняются only-if-applicable: проект без платежей, UI, API или фоновых задач не должен блокироваться лишними вопросами, но применимая зона не стартует без owner approval;
+- provider-specific и stack-specific решения не становятся starter core defaults; они фиксируются как downstream adapter/profile choices;
 - каждый пункт получает owner approval; placeholder, `TBD` и несогласованные допущения считаются blocker;
 - после approval ответы переносятся в `.memory-bank/product-charter.md`, `.memory-bank/project-context.md`, `.memory-bank/architecture-map.md`, `.memory-bank/code-rules.md`, `.memory-bank/qa-playbook.md`, `AGENTS.md`, `CODEX_MEMORY.md`, `README.md` и другие релевантные sources.
+
+Минимальные capability guardrails:
+
+- auth: token/session storage, refresh/rotation/revocation, logout, CSRF/OAuth state, sensitive data boundary;
+- payments: provider selection rule, webhook verification, idempotency, refund/cancellation, audit trail;
+- credits/limits: balance source of truth, precision, pre-execution check, spend/refund/correction, race protection;
+- analytics/consent: event catalog owner, consent policy, failure isolation, privacy boundaries;
+- i18n: locale policy, translation source of truth, metadata/routing, completeness check;
+- async jobs: lifecycle statuses, retry/backoff, cancellation, idempotency, concurrency choice, user-visible progress;
+- API documentation: docs source of truth, human-readable and agent-readable surfaces, freshness policy;
+- service layout: product code boundaries, worker/background boundaries, governance-root files;
+- runtime-specific rules: dependency manager, type/lint expectations, official docs source and adapter/profile boundary.
 
 `templates/agent-workspace/*`
 
@@ -407,7 +422,7 @@ TRIZ обязателен, если сработал хотя бы один из
 
 1. Создать `AGENTS.md` как главный policy-файл.
 2. Создать Project Intake по `plans/_project_intake_template.md` и заполнить все обязательные product/governance пункты.
-3. Получить owner approval по каждому пункту intake; несогласованные пункты считать blocker.
+3. Отметить applicable capability decisions и получить owner approval по каждому применимому пункту intake; несогласованные пункты считать blocker.
 4. Создать `.memory-bank/product-charter.md` и адаптировать миссию, видение, цель, целевую аудиторию и `JTBD` под продукт.
 5. Создать `.memory-bank/` с минимумом из `index`, `project-context`, `architecture-map`, `code-rules`, `qa-playbook`.
 6. Перенести согласованные ответы intake в `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, `README.md` и релевантные operator-facing docs.
@@ -428,6 +443,7 @@ TRIZ обязателен, если сработал хотя бы один из
 Blueprint считается внедрённым, если:
 
 - репозиторий содержит все канонические governance-файлы;
+- Project Intake содержит approved product/governance пункты и approved applicable capability decisions без provider/stack defaults в starter core;
 - conveyor создаёт `codex/*` worktree-задачи и пишет состояние в `.git/codex-task-pipeline/*`;
 - finish flow останавливается на QA failure и gated decisions корректно;
 - `qa:agent` работает детерминированно;
