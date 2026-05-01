@@ -22,6 +22,7 @@ Charter fit: reusable rule sync supports the mission and JTBD by letting downstr
 4. Run or inspect the latest rule-sync scan:
    - `npm run rule-sync:scan -- --since <YYYY-MM-DD> --until <YYYY-MM-DD>`
    - `npm run rule-sync:report -- --latest`
+   - If the latest scan is a short zero-candidate follow-up probe immediately after a meaningful scan, `report --latest` falls back to the meaningful scan and shows traceability. Do not override a real zero-result scan for a full period.
 5. Start the owner-facing response from decision proposals, not candidate ids:
    - `Связь с charter проекта`
    - `Цель решения`

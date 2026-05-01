@@ -40,6 +40,7 @@
 ### `rule-sync:report`
 
 - читает последний или явно выбранный scan snapshot;
+- при `--latest` защищает owner report от короткого нулевого follow-up scan: если latest snapshot выглядит как technical probe сразу после meaningful run, report выбирает предшествующий meaningful snapshot и показывает fallback traceability; настоящий нулевой scan за полный период не подменяется старым результатом;
 - строит русскую owner-facing сводку, которая начинается с decision proposals в формате `Связь с charter проекта -> Цель решения -> JTBD -> Job Stories -> User Stories -> Критерии приемки`;
 - ниже decision proposals оставляет raw секции `Кандидаты на импорт`, `Требует ручной проверки`, `Пропущено как product-specific`, `Диагностика`;
 - сохраняет traceability: source project, task/commit evidence, changed files, suggested starter target.
