@@ -14,6 +14,9 @@ const REPO_ROOT = path.dirname(path.dirname(THIS_FILE));
 const RULE_SYNC_DIR = "runtime/rule-sync";
 const SCANS_DIR = "scans";
 const DEFAULT_MAX_DEPTH = 5;
+const ZERO_PROBE_FALLBACK_MAX_WINDOW_MS = 15 * 60 * 1000;
+const ZERO_PROBE_FALLBACK_MAX_GENERATED_DELTA_MS = 15 * 60 * 1000;
+const ZERO_PROBE_FALLBACK_BOUNDARY_TOLERANCE_MS = 60 * 1000;
 const GOVERNANCE_FILES = new Set(["AGENTS.md", "CODEX_MEMORY.md", "CLAUDE.md", ".cursorrules", "README.md"]);
 const GOVERNANCE_PREFIXES = [
   ".memory-bank/",
@@ -137,6 +140,14 @@ const SECRET_PATTERN = /(token|secret|password|credential|api[_-]?key|private ke
  * @property {DiscoveredProject[]} projects
  * @property {RuleCandidate[]} candidates
  * @property {string[]} diagnostics
+ */
+
+/**
+ * @typedef {Object} ScanSelection
+ * @property {string} scanPath
+ * @property {string} latestPath
+ * @property {"latest"|"fallback_meaningful_probe"} source
+ * @property {string | null} reason
  */
 
 /**
@@ -1167,16 +1178,24 @@ export function renderRuleSyncReport(snapshot) {
  * @returns {Promise<string | null>}
  */
 async function latestScanPath(repoRoot) {
+  const files = await scanPaths(repoRoot);
+  return files.at(-1) ?? null;
+}
+
+/**
+ * @param {string} repoRoot
+ * @returns {Promise<string[]>}
+ */
+async function scanPaths(repoRoot) {
   const scansRoot = path.join(repoRoot, RULE_SYNC_DIR, SCANS_DIR);
   if (!existsSync(scansRoot)) {
-    return null;
+    return [];
   }
   const entries = await readdir(scansRoot, { withFileTypes: true });
-  const files = entries
+  return entries
     .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
     .map((entry) => path.join(scansRoot, entry.name))
     .sort();
-  return files.at(-1) ?? null;
 }
 
 /**
@@ -1185,6 +1204,90 @@ async function latestScanPath(repoRoot) {
  */
 async function readSnapshot(filePath) {
   return /** @type {RuleSyncSnapshot} */ (JSON.parse(await readFile(filePath, "utf8")));
+}
+
+/**
+ * @param {string} value
+ * @returns {number | null}
+ */
+function timestampMs(value) {
+  const parsed = new Date(value).getTime();
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+/**
+ * @param {RuleSyncSnapshot} snapshot
+ * @returns {number | null}
+ */
+function snapshotWindowMs(snapshot) {
+  const since = timestampMs(snapshot.since);
+  const until = timestampMs(snapshot.until);
+  if (since === null || until === null || until < since) {
+    return null;
+  }
+  return until - since;
+}
+
+/**
+ * @param {RuleSyncSnapshot} latest
+ * @param {RuleSyncSnapshot} candidate
+ * @returns {boolean}
+ */
+function isMeaningfulFallbackForZeroProbe(latest, candidate) {
+  if (latest.candidates.length !== 0 || candidate.candidates.length === 0) {
+    return false;
+  }
+
+  const latestWindow = snapshotWindowMs(latest);
+  if (latestWindow === null || latestWindow > ZERO_PROBE_FALLBACK_MAX_WINDOW_MS) {
+    return false;
+  }
+
+  const latestGenerated = timestampMs(latest.generatedAt);
+  const candidateGenerated = timestampMs(candidate.generatedAt);
+  if (
+    latestGenerated === null ||
+    candidateGenerated === null ||
+    Math.abs(latestGenerated - candidateGenerated) > ZERO_PROBE_FALLBACK_MAX_GENERATED_DELTA_MS
+  ) {
+    return false;
+  }
+
+  const latestSince = timestampMs(latest.since);
+  const candidateUntil = timestampMs(candidate.until);
+  if (latestSince === null || candidateUntil === null) {
+    return false;
+  }
+
+  return Math.abs(latestSince - candidateUntil) <= ZERO_PROBE_FALLBACK_BOUNDARY_TOLERANCE_MS;
+}
+
+/**
+ * @param {string} repoRoot
+ * @returns {Promise<ScanSelection | null>}
+ */
+export async function latestReportScanSelection(repoRoot) {
+  const paths = await scanPaths(repoRoot);
+  const latestPath = paths.at(-1);
+  if (!latestPath) {
+    return null;
+  }
+
+  const latest = await readSnapshot(latestPath);
+  for (const candidatePath of paths.slice(0, -1).reverse()) {
+    const candidate = await readSnapshot(candidatePath);
+    if (isMeaningfulFallbackForZeroProbe(latest, candidate)) {
+      return {
+        scanPath: candidatePath,
+        latestPath,
+        source: "fallback_meaningful_probe",
+        reason:
+          "Latest scan has 0 candidates and looks like a short follow-up probe; using the preceding meaningful scan for the owner report."
+      };
+    }
+  }
+
+  return { scanPath: latestPath, latestPath, source: "latest", reason: null };
 }
 
 /**
@@ -1283,14 +1386,30 @@ async function main() {
   }
 
   if (command === "report") {
-    const scanPath = typeof flags.scan === "string" ? flags.scan : flags.latest === true ? await latestScanPath(repoRoot) : null;
+    const selection =
+      typeof flags.scan === "string"
+        ? /** @type {ScanSelection | null} */ ({ scanPath: flags.scan, latestPath: flags.scan, source: "latest", reason: null })
+        : flags.latest === true
+          ? await latestReportScanSelection(repoRoot)
+          : null;
+    const scanPath = selection?.scanPath ?? null;
     if (!scanPath) {
       throw new Error("No scan selected. Use --latest or --scan <path>.");
     }
     const snapshot = await readSnapshot(scanPath);
-    const text = renderRuleSyncReport(snapshot);
+    const fallbackLines =
+      selection?.source === "fallback_meaningful_probe"
+        ? [
+            "",
+            "## Snapshot fallback",
+            `- ${selection.reason}`,
+            `- Selected scan: ${selection.scanPath}`,
+            `- Latest scan: ${selection.latestPath}`
+          ]
+        : [];
+    const text = [renderRuleSyncReport(snapshot), ...fallbackLines].join("\n");
     if (flags.json === true) {
-      console.log(JSON.stringify({ status: "ok", scanPath, text, snapshot }, null, 2));
+      console.log(JSON.stringify({ status: "ok", scanPath, selection, text, snapshot }, null, 2));
     } else {
       console.log(text);
     }

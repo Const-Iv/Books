@@ -11,6 +11,7 @@ import {
   buildDecisionProposals,
   classifyRuleCandidate,
   defaultScanWindow,
+  latestReportScanSelection,
   renderRuleSyncReport,
   scanRuleSync
 } from "../../scripts/rule-sync.mjs";
@@ -117,6 +118,133 @@ test("rule-sync default window resumes from latest scan until", async () => {
     assert.equal(window.source, "latest_scan");
     assert.equal(window.since.toISOString(), "2026-04-27T02:00:00.000Z");
     assert.equal(window.until.toISOString(), "2026-04-29T02:30:00.000Z");
+  } finally {
+    await rm(repoRoot, { recursive: true, force: true });
+  }
+});
+
+test("rule-sync report latest falls back from short zero probe to meaningful scan", async () => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), "rule-sync-report-latest-"));
+  try {
+    const scansRoot = path.join(repoRoot, "runtime", "rule-sync", "scans");
+    await mkdir(scansRoot, { recursive: true });
+    const meaningfulPath = path.join(scansRoot, "rule-sync-2026-04-30-233208826Z.json");
+    const zeroProbePath = path.join(scansRoot, "rule-sync-2026-04-30-233225164Z.json");
+    await writeFile(
+      meaningfulPath,
+      `${JSON.stringify({
+        schemaVersion: 1,
+        generatedAt: "2026-04-30T23:32:08.826Z",
+        since: "2026-04-29T21:00:00.000Z",
+        until: "2026-04-30T23:32:07.686Z",
+        repoRoot,
+        projects: [],
+        candidates: [
+          {
+            id: "rs-meaningful",
+            category: "import_candidate",
+            sourceProject: "Agent_Const",
+            sourceRepo: "/tmp/agent",
+            sourceType: "commit",
+            taskId: null,
+            branch: null,
+            commitSha: "abcdef",
+            title: "Starter governance",
+            paths: ["AGENTS.md"],
+            snippets: ["Rule text"],
+            suggestedTargetFiles: ["AGENTS.md"],
+            summary: "Изменены governance paths: AGENTS.md.",
+            evidence: "commit abcdef",
+            confidence: "low",
+            classifierReasons: ["reusable:starter"]
+          }
+        ],
+        diagnostics: []
+      })}\n`,
+      "utf8"
+    );
+    await writeFile(
+      zeroProbePath,
+      `${JSON.stringify({
+        schemaVersion: 1,
+        generatedAt: "2026-04-30T23:32:25.164Z",
+        since: "2026-04-30T23:32:07.686Z",
+        until: "2026-04-30T23:32:24.755Z",
+        repoRoot,
+        projects: [],
+        candidates: [],
+        diagnostics: []
+      })}\n`,
+      "utf8"
+    );
+
+    const selection = await latestReportScanSelection(repoRoot);
+    assert.equal(selection?.source, "fallback_meaningful_probe");
+    assert.equal(selection?.scanPath, meaningfulPath);
+    assert.equal(selection?.latestPath, zeroProbePath);
+  } finally {
+    await rm(repoRoot, { recursive: true, force: true });
+  }
+});
+
+test("rule-sync report latest keeps real zero-result scan", async () => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), "rule-sync-report-zero-"));
+  try {
+    const scansRoot = path.join(repoRoot, "runtime", "rule-sync", "scans");
+    await mkdir(scansRoot, { recursive: true });
+    const oldPath = path.join(scansRoot, "rule-sync-2026-04-30-023000000Z.json");
+    const latestPath = path.join(scansRoot, "rule-sync-2026-05-01-023000000Z.json");
+    await writeFile(
+      oldPath,
+      `${JSON.stringify({
+        schemaVersion: 1,
+        generatedAt: "2026-04-30T02:30:00.000Z",
+        since: "2026-04-29T02:30:00.000Z",
+        until: "2026-04-30T02:30:00.000Z",
+        repoRoot,
+        projects: [],
+        candidates: [
+          {
+            id: "rs-old",
+            category: "import_candidate",
+            sourceProject: "Agent_Const",
+            sourceRepo: "/tmp/agent",
+            sourceType: "commit",
+            taskId: null,
+            branch: null,
+            commitSha: "abcdef",
+            title: "Starter governance",
+            paths: ["AGENTS.md"],
+            snippets: ["Rule text"],
+            suggestedTargetFiles: ["AGENTS.md"],
+            summary: "Изменены governance paths: AGENTS.md.",
+            evidence: "commit abcdef",
+            confidence: "low",
+            classifierReasons: ["reusable:starter"]
+          }
+        ],
+        diagnostics: []
+      })}\n`,
+      "utf8"
+    );
+    await writeFile(
+      latestPath,
+      `${JSON.stringify({
+        schemaVersion: 1,
+        generatedAt: "2026-05-01T02:30:00.000Z",
+        since: "2026-04-30T02:30:00.000Z",
+        until: "2026-05-01T02:30:00.000Z",
+        repoRoot,
+        projects: [],
+        candidates: [],
+        diagnostics: []
+      })}\n`,
+      "utf8"
+    );
+
+    const selection = await latestReportScanSelection(repoRoot);
+    assert.equal(selection?.source, "latest");
+    assert.equal(selection?.scanPath, latestPath);
   } finally {
     await rm(repoRoot, { recursive: true, force: true });
   }
