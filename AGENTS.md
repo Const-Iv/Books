@@ -225,6 +225,7 @@ Eval Gate для AI/agent behavior:
 - Performance и state-safety fixes должны явно сохранять пользовательские данные и публичные behavior contracts; read-only/internal automatic updates не считаются user changes без пользовательского действия или реального entity change.
 - Риск потери пользовательского состояния требует root-cause анализа и reusable regression guard; локальное reasoning-only исправление без guard допустимо только как зафиксированный exception.
 - Для complex behavior changes QA evidence должно включать deterministic checks и operational-doc capture; QA/TRIZ logs являются evidence для формулировки правила, а не готовым source text для governance import.
+- GitHub CI расследования должны идти через repo-owned `gh-fix-ci` workflow: recent Actions audit группирует повторы по repo/workflow/branch scope/failure class, отделяет `account_billing_blocker` от code regression и не превращает owner/platform blocker в code patch.
 
 ## Operational Docs and Task State
 

@@ -31,6 +31,12 @@
       ]
     },
     {
+      "module": "skills/gh-fix-ci/scripts/inspect_actions_failures.py",
+      "tests": [
+        "tests/unit/gh-actions-failure-audit.test.mjs"
+      ]
+    },
+    {
       "module": "scripts/worktree-start.mjs",
       "tests": [
         "tests/e2e/pr-smoke.test.mjs"

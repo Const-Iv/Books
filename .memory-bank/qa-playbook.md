@@ -86,6 +86,14 @@ Acceptance criteria проверяют пользовательский резу
 - Для delete cleanup acceptance evidence требует проверки exact `state.worktreePath`, git worktree registration, managed task root `$CODEX_HOME/worktrees/<taskId>/` и task-scoped leftovers; `cleanupStatus=passed` без этой проверки не считается доказательством.
 - Большие `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` должны compact'иться только через publish/release sync: полный pre-compaction snapshot уходит в `Docs/archive/*.md.gz`, активный лог остаётся читаемым.
 
+## GitHub CI Failure Triage
+
+- Для GitHub CI расследований использовать repo-owned `gh-fix-ci` workflow вместо ручного просмотра уведомлений.
+- PR checks разбираются через `skills/gh-fix-ci/scripts/inspect_pr_checks.py`.
+- Recent scheduled/nightly failures разбираются через `skills/gh-fix-ci/scripts/inspect_actions_failures.py` с явным window или owner-approved broad audit.
+- Отчёт должен сначала группировать повторы по repo/workflow/branch scope/failure class, затем показывать run urls и snippets как traceability.
+- `account_billing_blocker` означает owner/platform action и не должен превращаться в code patch.
+
 ## Failure Classes for Finish / Merge / Release
 
 - `retryable_flake`: только если failure имеет недетерминированный характер и не воспроизводится на повторе того же stage.
