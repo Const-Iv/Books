@@ -1,0 +1,4 @@
+interface:
+  display_name: "Starter Project Bootstrap"
+  short_description: "Guide new project bootstrap"
+  default_prompt: "Use $starter-project-bootstrap to guide a new downstream project through Project Intake, canonical docs, skills, and baseline QA."

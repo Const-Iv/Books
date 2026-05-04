@@ -31,6 +31,7 @@ JTBD: когда начинается новый проект, получить 
 - `CODEX_MEMORY.md` — оперативная память Codex.
 - `scripts/` — реальные process entrypoints, а не только README-контракты.
 - `skills/` — versioned reusable Codex skills, которые можно подключить глобально через symlink.
+- `skills/starter-project-bootstrap/` — основной conversational skill для фразы `стартуем новый проект`: ведёт owner'а по Project Intake, canonical docs, dependencies, shared skills и baseline QA.
 - `skills/starter-rule-sync/` — основной project-local skill для ручного и автоматического поиска reusable правил в downstream проектах; `scripts/rule-sync.mjs` остаётся детерминированным execution layer для scan/report/apply-plan.
 - `skills/starter-rule-share/` — основной project-local skill для передачи текущего starter baseline в выбранные active downstream проекты; `scripts/rule-share.mjs` остаётся approval-safe execution layer, а guarded one-run mode выполняет перенос только через downstream managed task worktrees и QA. Для copied-baseline проектов task seed уже включает canonical/mirror sync, QA/TRIZ evidence и stop-before-publish gate.
 - `tests/` — unit/integration/e2e проверки самого starter baseline.
@@ -42,20 +43,23 @@ JTBD: когда начинается новый проект, получить 
 ## Быстрый старт
 
 1. Скопируйте этот репозиторий или его содержимое в корень нового проекта.
-2. Создайте Project Intake по `plans/_project_intake_template.md`: заполните миссию, видение, цель, целевую аудиторию, `JTBD`, ограничения, сценарии, метрики, stack/runtime, QA/release choices, agent/eval choices, ownership правил и applicable capability decisions. Capability-блоки вроде auth, payments, credits, analytics/consent, i18n, async jobs, API documentation, service layout и runtime-specific rules заполняются только если применимы к продукту. Каждый применимый пункт должен быть явно согласован owner'ом; `TBD` и “заполним потом” считаются blocker.
-3. После approval перенесите согласованные ответы в:
+2. В чате напишите `стартуем новый проект`. Codex должен использовать `$starter-project-bootstrap`: при необходимости установить зависимости, выполнить `npm run skills:link`, определить текущее состояние bootstrap, создать или продолжить Project Intake и вести вас по обязательным решениям. Если для локальных skill-конфликтов нужен `npm run skills:link -- --adopt`, Codex должен остановиться и спросить ваше подтверждение.
+3. Создайте Project Intake по `plans/_project_intake_template.md`: заполните миссию, видение, цель, целевую аудиторию, `JTBD`, ограничения, сценарии, метрики, stack/runtime, QA/release choices, agent/eval choices, ownership правил и applicable capability decisions. Capability-блоки вроде auth, payments, credits, analytics/consent, i18n, async jobs, API documentation, service layout и runtime-specific rules заполняются только если применимы к продукту. Каждый применимый пункт должен быть явно согласован owner'ом; `TBD` и “заполним потом” считаются blocker.
+4. После approval перенесите согласованные ответы в:
    - `AGENTS.md`
    - `.memory-bank/product-charter.md`
    - `.memory-bank/project-context.md`
    - `.memory-bank/architecture-map.md`
+   - `.memory-bank/code-rules.md`
+   - `CODEX_MEMORY.md`
    - `README.md`
-4. Установите зависимости:
+5. Установите зависимости:
 
 ```bash
 npm ci
 ```
 
-5. Если хотите использовать общие repo-managed skills на этом устройстве, один раз подключите их в глобальный Codex home:
+6. Если хотите использовать общие repo-managed skills на этом устройстве, один раз подключите их в глобальный Codex home. При conversational bootstrap это делает агент после команды `стартуем новый проект`:
 
 ```bash
 npm run skills:link
@@ -67,7 +71,7 @@ npm run skills:link
 npm run skills:link -- --adopt
 ```
 
-6. Если проект подключает shared skills через git submodule, добавьте starter как versioned dependency и линкуйте skills из него:
+7. Если проект подключает shared skills через git submodule, добавьте starter как versioned dependency и линкуйте skills из него:
 
 ```bash
 git submodule add <starter-repo-url> vendor/new-project-starter
@@ -77,7 +81,7 @@ node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/n
 
 В таком режиме проект фиксирует конкретный commit starter baseline, а новые люди получают тот же набор skills после `git clone --recurse-submodules` или `git submodule update --init --recursive`.
 
-7. Прогоните baseline QA:
+8. Прогоните baseline QA:
 
 ```bash
 npm run qa:agent
@@ -139,6 +143,7 @@ npm run qa:perf:critical
 - Core starter не содержит продуктовый UI/API runtime. Smoke/nightly здесь проверяют process-level сценарии на временных git repos.
 - Capability decisions в Project Intake не являются core defaults: starter не мандатит конкретный frontend stack, identity provider, payment provider, fixed locales, Python-only decorators, database queue или worker model. Такие решения downstream выбирает через adapters/profiles и owner approval.
 - Repo-managed shared skills обновляются на устройстве обычным `git pull`, если symlink уже был создан. Для новых или переименованных skills повторно запускайте `npm run skills:link`.
+- `starter-project-bootstrap` — основной вход для conversational bootstrap: после фразы `стартуем новый проект` агент должен подключить repo-managed skills через `npm run skills:link`, показать связь с charter, определить bootstrap state, провести Project Intake Gate, перенести approved ответы в canonical sources и предложить baseline QA.
 - `starter-rule-sync` — основной ручной и автоматический вход для быстрого подключения reusable rule updates; автоматизации должны вызывать этот skill, а не дублировать его логику. Report начинается с decision proposals, candidate ids остаются traceability. Default scan window идёт от последнего сохранённого scan snapshot до текущего запуска и всё равно требует owner approval перед импортом.
 - `starter-rule-share` — основной вход для outbound sharing после того, как starter уже обновлён и проверен. Список проектов берётся из ignored `runtime/rule-share/config.json`; report требует owner approval по проектам; apply-plan готовит только per-project task seeds и не делает direct edits. Для copied-baseline проектов seed содержит полный import contract: сохранить downstream charter, синхронизировать canonical/mirror surfaces, записать QA/TRIZ evidence и остановиться перед publish. По явному запросу или standing approval skill может пройти весь guarded one-run flow: scan/report, approval JSON, apply-plan, downstream `task:start`, reusable-rule import и QA; finish/merge/publish остаются отдельным явным gate.
 - Для multi-project командного использования предпочтителен git submodule: downstream repo хранит starter под `vendor/new-project-starter`, а `skills-manage.mjs --source vendor/new-project-starter/skills` создаёт symlink'и в локальный `$CODEX_HOME/skills`.
