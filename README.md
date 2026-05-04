@@ -14,7 +14,7 @@
 - product charter for mission/vision/goal/target-audience/JTBD;
 - local-first `release:local`.
 
-Миссия starter: дать команде переносимую операционную основу для старта нового проекта с первого дня.
+Миссия starter: помогать командам, которые запускают новый проект или репозиторий, с первого дня получать понятную и воспроизводимую операционную основу через переносимый starter baseline.
 
 Целевая аудитория starter: команды, которые начинают новый проект или репозиторий, технические и продуктовые лиды, инженеры и agent-operators, а также downstream maintainers, которые подключают starter как baseline.
 
@@ -44,7 +44,7 @@ JTBD: когда начинается новый проект, получить 
 
 1. Скопируйте этот репозиторий или его содержимое в корень нового проекта.
 2. В чате напишите `стартуем новый проект`. Codex должен использовать `$starter-project-bootstrap`: автоматически создать безопасный bootstrap worktree, при необходимости установить зависимости, выполнить `npm run skills:link`, определить текущее состояние bootstrap, создать или продолжить Project Intake и вести вас по обязательным решениям. Если для локальных skill-конфликтов нужен `npm run skills:link -- --adopt`, Codex должен показать конкретные конфликтующие папки и спросить отдельное подтверждение.
-3. Создайте Project Intake по `plans/_project_intake_template.md`: заполните миссию, видение, цель, целевую аудиторию, `JTBD`, ограничения, сценарии, метрики, stack/runtime, QA/release choices, agent/eval choices, ownership правил и applicable capability decisions. Capability-блоки вроде auth, payments, credits, analytics/consent, i18n, async jobs, API documentation, service layout и runtime-specific rules заполняются только если применимы к продукту. Каждый применимый пункт должен быть явно согласован owner'ом; `TBD` и “заполним потом” считаются blocker.
+3. Создайте Project Intake по `plans/_project_intake_template.md`: заполните миссию, видение, цель, целевую аудиторию, `JTBD`, ограничения, сценарии, метрики, stack/runtime, QA/release choices, agent/eval choices, ownership правил и applicable capability decisions. Миссию и видение проверяйте по вопросам и формулам из `.memory-bank/product-charter.md`: миссия описывает, кому проект помогает и какой результат даёт сейчас, а видение — какое будущее проект хочет получить. Capability-блоки вроде auth, payments, credits, analytics/consent, i18n, async jobs, API documentation, service layout и runtime-specific rules заполняются только если применимы к продукту. Каждый применимый пункт должен быть явно согласован owner'ом; `TBD` и “заполним потом” считаются blocker.
 4. После approval перенесите согласованные ответы в:
    - `AGENTS.md`
    - `.memory-bank/product-charter.md`
