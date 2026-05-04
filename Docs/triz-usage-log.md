@@ -108,3 +108,9 @@
 - Branch: `codex/20260430-082858-2709-require-exact-cleanup-verification-in-worktree-finish`
 - Reasons: cross_module_conflict, historical_recurrence
 - Status: trigger recorded
+
+## 2026-05-04T11:44:20.730Z 20260504-084634-8208
+
+- Branch: `codex/20260504-084634-8208-bootstrap-downstream-`
+- Reasons: historical_recurrence
+- Status: trigger recorded
