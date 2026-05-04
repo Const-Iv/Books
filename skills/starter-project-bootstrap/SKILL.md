@@ -55,9 +55,21 @@ For a copied starter repository, the skill folder exists under `skills/`, but Co
 
 1. If repo dependencies are not installed and `package.json` exists, run `npm ci`.
 2. Run `npm run skills:link` from the new project root to connect repo-managed skills, including `starter-project-bootstrap`.
-3. If `skills:link` fails because target skills already exist or are unmanaged, stop and explain the conflict. Do not run `npm run skills:link -- --adopt` without explicit owner approval, because adopt moves existing local skill folders into backup-managed paths.
+3. If `skills:link` fails because target skills already exist or are unmanaged, stop and show the exact conflicting target skill paths. Ask a separate approval question for `npm run skills:link -- --adopt`; do not combine it with worktree approval. Do not run `--adopt` without explicit owner approval, because adopt moves existing local skill folders into backup-managed paths.
 4. If the project uses starter as a submodule, run `git submodule update --init --recursive` and then `node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/new-project-starter/skills`.
 5. After linking succeeds, continue the Project Intake workflow.
+
+## Bootstrap Worktree Rule
+
+The user command `стартуем новый проект` is enough approval to create a managed bootstrap worktree when all of these are true:
+
+- the repository is on `main`;
+- the working tree is clean;
+- the repo exposes the canonical `task:start` entrypoint.
+
+In that case, start the managed bootstrap worktree automatically with a clear title such as `Bootstrap new project`, then continue the workflow in that worktree. Do not ask the owner to write a combined confirmation such as "create worktree and adopt skills".
+
+Stop instead of auto-starting when the repo is dirty, the task conveyor is unavailable, or the owner explicitly asks for direct-main bootstrap. Direct-main edits still require explicit owner approval.
 
 ## Main Workflow
 
@@ -65,11 +77,8 @@ For a copied starter repository, the skill folder exists under `skills/`, but Co
    - The starter's job is to give a portable operational baseline.
    - A downstream project must define its own mission, audience, JTBD, constraints, and capability choices before feature work.
 2. Explain the current bootstrap state and the next safe step in plain language.
-3. Ensure repo-managed skills are linked using the safe flow above, unless this was already done in the current bootstrap session.
-4. If the repo is on `main`, do not edit files until one of these is true:
-   - a managed `codex/*` worktree exists for bootstrap; or
-   - the owner explicitly approves a direct-main initial bootstrap edit for this repository.
-   Prefer the managed worktree when repo scripts are available.
+3. If the repo is on clean `main`, create a managed bootstrap worktree automatically using the rule above before editing files.
+4. Ensure repo-managed skills are linked using the safe flow above, unless this was already done in the current bootstrap session.
 5. If there is no approved Project Intake, create or continue an intake file from `plans/_project_intake_template.md`.
 6. Ask for missing intake information in small batches. Prefer one high-impact question at a time when answers materially affect safety or scope.
 7. Mark every required intake item as `Согласовано` or `Заблокировано`. `TBD`, placeholders, and "заполним потом" remain blockers.
