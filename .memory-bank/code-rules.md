@@ -1,5 +1,14 @@
 # Code Rules
 
+## Product-Specific Rules
+
+- Канонический product charter проекта: `.memory-bank/product-charter.md`.
+- Любое продуктовое решение по Школе ассистентов должно сохранять миссию, видение, цель, целевую аудиторию, `JTBD`, продуктовые ограничения и критерии успеха из charter.
+- Raw transcript `Docs/product-discovery/2026-04-03-assistant-selection-transcript.raw` не редактировать.
+- Roadmap items не считать готовой функциональностью без отдельного implementation approval.
+- До подтверждения гипотезы не фиксировать runtime, stack, коммерческую модель, governance/runtime ownership или capability decisions как готовые решения.
+- Capability decisions на этапе проверки гипотезы: не применимо.
+
 ## Core Rules
 
 - Product charter в `.memory-bank/product-charter.md` — первичный gate для любых продуктовых решений и feature/behavior/process/governance изменений: сначала прочитать документ целиком, проверить миссию, видение, цель, целевую аудиторию и `JTBD`, затем выбирать implementation path.
