@@ -54,7 +54,7 @@ async function createSkillFixture() {
   };
 }
 
-test("repo exposes starter-rule-sync as a managed project skill", async () => {
+test("repo exposes starter managed project skills", async () => {
   const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
   const discovered = await discoverRepoSkills(repoRoot);
   assert.deepEqual(
@@ -63,6 +63,7 @@ test("repo exposes starter-rule-sync as a managed project skill", async () => {
       "codebase-recon",
       "gh-address-comments",
       "gh-fix-ci",
+      "starter-project-bootstrap",
       "starter-rule-share",
       "starter-rule-sync",
       "worktree-create",

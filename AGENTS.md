@@ -39,6 +39,7 @@ Product Charter Gate:
 - Rule-sync import не должен переносить сырой QA/TRIZ log как готовое правило: logs используются как evidence, а import text переписывается в portable starter invariant с source traceability.
 - Owner-facing reports должны сначала давать человеческий смысл, решение и следующий шаг; candidate ids, commits, task ids и source snippets используются только как проверяемая traceability и не заменяют summary.
 - `skills/starter-rule-share/` — основной project-local skill для outbound sharing текущего подтверждённого starter baseline в выбранные активные downstream проекты. `rule-share:*` commands остаются approval-safe execution layer: scan/report read-only, apply-plan только dry-run task seeds, список проектов берётся из ignored `runtime/rule-share/config.json`, а direct bulk-copy во все локальные проекты запрещён. Guarded one-run mode допустим только по явному owner request или ignored standing approval: перенос идёт через downstream managed task worktrees и deterministic QA, manual-review/blocked проекты пропускаются, finish/merge/publish не выполняются без отдельного явного разрешения. Для copied-baseline `prepare_rule_import` task seed должен включать canonical/mirror parity (`AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, README, `.cursorrules`, `CLAUDE.md`), QA/TRIZ evidence и явную остановку перед publish gate.
+- `skills/starter-project-bootstrap/` — основной project-local skill для conversational bootstrap нового downstream-проекта после копирования или подключения starter baseline. Интенты `стартуем новый проект`, `запусти новый проект`, `проведи bootstrap нового проекта`, `я скопировал starter в новый репозиторий` должны вызывать этот skill: сначала установить зависимости при необходимости и выполнить `npm run skills:link`, затем определить bootstrap state, провести Project Intake Gate, перенести approved ответы в canonical sources и запустить baseline QA. Если `skills:link` требует `--adopt` из-за конфликтующих локальных skill targets, ассистент должен остановиться и запросить explicit owner approval. Feature/refactor/behavior-change work запрещён до approved intake.
 
 Project Intake Gate для нового downstream-проекта:
 - Новый проект, который стартует от starter baseline, сначала заполняет Project Intake по `plans/_project_intake_template.md`; feature/refactor/behavior-change реализация начинается только после owner approval по всем обязательным пунктам.
@@ -49,6 +50,7 @@ Project Intake Gate для нового downstream-проекта:
 - Каждый пункт intake должен иметь статус `согласовано` или зафиксированный blocker; placeholder, `TBD`, “заполним потом” и несогласованные допущения не считаются готовым bootstrap.
 - После approval ответы из intake переносятся в `.memory-bank/product-charter.md`, `.memory-bank/project-context.md`, `.memory-bank/architecture-map.md`, `.memory-bank/code-rules.md`, `AGENTS.md`, `CODEX_MEMORY.md`, `README.md` и другие релевантные canonical sources.
 - Если по пункту нельзя выбрать безопасный вариант без владельца продукта, ассистент задаёт короткий choice question и рекомендует только charter-safe option.
+- Если пользователь пишет `стартуем новый проект` или близкую формулировку, ассистент не должен выдавать только общий checklist: нужно использовать `$starter-project-bootstrap`, показать связь с charter, назвать текущее состояние bootstrap, дать следующий безопасный шаг и вести owner'а по intake, canonical transfer и deterministic QA.
 
 Eval Gate для AI/agent behavior:
 - Для изменений, влияющих на Plan mode, вопросы/рекомендации ассистента, Product Charter gate, Project Intake Gate, rule-sync owner reports, rule-share owner reports, conversational commands, TRIZ decisions или другой AI/agent behavior, plan file обязан содержать `Eval spec`.
@@ -148,6 +150,19 @@ Eval Gate для AI/agent behavior:
 ## Chat Conveyor Commands (Default Mode)
 
 В `Default` режиме ассистент должен понимать разговорные формулировки и исполнять их через канонические скрипты репозитория.
+
+### New Project Bootstrap
+
+Канонический интент: `стартуем новый проект`.
+
+- использовать `$starter-project-bootstrap`;
+- прочитать `.memory-bank/product-charter.md`, `.memory-bank/index.md`, `plans/_project_intake_template.md`, `AGENTS.md` и `CODEX_MEMORY.md`;
+- если repo-managed skills ещё не подключены, установить зависимости через `npm ci` при необходимости и выполнить `npm run skills:link`; при конфликте не запускать `--adopt` без explicit owner approval;
+- определить состояние bootstrap: `fresh-copy`, `intake-in-progress`, `intake-approved`, `canonical-ready` или `qa-ready`;
+- если Project Intake не approved, создать или продолжить intake и не начинать feature/refactor/behavior-change работу;
+- если intake approved, перенести ответы в canonical sources и mirrors as applicable;
+- после canonical transfer установить зависимости, подключить repo-managed skills при необходимости и прогнать baseline QA;
+- не hardcode'ить stack/provider/product defaults в starter core; такие решения фиксируются как downstream adapters/profiles с owner approval.
 
 ### Main Branch Protection
 

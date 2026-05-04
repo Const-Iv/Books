@@ -11,6 +11,7 @@
 - `scripts/worktree-history.mjs` + `scripts/worktree-ledger.mjs`: docs snapshots from runtime history/state.
 - `scripts/worktree-operational-docs.mjs`: single-writer capture/sync of operational docs.
 - `scripts/release-local.mjs`: local-first release gate.
+- `skills/starter-project-bootstrap/SKILL.md`: primary Codex workflow for guided downstream Project Intake, canonical transfer, dependency/shared-skills setup, and baseline QA.
 - `skills/starter-rule-sync/SKILL.md`: primary Codex workflow for manual and automated reusable rule sync.
 - `scripts/rule-sync.mjs`: deterministic cross-project governance scan/report/apply-plan execution seam for reusable starter rules.
 - `skills/starter-rule-share/SKILL.md`: primary Codex workflow for approval-safe outbound sharing of the current starter baseline.
@@ -39,6 +40,7 @@
 - rule-share allowlist drift, из-за которого устаревший или paused проект может быть ошибочно предложен к обновлению.
 - rule-share delivery drift, из-за которого downstream product-specific charter может быть перезаписан вместо reusable baseline import.
 - capability profile drift, из-за которого product-specific provider, locale, stack, auth, billing, analytics, jobs или API-docs decisions могут ошибочно попасть в starter core вместо downstream adapters/profiles.
+- bootstrap flow drift, из-за которого фраза `стартуем новый проект` превращается в общий checklist, пропускает Project Intake approval или начинает feature work до canonical transfer.
 
 ## Change Impact Checklist
 
@@ -53,6 +55,13 @@
 
 - синхронизировать `AGENTS.md`, `.memory-bank/*`, `.memory-bank/product-charter.md`, `CODEX_MEMORY.md`, `.cursorrules`, `CLAUDE.md`;
 - проверить README и scripts/README на parity с реальными командами.
+
+Когда меняется starter project bootstrap:
+
+- проверить `skills/starter-project-bootstrap/SKILL.md`;
+- проверить `plans/_project_intake_template.md`;
+- проверить, что trigger rules есть в `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md` и mirrors;
+- проверить manual eval по golden prompts `стартуем новый проект` и `стартуем новый проект на <stack/provider>`.
 
 Когда меняется rule-sync:
 
