@@ -6,11 +6,16 @@ These rules apply to the whole repository.
 
 Канонический product source of truth: `.memory-bank/product-charter.md`.
 
+Правило формулировки миссии и видения:
+- Миссия отвечает на вопросы “зачем существуем”, “для кого работаем”, “какую проблему решаем”, “какую пользу создаём”; это про настоящее и смысл деятельности. Формула: `Мы помогаем [кому] получать [какой результат] через [что / как]`.
+- Видение отвечает на вопросы “куда идём”, “какими хотим стать”, “какой рынок, привычку или способ работы хотим изменить”, “как выглядит успех через 3–10 лет”; это про будущее и амбицию. Формула: `Мы видим будущее, в котором [желаемое состояние мира / рынка], а наш проект — [роль в этом будущем]`.
+- Для новых downstream-проектов mission/vision в Project Intake нужно проверять по этим вопросам и формулам до переноса в canonical sources; миссия и видение не создаются на уровне отдельных задач.
+
 Миссия:
-- Мы даём команде переносимую операционную основу для старта нового проекта с первого дня: понятные правила работы, безопасный task flow, воспроизводимые проверки, memory-bank governance, TRIZ-эскалацию и разговорное управление задачами без ручной сборки заново.
+- Мы помогаем командам, которые запускают новый проект или репозиторий, с первого дня получать понятную и воспроизводимую операционную основу через переносимый starter baseline: правила работы, безопасное ведение задач, проверяемое качество, память проекта и разговорное управление процессом без ручной сборки заново.
 
 Видение:
-- `new-project-starter` становится базовым слоем для новых репозиториев: команда подключает его как baseline, сразу получает понятный способ заводить, проверять, завершать и публиковать задачи, а продуктовую специфику добавляет поверх через adapters/profiles без изменения core governance.
+- Мы видим будущее, в котором новый проект начинается не с ручной сборки правил, процессов и проверок, а с готовой переносимой основы; `new-project-starter` становится базовым слоем для таких репозиториев, где команда добавляет продуктовую специфику поверх через adapters/profiles без изменения core governance.
 
 Цель проекта:
 - Поддерживать runnable local-first starter baseline, который можно подключать или копировать в downstream проекты, чтобы они сразу имели canonical sources of truth, managed worktrees, deterministic QA, task state/history, operational docs и reusable shared skills.
@@ -44,6 +49,7 @@ Product Charter Gate:
 Project Intake Gate для нового downstream-проекта:
 - Новый проект, который стартует от starter baseline, сначала заполняет Project Intake по `plans/_project_intake_template.md`; feature/refactor/behavior-change реализация начинается только после owner approval по всем обязательным пунктам.
 - Обязательные сведения: миссия, видение, цель, целевая аудитория, `JTBD`, продуктовые ограничения, сценарии использования, метрики успеха, границы core/adapters/profiles, stack/runtime choices, QA/release choices, agent/eval ownership, source-of-truth files, rules/memory ownership и applicable capability decisions.
+- Миссия и видение в Project Intake должны быть сформулированы по правилам из `.memory-bank/product-charter.md`: миссия показывает, кому проект помогает и какой результат даёт сейчас; видение показывает желаемое будущее и роль проекта в нём.
 - Capability decisions в Project Intake заполняются only-if-applicable: auth / user identity, payments / billing, credits / limits, analytics / consent, i18n / localization, async jobs / workers, API documentation, service layout и runtime-specific rules. Применимый блок требует owner approval до feature/refactor/behavior-change работы в этой зоне; неприменимый блок явно помечается как not applicable.
 - Starter core не должен hardcode'ить provider-specific или stack-specific defaults: конкретный frontend stack, identity provider, payment providers, fixed locales, Python-only decorators, database queue или single-worker model допустимы только как downstream adapter/profile choice.
 - Security-sensitive capability decisions должны фиксировать portable invariants до implementation: token/session storage и revocation для auth; webhook verification и idempotency для payments; audit trail, precision, pre-execution checks and race protection for credits/limits; consent and failure isolation for analytics; completeness checks for i18n; retry/cancellation/idempotency for async jobs; documentation source of truth for APIs.

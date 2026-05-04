@@ -24,8 +24,8 @@ Purpose: хранить долгоживущие, reusable знания прое
 ## Update Policy
 
 - Coding constraints и assistant standing orders — в `code-rules.md`.
-- Mission, vision, goal, целевая аудитория проекта и `JTBD` — в `product-charter.md`; проблема, целевая аудитория изменения, сценарии, требования, `Job Story`, `User Story`, критерии приемки, метрика успеха, ограничения и `Eval spec` оформляются на уровне конкретных feature/spec задач, а не общего charter.
-- Project Intake для нового downstream-проекта — в `plans/_project_intake_template.md`; после owner approval согласованные ответы переносятся в canonical sources, а несогласованные пункты считаются blocker. Applicable capability decisions фиксируются там же как optional-if-applicable блоки, чтобы product-specific auth, payments, credits, analytics, i18n, async jobs, API docs, service layout и runtime choices не попадали в starter core как mandatory defaults.
+- Mission, vision, goal, целевая аудитория проекта и `JTBD` — в `product-charter.md`; там же живут вопросы и формулы для mission/vision в Project Intake. Проблема, целевая аудитория изменения, сценарии, требования, `Job Story`, `User Story`, критерии приемки, метрика успеха, ограничения и `Eval spec` оформляются на уровне конкретных feature/spec задач, а не общего charter.
+- Project Intake для нового downstream-проекта — в `plans/_project_intake_template.md`; mission/vision там проверяются по формулам из `product-charter.md`, после owner approval согласованные ответы переносятся в canonical sources, а несогласованные пункты считаются blocker. Applicable capability decisions фиксируются там же как optional-if-applicable блоки, чтобы product-specific auth, payments, credits, analytics, i18n, async jobs, API docs, service layout и runtime choices не попадали в starter core как mandatory defaults.
 - Conversational bootstrap нового downstream-проекта — в `skills/starter-project-bootstrap/SKILL.md`; обязательные gate'ы остаются в product charter, code rules и Project Intake template.
 - Stable architecture/process boundaries — в `architecture-map.md`.
 - Repeatable QA rules, failure classes, evidence capture — в `qa-playbook.md`.
