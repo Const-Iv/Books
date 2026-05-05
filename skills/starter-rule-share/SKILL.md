@@ -1,6 +1,6 @@
 ---
 name: starter-rule-share
-description: Primary project-local skill for sharing the current approved new-project-starter governance baseline outward to owner-approved active downstream projects. Use after starter-rule-sync has imported and verified reusable rules in New Project Starter, when Codex needs to propose target projects, require owner approval, run guarded one-run sharing when explicitly requested, and prepare or execute approval-safe per-project task updates without overwriting downstream product-specific governance.
+description: Primary project-local skill for sharing the current approved new-project-starter governance baseline outward to owner-approved active downstream projects. Use after starter-rule-import has imported and verified reusable rules in New Project Starter, when Codex needs to propose target projects, require owner approval, run guarded one-run sharing when explicitly requested, and prepare or execute approval-safe per-project task updates without overwriting downstream product-specific governance.
 ---
 
 # starter-rule-share

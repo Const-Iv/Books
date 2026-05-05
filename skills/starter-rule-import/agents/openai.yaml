@@ -1,0 +1,4 @@
+interface:
+  display_name: "Starter Rule Import"
+  short_description: "Approve and import starter rules"
+  default_prompt: "Use $starter-rule-import to approve the latest starter rule report and prepare a safe import."

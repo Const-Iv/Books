@@ -147,6 +147,8 @@ export const REQUIRED_FILES = [
   "research/triz/case-library.md",
   "skills/worktree-create/SKILL.md",
   "skills/worktree-finish/SKILL.md",
+  "skills/starter-rule-report/SKILL.md",
+  "skills/starter-rule-import/SKILL.md",
   "skills/starter-rule-sync/SKILL.md",
   "skills/starter-rule-share/SKILL.md",
   "templates/agent-workspace/README.md",

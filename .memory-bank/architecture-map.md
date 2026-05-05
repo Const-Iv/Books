@@ -12,7 +12,9 @@
 - `scripts/worktree-operational-docs.mjs`: single-writer capture/sync of operational docs.
 - `scripts/release-local.mjs`: local-first release gate.
 - `skills/starter-project-bootstrap/SKILL.md`: primary Codex workflow for guided downstream Project Intake, canonical transfer, dependency/shared-skills setup, and baseline QA.
-- `skills/starter-rule-sync/SKILL.md`: primary Codex workflow for manual and automated reusable rule sync.
+- `skills/starter-rule-report/SKILL.md`: primary Codex workflow for read-only reusable rule discovery and owner reports.
+- `skills/starter-rule-import/SKILL.md`: primary Codex workflow for owner-approved reusable rule import.
+- `skills/starter-rule-sync/SKILL.md`: compatibility router for legacy combined rule-sync prompts.
 - `scripts/rule-sync.mjs`: deterministic cross-project governance scan/report/apply-plan execution seam for reusable starter rules.
 - `skills/starter-rule-share/SKILL.md`: primary Codex workflow for approval-safe outbound sharing of the current starter baseline.
 - `scripts/rule-share.mjs`: deterministic target-project scan/report/apply-plan execution seam for outbound starter rule sharing.
@@ -66,6 +68,8 @@
 
 Когда меняется rule-sync:
 
+- проверить `skills/starter-rule-report/SKILL.md`;
+- проверить `skills/starter-rule-import/SKILL.md`;
 - проверить `skills/starter-rule-sync/SKILL.md`;
 - проверить `scripts/rule-sync.mjs`;
 - проверить `tests/unit/rule-sync.test.mjs`;

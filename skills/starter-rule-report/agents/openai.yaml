@@ -1,0 +1,4 @@
+interface:
+  display_name: "Starter Rule Report"
+  short_description: "Build readable starter rule reports"
+  default_prompt: "Use $starter-rule-report to run the read-only starter rule scan and save the owner report."
