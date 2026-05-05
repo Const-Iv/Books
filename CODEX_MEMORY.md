@@ -68,6 +68,8 @@
 - Если отчёт или дайджест собирает данные из разных источников, каждая запись должна явно показывать свой источник. Конкретные каналы проекта, например Telegram или Gmail, остаются в проекте-источнике.
 - `task:start` slug regression: если user title содержит осмысленный текст, нельзя получать generic `task`; для non-ASCII title нужно сохранять читаемую связь с запросом через deterministic ASCII slug (`ЭХО` -> `echo`).
 - Echo-testing lesson: перед строительством продукта на неизвестной корневой связке сначала проверять минимальный изолированный loop/result, фиксировать limitations and decision, и только потом разрешать product feature work.
+- Approved reusable starter rules должны фиксироваться в `.memory-bank/starter-rule-registry.json`; без stable id и exact text `starter-rule-share` не может надёжно отличить уже применённое правило от missing rule.
+- Outbound rule sharing переносит в copied-baseline проекты только `missingRules`; `presentUnregisteredRules` нельзя дублировать как новый текст, а partial/manual-review matches требуют owner review.
 
 ## Project Notes
 
@@ -87,3 +89,4 @@
 - Product charter теперь содержит явные вопросы и формулы для mission/vision, чтобы Project Intake новых downstream-проектов точнее различал текущий смысл проекта и будущую амбицию.
 - Starter содержит `starter-rule-report`, `starter-rule-import` и temporary `starter-rule-sync` router как approval-safe контур регулярного переноса reusable правил из downstream проектов обратно в baseline.
 - Scheduled automations должны вызывать `starter-rule-report` для read-only scan/report; утреннее owner approval и import должны идти через `starter-rule-import`; `starter-rule-sync` только направляет старые prompt'ы к одному из этих двух skills. `rule-sync:*` commands остаются approval-safe execution layer, default scan window идёт от последнего saved scan snapshot до текущего запуска, а owner report начинается с decision proposals вместо raw candidate ids.
+- Starter содержит `.memory-bank/starter-rule-registry.json` как machine-readable реестр reusable правил; `starter-rule-import` обновляет его при новом approved import, а `starter-rule-share` использует его для project-level отчёта `present/missing/presentUnregistered/blocked`.
