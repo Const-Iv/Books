@@ -34,7 +34,7 @@
 - читает task pipeline events/states и governance commits за заданный период;
 - пишет snapshot в `runtime/rule-sync/scans/*.json`;
 - остаётся read-only относительно tracked starter source.
-- ручной owner-facing workflow должен идти через repo skill `starter-rule-sync`; script остаётся детерминированным execution layer.
+- read-only owner report workflow должен идти через repo skill `starter-rule-report`; script остаётся детерминированным execution layer.
 - если `--since` / `--until` не указаны, default window начинается с `until` последнего сохранённого scan snapshot и заканчивается текущим временем; если snapshot ещё нет, используется предыдущий локальный день.
 
 ### `rule-sync:report`
@@ -49,6 +49,7 @@
 - эталонный формат owner-facing групп использует жирные Markdown labels: `**Точный текст для starter:**`, `**Что проверить вручную:**`, `**Моё предложение:**`, `**Что ожидается от владельца:**`; эти labels считаются частью контракта читаемости отчёта;
 - anti-regression contract: не возвращать raw ids как основной интерфейс решения, не повторять дубли отдельными пунктами, не оставлять QA/TRIZ logs как import-ready правила, не использовать generic evidence wording без конкретной проблемы и ожидаемого owner decision;
 - сохраняет traceability: source project, task/commit evidence, changed files, suggested starter target.
+- утренний owner approval workflow по этому report должен идти через repo skill `starter-rule-import`.
 
 ### `rule-sync:apply-plan`
 
@@ -56,6 +57,7 @@
 - в v1 требует `--dry-run`;
 - возвращает seed и команду для managed `task:start`;
 - не применяет правила, не меняет `main` и не создаёт source edits без отдельного task worktree/plan/QA.
+- user-facing текст должен объяснять `--dry-run` как `предварительная проверка без изменений`.
 
 ### `rule-share:scan`
 

@@ -1,4 +1,4 @@
 interface:
   display_name: "Starter Rule Sync"
-  short_description: "Sync reusable rules into starter"
-  default_prompt: "Use $starter-rule-sync to review reusable rule updates from local projects and prepare an approval-safe starter import."
+  short_description: "Route old rule-sync prompts"
+  default_prompt: "Use $starter-rule-sync only to route old rule-sync prompts to $starter-rule-report or $starter-rule-import."

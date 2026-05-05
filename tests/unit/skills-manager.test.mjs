@@ -64,6 +64,8 @@ test("repo exposes starter managed project skills", async () => {
       "gh-address-comments",
       "gh-fix-ci",
       "starter-project-bootstrap",
+      "starter-rule-import",
+      "starter-rule-report",
       "starter-rule-share",
       "starter-rule-sync",
       "worktree-create",
