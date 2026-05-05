@@ -41,6 +41,7 @@
 - rule-share delivery drift, из-за которого downstream product-specific charter может быть перезаписан вместо reusable baseline import.
 - capability profile drift, из-за которого product-specific provider, locale, stack, auth, billing, analytics, jobs или API-docs decisions могут ошибочно попасть в starter core вместо downstream adapters/profiles.
 - bootstrap flow drift, из-за которого фраза `стартуем новый проект` превращается в общий checklist, пропускает Project Intake approval или начинает feature work до canonical transfer.
+- owner-report source drift, из-за которого отчёт или дайджест смешивает данные из нескольких источников без явного источника каждой записи.
 
 ## Change Impact Checklist
 

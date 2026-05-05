@@ -37,8 +37,9 @@ Charter fit: reusable rule sync supports the mission and JTBD by letting downstr
    - `Кандидаты на импорт`: reusable baseline rules for starter.
    - `Требует ручной проверки`: mixed reusable and product-specific signals.
    - `Пропущено как product-specific`: belongs in the source project or an adapter/profile.
-7. Ask the owner to approve, skip, or rewrite decision proposals. Candidate ids are traceability, not the decision interface.
-8. After explicit approval, write an ignored approval JSON such as `runtime/rule-sync/approvals/<date>-approval.json`:
+7. If the report or digest combines data from multiple sources, every entry must explicitly show its source. Concrete source channels such as Telegram or Gmail stay in the source project.
+8. Ask the owner to approve, skip, or rewrite decision proposals. Candidate ids are traceability, not the decision interface.
+9. After explicit approval, write an ignored approval JSON such as `runtime/rule-sync/approvals/<date>-approval.json`:
    ```json
    {
      "approved": ["rs-candidate-id"],
@@ -47,10 +48,10 @@ Charter fit: reusable rule sync supports the mission and JTBD by letting downstr
      }
    }
    ```
-9. Prepare import with:
+10. Prepare import with:
    - `npm run rule-sync:apply-plan -- --approval <path> --dry-run`
-10. Use the returned `task:start` seed to create a managed worktree and plan file before changing starter source files.
-11. After implementation, run deterministic QA and record evidence in the task response or plan file.
+11. Use the returned `task:start` seed to create a managed worktree and plan file before changing starter source files.
+12. After implementation, run deterministic QA and record evidence in the task response or plan file.
 
 ## Manual Fast Path
 
