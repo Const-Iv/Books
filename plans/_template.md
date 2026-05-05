@@ -51,6 +51,15 @@ User Stories:
 - <ограничение 1>
 - <ограничение 2>
 
+Echo-testing applicability:
+- Применимо: да | нет
+- Unknown root technology / integration / provider / runtime / agent surface:
+- Minimal echo-test scenario:
+- Expected minimal observable result:
+- Evidence path / actual result:
+- Decision: proceed | blocked | narrow spike | choose alternative
+- Если echo-test не применим, причина:
+
 Eval spec (обязательно для AI/agent behavior changes):
 - Применимо: да | нет
 - Agent surface: <Plan mode / Product Charter gate / Project Intake / rule-sync / conversational commands / TRIZ / другое>

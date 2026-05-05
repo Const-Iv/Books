@@ -110,6 +110,21 @@ Stack / runtime choices:
 - Подтвердил:
 - Дата:
 
+Echo-testing / root capability check:
+- Есть ли неизвестная корневая технология, интеграция, provider, runtime, agent surface, bot/channel, worker или внешний API: [ ] Да [ ] Нет [ ] Заблокировано
+- Что именно неизвестно:
+- Minimal echo-test scenario:
+- Входной сигнал / test input:
+- Ожидаемый minimal observable result:
+- Security boundary: какие secrets, production user data и insecure bypass запрещены:
+- Evidence path / где фиксируется результат:
+- Фактический результат:
+- Найденные ограничения:
+- Решение: [ ] Proceed [ ] Blocked [ ] Narrow spike [ ] Choose alternative
+- Статус согласования: [ ] Ожидает owner approval [ ] Согласовано [ ] Заблокировано
+- Подтвердил:
+- Дата:
+
 QA / release choices:
 - Primary deterministic gate:
 - Smoke / e2e scope:

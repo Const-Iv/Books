@@ -22,7 +22,8 @@ Use this skill to start a task worktree in a way that is consistent across proje
 3. If the repo blocks dirty-tree starts, stop and report the blocker instead of forcing a bypass.
 4. Execute the canonical start entrypoint from the repo contract.
 5. Verify the result by capturing the created branch, worktree path, and any task id or state artifact.
-6. Report the result briefly with the exact branch and worktree path.
+6. Confirm the branch/worktree slug reflects the resolved title; for non-ASCII title expect the repo's deterministic readable ASCII slug, such as `ЭХО` -> `echo`, and treat a generic `task` slug for meaningful text as a regression.
+7. Report the result briefly with the exact branch and worktree path.
 
 ## Intent Resolution
 
@@ -34,6 +35,7 @@ Use this skill to start a task worktree in a way that is consistent across proje
 ## Guardrails
 
 - Do not invent branch naming if the repo already defines it.
+- Do not replace a meaningful user title with a generic `task` slug when the repo supports deterministic title-derived slugs.
 - Do not bypass dirty-tree guards such as removed `--allow-dirty` flags or similar repo protections.
 - Do not replace a documented script-driven conveyor with free-form git commands.
 - If no canonical start flow exists, say so explicitly before proposing a generic fallback.
