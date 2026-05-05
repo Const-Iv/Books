@@ -66,6 +66,8 @@
 - GitHub CI failures нужно разбирать через repo-owned `gh-fix-ci`: recent Actions audit группирует повторы по repo/workflow/branch scope/failure class, а `account_billing_blocker` считается owner/platform action, не code regression.
 - `rule-sync:report --latest` должен fallback'иться с короткого нулевого follow-up probe на предшествующий meaningful scan и показывать traceability; настоящий нулевой scan за полный период нельзя подменять старым результатом.
 - Если отчёт или дайджест собирает данные из разных источников, каждая запись должна явно показывать свой источник. Конкретные каналы проекта, например Telegram или Gmail, остаются в проекте-источнике.
+- `task:start` slug regression: если user title содержит осмысленный текст, нельзя получать generic `task`; для non-ASCII title нужно сохранять читаемую связь с запросом через deterministic ASCII slug (`ЭХО` -> `echo`).
+- Echo-testing lesson: перед строительством продукта на неизвестной корневой связке сначала проверять минимальный изолированный loop/result, фиксировать limitations and decision, и только потом разрешать product feature work.
 
 ## Project Notes
 
