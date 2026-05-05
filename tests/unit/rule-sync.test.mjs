@@ -1,10 +1,11 @@
 // @ts-check
 
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import {
   buildApplyPlan,
@@ -16,6 +17,8 @@ import {
   scanRuleSync
 } from "../../scripts/rule-sync.mjs";
 import { runCommand } from "../../scripts/lib/runtime.mjs";
+
+const TEST_REPO_ROOT = path.dirname(path.dirname(path.dirname(fileURLToPath(import.meta.url))));
 
 /**
  * @param {string} repoRoot
@@ -277,6 +280,24 @@ test("rule-sync report renders required sections", () => {
         evidence: "task task-1; commit abcdef",
         confidence: "high",
         classifierReasons: ["reusable:governance", "reusable:jtbd", "reusable:plan template"]
+      },
+      {
+        id: "rs-test-2",
+        category: "import_candidate",
+        sourceProject: "Agent_Const",
+        sourceRepo: "/tmp/agent",
+        sourceType: "commit",
+        taskId: null,
+        branch: null,
+        commitSha: "123456",
+        title: "Product charter report wording",
+        paths: ["AGENTS.md"],
+        snippets: ["Every owner-facing decision starts with project charter, JTBD, Job Stories, User Stories and acceptance criteria."],
+        suggestedTargetFiles: ["AGENTS.md"],
+        summary: "Изменены governance paths: AGENTS.md.",
+        evidence: "commit 123456",
+        confidence: "medium",
+        classifierReasons: ["reusable:governance", "reusable:product-charter"]
       }
     ]
   });
@@ -285,6 +306,16 @@ test("rule-sync report renders required sections", () => {
   assert.match(text, /Требует ручной проверки/);
   assert.match(text, /Пропущено как product-specific/);
   assert.match(text, /Предложения к решению/);
+  assert.match(text, /Разбор по проектам/);
+  assert.match(text, /### Agent_Const/);
+  assert.match(text, /\*\*Что делать:\*\* Перенести как правило для отчётов владельцу/);
+  assert.match(text, /\*\*Что нашли:\*\* Найдено 2 похожих записей/);
+  assert.match(text, /\*\*Точный текст для starter:\*\* Любое продуктовое или рабочее решение должно начинаться со связи с project charter/);
+  assert.match(text, /\*\*Дубли или похожие записи:\*\* Да, это одна тема из нескольких источников: rs-test, rs-test-2/);
+  assert.match(text, /\*\*Источники для проверки:\*\*/);
+  assert.match(text, /## Кандидаты на импорт[\s\S]*\*\*Точный текст для starter:\*\* Любое продуктовое или рабочее решение/);
+  assert.match(text, /\*\*Пункты в группе:\*\* rs-test, rs-test-2/);
+  assert.match(text, /\*\*Что ожидается от владельца:\*\* Ответить: перенести, пропустить или переписать/);
   assert.doesNotMatch(text, /Миссия:/);
   assert.doesNotMatch(text, /Видение:/);
   assert.match(text, /Связь с charter проекта:/);
@@ -293,6 +324,68 @@ test("rule-sync report renders required sections", () => {
   assert.match(text, /Критерии приемки:/);
   assert.match(text, /Диагностика/);
   assert.match(text, /rs-test/);
+});
+
+test("rule-sync report saves readable markdown artifact", async () => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), "rule-sync-readable-report-"));
+  try {
+    initRepo(repoRoot);
+    await commitFile(repoRoot, "README.md", "# Starter\n", "initial starter");
+    const scansRoot = path.join(repoRoot, "runtime", "rule-sync", "scans");
+    await mkdir(scansRoot, { recursive: true });
+    const scanPath = path.join(scansRoot, "rule-sync-2026-05-04-233227430Z.json");
+    await writeFile(
+      scanPath,
+      `${JSON.stringify({
+        schemaVersion: 1,
+        generatedAt: "2026-05-04T23:32:27.430Z",
+        since: "2026-05-03T23:32:39.741Z",
+        until: "2026-05-04T23:32:26.000Z",
+        repoRoot,
+        projects: [],
+        diagnostics: [],
+        candidates: [
+          {
+            id: "rs-review",
+            category: "needs_review",
+            sourceProject: "Agent_Const",
+            sourceRepo: "/tmp/agent",
+            sourceType: "commit",
+            taskId: null,
+            branch: null,
+            commitSha: "abcdef",
+            title: "Telegram governance mixed with reusable report rule",
+            paths: ["AGENTS.md"],
+            snippets: ["Owner-facing reports must show source traceability while Telegram details stay local."],
+            suggestedTargetFiles: ["AGENTS.md / .memory-bank/*"],
+            summary: "Изменены governance paths: AGENTS.md.",
+            evidence: "commit abcdef",
+            confidence: "low",
+            classifierReasons: ["reusable:governance", "product:telegram"]
+          }
+        ]
+      })}\n`,
+      "utf8"
+    );
+
+    const output = runCommand(repoRoot, "node", [path.join(TEST_REPO_ROOT, "scripts/rule-sync.mjs"), "report", "--scan", scanPath]).stdout;
+    const reportPath = output.match(/Report saved: (.+)$/m)?.[1] ?? "";
+    const report = await readFile(reportPath, "utf8");
+    assert.ok(reportPath.includes(path.join("runtime", "rule-sync", "reports")));
+    assert.match(report, /## Разбор по проектам/);
+    assert.match(report, /### Agent_Const/);
+    assert.match(report, /\*\*Что делать:\*\* Переписать без названий конкретных каналов/);
+    assert.match(report, /\*\*Точный текст для starter:\*\* Если отчёт или дайджест собирает данные из разных источников/);
+    assert.match(report, /\*\*Как переписать без лишнего:\*\* Не переносить `Telegram`, `Gmail`, `inbox_agent`/);
+    assert.match(report, /\*\*Что нашли:\*\* В проекте изменили рабочие правила/);
+    assert.match(report, /\*\*Источники для проверки:\*\*/);
+    assert.match(report, /## Требует ручной проверки[\s\S]*\*\*Точный текст для starter:\*\* Если отчёт или дайджест собирает данные из разных источников/);
+    assert.match(report, /\*\*Что проверить вручную:\*\* согласны ли вы с общей мыслью без названий конкретных каналов/);
+    assert.match(report, /\*\*Моё предложение:\*\* принять предложенный общий текст/);
+    assert.match(report, /\*\*Что ожидается от владельца:\*\* Выбрать одно: принять предложенный текст/);
+  } finally {
+    await rm(repoRoot, { recursive: true, force: true });
+  }
 });
 
 test("rule-sync decision proposals group product planning candidates", () => {
@@ -329,7 +422,7 @@ test("rule-sync decision proposals group product planning candidates", () => {
   assert.equal(proposals.length, 1);
   assert.equal(proposals[0].recommendation, "import");
   assert.equal(proposals[0].candidates[0].id, "rs-plan");
-  assert.match(proposals[0].jobStories.join("\n"), /candidate ids/);
+  assert.match(proposals[0].jobStories.join("\n"), /служебные id/);
 });
 
 test("rule-sync apply-plan builds safe task-start seed", () => {
