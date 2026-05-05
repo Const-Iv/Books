@@ -43,6 +43,7 @@
 - rule-share delivery drift, из-за которого downstream product-specific charter может быть перезаписан вместо reusable baseline import.
 - capability profile drift, из-за которого product-specific provider, locale, stack, auth, billing, analytics, jobs или API-docs decisions могут ошибочно попасть в starter core вместо downstream adapters/profiles.
 - bootstrap flow drift, из-за которого фраза `стартуем новый проект` превращается в общий checklist, пропускает Project Intake approval или начинает feature work до canonical transfer.
+- echo-testing drift, из-за которого unknown root technology получает продуктовую реализацию без isolated minimal proof или blocker.
 - owner-report source drift, из-за которого отчёт или дайджест смешивает данные из нескольких источников без явного источника каждой записи.
 
 ## Change Impact Checklist
@@ -63,6 +64,7 @@
 
 - проверить `skills/starter-project-bootstrap/SKILL.md`;
 - проверить `plans/_project_intake_template.md`;
+- проверить echo-testing gate для unknown root technology и manual eval по golden prompts;
 - проверить, что trigger rules есть в `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md` и mirrors;
 - проверить manual eval по golden prompts `стартуем новый проект` и `стартуем новый проект на <stack/provider>`.
 

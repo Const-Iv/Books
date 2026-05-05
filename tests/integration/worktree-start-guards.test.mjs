@@ -5,7 +5,7 @@ import { appendFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
-import { loadAllTaskStates } from "../../scripts/lib/runtime.mjs";
+import { loadAllTaskStates, loadTaskStateByBranch } from "../../scripts/lib/runtime.mjs";
 import { createTempStarterRepo, runStarterScript } from "../helpers/temp-repo.mjs";
 
 test("task:start rejects dirty tree and does not allow --allow-dirty bypass", async () => {
@@ -29,6 +29,32 @@ test("task:start rejects dirty tree and does not allow --allow-dirty bypass", as
 
     const states = await loadAllTaskStates(fixture.repoRoot);
     assert.equal(states.length, 0);
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test("task:start uses a readable slug from Cyrillic task title", async () => {
+  const fixture = await createTempStarterRepo();
+  try {
+    const env = {
+      CODEX_HOME: fixture.codexHome,
+      STARTER_NO_OPEN: "1"
+    };
+
+    const start = runStarterScript(
+      fixture.repoRoot,
+      ["scripts/worktree-start.mjs", "--title", "ЭХО", "--seed-message", "Worktree Create ЭХО"],
+      { env }
+    );
+    const payload = JSON.parse(start.stdout);
+
+    assert.match(payload.branch, /^codex\/\d{8}-\d{6}-[a-f0-9]+-echo$/);
+    assert.equal(path.basename(payload.worktreePath), "repo-echo");
+
+    const state = await loadTaskStateByBranch(fixture.repoRoot, payload.branch);
+    assert.equal(state?.title, "ЭХО");
+    assert.equal(state?.slug, "echo");
   } finally {
     await fixture.cleanup();
   }

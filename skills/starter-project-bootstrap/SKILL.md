@@ -84,10 +84,11 @@ Stop instead of auto-starting when the repo is dirty, the task conveyor is unava
 7. Mark every required intake item as `Согласовано` or `Заблокировано`. `TBD`, placeholders, and "заполним потом" remain blockers.
 8. For capability decisions, first ask whether each block is applicable. If applicable, record owner-approved invariants before implementation in that area.
 9. If the project is still validating a hypothesis, do not treat architecture, technologies, launch method, commercial model, ownership zones, or major product capabilities as approved until they are explicitly agreed in Project Intake, product charter, or roadmap.
-10. If the project needs actions after publishing, such as restarting local agents or services, capture the owner-approved method in Project Intake; do not turn local commands or environment settings into starter core behavior.
-11. After owner approval, transfer answers into canonical sources.
-12. Run baseline QA and report evidence.
-13. Only after QA passes, say the downstream project is ready for feature/refactor/behavior-change tasks.
+10. If the project depends on an unknown root technology, integration, provider, runtime, agent surface, bot/channel, worker, or external API, require isolated echo-test evidence or a recorded blocker before feature/refactor/behavior-change work in that area.
+11. If the project needs actions after publishing, such as restarting local agents or services, capture the owner-approved method in Project Intake; do not turn local commands or environment settings into starter core behavior.
+12. After owner approval, transfer answers into canonical sources.
+13. Run baseline QA and report evidence.
+14. Only after QA passes, say the downstream project is ready for feature/refactor/behavior-change tasks.
 
 ## Project Intake Order
 
@@ -105,10 +106,11 @@ Collect and approve in this order:
 10. Source-of-truth files
 11. Core / adapters / profiles boundary
 12. Stack / runtime choices
-13. QA / release choices
-14. Agent / eval choices
-15. Memory / rules ownership
-16. Capability decisions, only if applicable:
+13. Echo-testing / root capability check, only if unknown root technology exists
+14. QA / release choices
+15. Agent / eval choices
+16. Memory / rules ownership
+17. Capability decisions, only if applicable:
     - auth / user identity
     - payments / billing
     - credits / limits
@@ -178,6 +180,7 @@ Stop and ask for owner input when:
 
 - mission, vision, goal, audience, or JTBD cannot be safely inferred;
 - a required intake item is still placeholder or `TBD`;
+- an unknown root technology exists but echo-test evidence is missing and no blocker/alternative has been owner-approved;
 - a capability is applicable but lacks security-sensitive invariants;
 - `skills:link` reports unmanaged target conflicts and `--adopt` would be needed;
 - the user asks for feature/refactor/behavior-change work before intake approval;

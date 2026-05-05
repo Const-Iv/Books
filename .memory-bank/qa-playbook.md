@@ -44,6 +44,14 @@ Dependency preflight обязателен перед запуском gate:
 - Если relevant tests нет, явно фиксировать gap и компенсировать ближайшей более широкой deterministic check.
 - `qa:agent` остаётся обязательным final gate.
 
+## Echo-testing Gate For Unknown Root Technology
+
+- Echo-test обязателен до feature/refactor/behavior-change реализации, если продукт или capability зависит от неизвестной корневой технологии, интеграции, provider, runtime, agent surface, bot/channel, worker или внешнего API.
+- Echo-test должен быть минимальным и изолированным: без продуктовой бизнес-логики, UX polishing, production user data и insecure bypass.
+- Допустимый proof: входной сигнал проходит через выбранную связку и возвращается как same payload, фиксированный ответ или другой минимальный observable result.
+- Evidence должно фиксировать hypothesis, setup, command/scenario, actual result, discovered limitations and decision: `proceed`, `blocked`, `narrow spike`, or `choose alternative`.
+- Passing echo-test не заменяет `qa:agent`, security gate, product acceptance, capability-specific QA или owner approval.
+
 ## Behavior-Focused Test Quality
 
 Тесты должны доказывать пользовательское или contract-level поведение, а не повторять implementation details.
@@ -108,6 +116,7 @@ Acceptance criteria проверяют пользовательский резу
 - Для complex behavior changes evidence должно включать deterministic checks and operational-doc capture.
 - Для temporary fixtures/worktrees cleanup result тоже является QA evidence.
 - Для process/conveyor задач фиксировать task state/history changes как часть acceptance evidence.
+- Для echo-testing фиксировать root capability, minimal scenario, actual observed result, limitations and decision; отсутствие echo-test для unknown root technology считается blocker, а не QA pass.
 - `task:finish:core` не должен publish'ить commit, который не прошёл task QA: если finish стартует из dirty task tree, сначала нужен task commit/checkpoint, затем новый QA checkpoint уже на committed `HEAD`.
 - Для no-op finish, где clean task branch уже содержится в `main`, acceptance evidence — `publishStatus=skipped_already_merged`, `PUBLISH_SKIP` в runtime history и итоговый `cleanupStatus=passed|kept`.
 - Для delete cleanup acceptance evidence требует проверки exact `state.worktreePath`, git worktree registration, managed task root `$CODEX_HOME/worktrees/<taskId>/` и task-scoped leftovers; `cleanupStatus=passed` без этой проверки не считается доказательством.

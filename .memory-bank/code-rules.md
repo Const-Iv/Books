@@ -90,6 +90,7 @@
 - Task state и runtime history должны быть machine-readable и append-friendly.
 - `task:start` запускается только из clean source tree; `--allow-dirty` не должен обходить preflight.
 - Managed task worktree по умолчанию живёт под `~/.codex/worktrees/<taskId>/<project>-<task-slug>`.
+- `<task-slug>` выводится из фактического task title: non-ASCII title нужно приводить к deterministic readable ASCII slug, включая approved short semantic mapping вроде `ЭХО` -> `echo`; fallback `task` разрешён только если title не содержит осмысленных букв или цифр.
 - `task:start` обязан bootstrappить dependencies в новом worktree; missing deps — environment blocker, а не product regression.
 - `task:qa:agent` обязан писать `qaLastPassSha` и `previewPreparedSha`.
 - Для starter baseline `previewPreparedSha` допустим даже при preview status `not_supported`; это canonical checkpoint, а не обещание UI preview.
@@ -100,6 +101,14 @@
 - Delete cleanup может получить `cleanupStatus=passed` только после проверки exact `state.worktreePath`, отсутствия этого пути в `git worktree list`, удаления managed task root `$CODEX_HOME/worktrees/<taskId>/` и отсутствия task-scoped leftovers. Похожие worktrees других `taskId` или проектов не считаются cleanup текущей задачи и требуют отдельного fixed choice.
 - Shared operational docs и generated `Docs/task-history.md` — single-writer; task branch обновления проходят только через capture, а sync/rebuild происходят на publish/release stage.
 - `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` остаются активными читаемыми логами: при compaction полный pre-compaction snapshot сохраняется в `Docs/archive/*.md.gz`, а активный файл хранит компактный текущий хвост.
+
+## Echo-testing Gate
+
+- Если новый downstream-продукт, product spec или capability зависит от неизвестной корневой технологии, интеграции, provider, runtime, agent surface, bot/channel, worker или внешнего API, feature/refactor/behavior-change реализация в этой зоне начинается только после изолированного echo-test evidence или зафиксированного blocker.
+- Echo-test проверяет минимальный корневой путь без продуктовой бизнес-логики: входной сигнал проходит через выбранную связку и возвращается как same payload, фиксированный ответ или другой минимальный observable result.
+- Echo-test evidence фиксирует hypothesis, setup, команду/сценарий, фактический результат, найденные ограничения и решение `proceed | blocked | narrow spike | choose alternative`.
+- Echo-test не заменяет deterministic QA, security checks, product acceptance, owner approval или capability-specific invariants.
+- Echo-test не должен использовать real secrets, production user data, небезопасные bypass или provider-specific правила как starter core defaults.
 
 ## QA Rules
 

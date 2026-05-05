@@ -114,11 +114,19 @@ node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/n
 
 - создаёт `codex/*` branch и отдельный managed worktree;
 - принимает `--title`, `--seed-message`, но не позволяет обходить preflight через `--allow-dirty`;
+- строит branch/worktree slug из фактического `--title`; для non-ASCII title используется readable ASCII slug, например `ЭХО` -> `echo`, а fallback `task` допустим только для title без осмысленных букв/цифр;
 - если source tree dirty, останавливается до создания ветки/worktree и подсказывает безопасные next steps;
 - пишет task state в `.git/codex-task-pipeline/tasks/*.json`;
 - пишет runtime history в `.git/codex-task-pipeline/history/events.ndjson`;
 - bootstrappит зависимости в новом worktree;
 - best-effort открывает новый worktree/chat, но auto-open failure не должен ломать START.
+
+### Echo-testing gate
+
+- для нового продукта или capability на неизвестной корневой технологии до feature work нужен isolated echo-test;
+- echo-test проверяет минимальный путь без продуктовой логики: входной сигнал возвращается как same payload, фиксированный ответ или другой minimal observable result;
+- evidence фиксирует hypothesis, setup, command/scenario, actual result, limitations and decision: `proceed`, `blocked`, `narrow spike` или `choose alternative`;
+- echo-test не заменяет `qa:agent`, security checks, product acceptance или owner approval.
 
 ### `task:qa:agent`
 

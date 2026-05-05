@@ -161,6 +161,46 @@ export const REQUIRED_FILES = [
   "tsconfig.json"
 ];
 
+const CYRILLIC_SLUG_OVERRIDES = new Map([
+  ["эхо", "echo"]
+]);
+
+const CYRILLIC_TO_LATIN = new Map([
+  ["а", "a"],
+  ["б", "b"],
+  ["в", "v"],
+  ["г", "g"],
+  ["д", "d"],
+  ["е", "e"],
+  ["ё", "yo"],
+  ["ж", "zh"],
+  ["з", "z"],
+  ["и", "i"],
+  ["й", "y"],
+  ["к", "k"],
+  ["л", "l"],
+  ["м", "m"],
+  ["н", "n"],
+  ["о", "o"],
+  ["п", "p"],
+  ["р", "r"],
+  ["с", "s"],
+  ["т", "t"],
+  ["у", "u"],
+  ["ф", "f"],
+  ["х", "h"],
+  ["ц", "ts"],
+  ["ч", "ch"],
+  ["ш", "sh"],
+  ["щ", "sch"],
+  ["ъ", ""],
+  ["ы", "y"],
+  ["ь", ""],
+  ["э", "e"],
+  ["ю", "yu"],
+  ["я", "ya"]
+]);
+
 /**
  * @param {string} cwd
  * @param {string} command
@@ -187,11 +227,26 @@ export function runCommand(cwd, command, args, options = {}) {
 }
 
 /**
+ * @param {string} word
+ * @returns {string}
+ */
+function transliterateCyrillicWord(word) {
+  const override = CYRILLIC_SLUG_OVERRIDES.get(word);
+  if (override) {
+    return override;
+  }
+  return Array.from(word, (character) => CYRILLIC_TO_LATIN.get(character) ?? character).join("");
+}
+
+/**
  * @param {string} input
  * @returns {string}
  */
 export function slugify(input) {
-  const normalized = input
+  const transliterated = input
+    .toLowerCase()
+    .replace(/[\u0400-\u04ff]+/g, (word) => transliterateCyrillicWord(word));
+  const normalized = transliterated
     .normalize("NFKD")
     .replace(/[^\w\s-]/g, " ")
     .replace(/_/g, " ")

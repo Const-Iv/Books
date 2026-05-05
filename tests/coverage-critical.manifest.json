@@ -39,6 +39,7 @@
     {
       "module": "scripts/worktree-start.mjs",
       "tests": [
+        "tests/integration/worktree-start-guards.test.mjs",
         "tests/e2e/pr-smoke.test.mjs"
       ]
     },
