@@ -5,7 +5,7 @@ description: Primary project-local skill for sharing the current approved new-pr
 
 # starter-rule-share
 
-Use this skill after `new-project-starter` has received approved reusable rules and passed deterministic QA. The skill shares the updated baseline outward only to owner-approved active projects. It must never bulk-copy rules into every local repository and must never overwrite downstream product-specific charter, adapters, profiles, private notes, or local state.
+Use this skill after `new-project-starter` has received approved reusable rules and passed deterministic QA. The skill shares the updated baseline outward only to owner-approved active projects. Rule-level sharing is driven by `.memory-bank/starter-rule-registry.json`: every reusable rule must have a stable id, exact text, target files, required fragments, source traceability, and share policy. The skill must never bulk-copy rules into every local repository and must never overwrite downstream product-specific charter, adapters, profiles, private notes, or local state.
 
 Charter fit: outbound sharing supports the mission and JTBD by letting active downstream projects receive the latest reusable operational baseline without rebuilding governance by hand. Keep downstream product specificity in the downstream project.
 
@@ -16,6 +16,7 @@ Charter fit: outbound sharing supports the mission and JTBD by letting active do
    - starter working tree is clean;
    - the rule-sync import task passed deterministic QA;
    - the rules being shared are reusable starter baseline rules, not product-specific source-project details.
+   - `.memory-bank/starter-rule-registry.json` contains the approved reusable rules that should be checked downstream.
 3. Ensure local target-project config exists in ignored `runtime/rule-share/config.json`:
    ```json
    {
@@ -32,10 +33,16 @@ Charter fit: outbound sharing supports the mission and JTBD by letting active do
 5. Present the owner report in this order:
    - `Предложения к проектам`
    - `Готово к обновлению`
+   - `Актуально`
    - `Требует ручной проверки`
    - `Заблокировано`
    - `Диагностика`
-   For `Требует ручной проверки`, explain the missing starter signals before recommending any next step.
+   For every project, show concrete rule groups:
+   - `Есть в проекте`: rule id or current starter reference proves the rule is already present.
+   - `Есть текстом, но не зарегистрировано`: exact text or required fragments are already present; do not duplicate them.
+   - `Будет добавлено`: exact missing rule text that can be imported automatically.
+   - `Требует ручной проверки`: similar or manual-review rules that must not be auto-imported.
+   For `Требует ручной проверки`, explain the missing starter signals or partial rule match before recommending any next step.
 6. Ask the owner to approve the target project list before apply-plan. Use project ids only as traceability after the project names and recommended actions are clear.
 7. After explicit approval, write an ignored approval JSON such as `runtime/rule-share/approvals/<date>-approval.json`:
    ```json
@@ -81,7 +88,8 @@ When one-run mode is active:
 6. For each returned task seed, run the target project's managed `task:start`.
 7. In each target task worktree, apply only reusable baseline updates:
    - for `update_starter_reference`, update `vendor/new-project-starter` to the approved starter HEAD and check shared skills;
-   - for `prepare_rule_import`, compare canonical files and make surgical diffs, preserving downstream product charter wording, adapters, profiles and local rules.
+   - for `prepare_rule_import`, import only the `missingRules` from the task seed; preserve downstream product charter wording, adapters, profiles and local rules.
+   - if a rule is `presentUnregistered`, do not duplicate its text; only register it as applied if the downstream project maintains a rule registry and this is part of the approved task.
    - for copied-baseline imports, sync the reusable rule across downstream canonical and mirror surfaces when relevant: `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, `README.md`, `.cursorrules`, and `CLAUDE.md`.
    - record downstream evidence in `Docs/qa-implementation-log.md` and `Docs/triz-usage-log.md` when TRIZ triggers. Evidence must include starter source, starter HEAD, approved project, imported reusable rules, skipped product-specific areas, changed canonical files, deterministic QA result and any TRIZ decision.
 8. Run the target project's deterministic QA and record evidence in the target plan or response.
@@ -92,8 +100,31 @@ If any target becomes ambiguous during import, stop that target and continue onl
 ## Delivery Modes
 
 - `update_starter_reference`: for projects that keep starter under `vendor/new-project-starter`; update that versioned reference and check shared skills.
-- `prepare_rule_import`: for copied starter-baseline projects; compare starter canonical files and import only reusable governance/rules with surgical diffs, including downstream canonical/mirror parity and QA/TRIZ evidence capture.
+- `prepare_rule_import`: for copied starter-baseline projects; import only registry `missingRules` with surgical diffs, including downstream canonical/mirror parity and QA/TRIZ evidence capture.
 - `manual_review`: for projects without a clean managed task flow, without complete starter baseline signals, or with conflicts requiring owner judgment.
+
+## Rule Registry Contract
+
+Canonical registry path: `.memory-bank/starter-rule-registry.json`.
+
+Each entry must include:
+
+- `id`: stable id for dedupe across projects.
+- `title`: short human-readable rule name.
+- `text`: exact text to import when the rule is missing.
+- `targetFiles`: downstream files where the rule may need to be present.
+- `requiredFragments`: key fragments used when exact text changed slightly.
+- `source`: traceability for owner review, such as candidate ids or existing governance source.
+- `sharePolicy`: `required` for automatic missing-rule import, `manual_review` for rules that must be shown but not auto-applied.
+
+Scanner behavior:
+
+- Registry id found downstream -> `presentRules`.
+- Exact text or all required fragments found, but no downstream registry id -> `presentUnregisteredRules`.
+- No reliable match and `sharePolicy = required` -> `missingRules`.
+- Partial match or `sharePolicy = manual_review` -> `blockedRules`.
+
+Do not put starter mission, starter vision, starter product charter text, local machine paths, source-project names, private notes, or provider-specific defaults into registry rule text.
 
 ## Copied-Baseline Import Checklist
 
@@ -102,10 +133,11 @@ For `prepare_rule_import`, the task seed from `rule-share:apply-plan` is the imp
 Required actions inside the downstream managed worktree:
 
 1. Read the downstream product charter first and preserve its wording.
-2. Compare starter canonical files against downstream files listed in the task seed.
-3. Import only reusable baseline governance; do not copy product-specific starter text over downstream product decisions.
-4. Keep mandatory rules in parity across `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, `README.md`, `.cursorrules`, and `CLAUDE.md` when those surfaces exist.
-5. Record evidence in downstream operational docs:
+2. Use the task seed `Missing rules to import` section as the exact import contract.
+3. Import only those missing reusable baseline rules; do not duplicate `presentRules` or `presentUnregisteredRules`.
+4. Do not copy product-specific starter text over downstream product decisions.
+5. Keep mandatory rules in parity across `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, `README.md`, `.cursorrules`, and `CLAUDE.md` when those surfaces exist.
+6. Record evidence in downstream operational docs:
    - starter source and HEAD;
    - approved target project;
    - imported reusable rules;
@@ -113,8 +145,8 @@ Required actions inside the downstream managed worktree:
    - changed canonical files;
    - deterministic QA result;
    - TRIZ trigger/decision when applicable.
-6. Run downstream deterministic QA after the final diff.
-7. Stop with a clear status report and target worktree path. Finish/merge/publish is a separate explicit owner gate.
+7. Run downstream deterministic QA after the final diff.
+8. Stop with a clear status report and target worktree path. Finish/merge/publish is a separate explicit owner gate.
 
 ## Manual Review Path
 

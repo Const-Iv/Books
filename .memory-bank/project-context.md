@@ -32,6 +32,7 @@
 - `skills/starter-rule-share/`: primary project-local skill для approval-safe outbound rule sharing после успешного starter import.
 - `skills/starter-project-bootstrap/`: primary project-local skill для guided bootstrap нового downstream-проекта после копирования или подключения starter baseline.
 - `.memory-bank/`: shared knowledge layer для всех агентов.
+- `.memory-bank/starter-rule-registry.json`: canonical machine-readable список reusable starter rules для outbound sharing; rule-share использует его для проверки, что уже есть в downstream проекте и что действительно нужно добавить.
 - `Docs/`: human-readable process evidence и baselines.
 - `plans/`: plan и bugfix templates плюс reference blueprint.
 - `research/triz/`: canonical TRIZ pack.
@@ -51,6 +52,7 @@
 
 - Governance: `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`.
 - Product charter: `.memory-bank/product-charter.md`.
+- Reusable rule registry: `.memory-bank/starter-rule-registry.json`.
 - Task state: `.git/codex-task-pipeline/tasks/*.json`.
 - Runtime history: `.git/codex-task-pipeline/history/events.ndjson`.
 - Operational docs: активные читаемые логи `Docs/qa-implementation-log.md`, `Docs/triz-usage-log.md`, архивные pre-compaction snapshots в `Docs/archive/*.md.gz` и append-only sections of `CODEX_MEMORY.md`.
@@ -101,13 +103,13 @@
 - Reusable starter skills публикуются в `$CODEX_HOME/skills` через symlink-based `skills:link`; после `git pull` существующие ссылки подхватывают обновления сразу, а для новых или переименованных skills нужно повторно запустить `skills:link`.
 - `starter-project-bootstrap` — основной Codex entrypoint для `стартуем новый проект`: сначала автоматически создать managed bootstrap worktree on clean `main`, обеспечить skill availability через `npm ci` при необходимости и `npm run skills:link`, затем определить bootstrap state, провести Project Intake Gate, canonical docs transfer и baseline QA; product-specific choices остаются downstream adapters/profiles.
 - `starter-rule-report` — основной Codex entrypoint для scheduled automation и быстрого ручного rule discovery/report: он запускает read-only scan/report, сохраняет readable Markdown artifact в `runtime/rule-sync/reports/`, показывает decision proposals до raw ids и не готовит import.
-- `starter-rule-import` — основной Codex entrypoint для утреннего согласования: он ведёт owner'а по `Кандидаты на импорт` и `Требует ручной проверки`, задаёт вопросы по проекту, сути и `**Точный текст для starter:**`, затем после explicit approval готовит approval JSON и preliminary check без изменений. `rule-sync:apply-plan` в v1 только готовит seed для managed `task:start` и не применяет изменения автоматически.
+- `starter-rule-import` — основной Codex entrypoint для утреннего согласования: он ведёт owner'а по `Кандидаты на импорт` и `Требует ручной проверки`, задаёт вопросы по проекту, сути и `**Точный текст для starter:**`, затем после explicit approval готовит approval JSON и preliminary check без изменений. Каждый approved reusable rule добавляется или обновляется в `.memory-bank/starter-rule-registry.json`. `rule-sync:apply-plan` в v1 только готовит seed для managed `task:start` и не применяет изменения автоматически.
 - `starter-rule-sync` — временный compatibility router для старых prompt'ов, который направляет к report/import skill.
 - `rule-sync:scan` и `rule-sync:report` остаются read-only относительно starter source. Эталонный report format для rule-sync решений: последние блоки `Кандидаты на импорт` и `Требует ручной проверки` читаются самостоятельно, похожие пункты сгруппированы по проекту/теме, а ключевые labels выделены жирным, например `**Точный текст для starter:**` и `**Что ожидается от владельца:**`.
 - Если отчёт или дайджест собирает данные из разных источников, каждая запись должна явно показывать свой источник. Конкретные каналы проекта, например Telegram или Gmail, остаются в проекте-источнике.
 - Default `rule-sync:scan` window идёт от `until` последнего saved scan snapshot до текущего запуска; fallback на previous local day используется только при отсутствии валидного snapshot.
 - `starter-rule-share` — основной Codex entrypoint для outbound sharing уже обновлённого starter baseline в выбранные active downstream проекты; `runtime/rule-share/config.json` хранит локальный allowlist/ignorelist и optional standing approval для guarded one-run mode, не коммитится.
-- `rule-share:scan` и `rule-share:report` read-only относительно downstream source; `rule-share:apply-plan` в v1 только готовит per-project dry-run task seeds и не делает direct edits. For copied-baseline `prepare_rule_import`, the seed includes canonical/mirror parity, QA/TRIZ evidence and stop-before-publish instructions. One-run mode выполняется самим skill поверх этих commands: только ready approved targets, managed downstream worktrees, deterministic QA, без finish/merge/publish по умолчанию.
+- `rule-share:scan` и `rule-share:report` read-only относительно downstream source; они читают `.memory-bank/starter-rule-registry.json` и группируют по проектам `presentRules`, `missingRules`, `presentUnregisteredRules`, `blockedRules` с конкретным текстом правил. `rule-share:apply-plan` в v1 только готовит per-project dry-run task seeds и не делает direct edits. For copied-baseline `prepare_rule_import`, the seed imports only `missingRules`, keeps canonical/mirror parity, records QA/TRIZ evidence and stops before publish. One-run mode выполняется самим skill поверх этих commands: только ready approved targets, managed downstream worktrees, deterministic QA, без finish/merge/publish по умолчанию.
 - Downstream проекты могут подключать starter как git submodule под `vendor/new-project-starter` и линковать shared skills через `skills-manage.mjs --source vendor/new-project-starter/skills`, чтобы repo фиксировал версию baseline для новых участников.
 - `.system`, plugin-cache и product-specific skills не должны вендориться в starter core.
 - Generated skill trees вроде `.agents/skills`, `.claude/skills` и `.cursor/skills` считаются output'ом профиля или инструмента; starter импортирует только reusable source policy или repo-owned skills under `skills/`, а не bulk generated trees.

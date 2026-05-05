@@ -65,6 +65,7 @@ After explicit owner confirmation of the summary:
 - Preserve source traceability in plan/evidence, not in the starter rule text unless needed.
 - Keep product-specific behavior in the source project or adapters/profiles.
 - Update canonical governance surfaces when a reusable rule becomes mandatory: `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, and relevant mirrors.
+- Add or update the same reusable rule in `.memory-bank/starter-rule-registry.json` with a stable `id`, `title`, exact `text`, `targetFiles`, `requiredFragments`, `source`, and `sharePolicy`. This registry is what `$starter-rule-share` uses to avoid duplicate downstream imports.
 - Run deterministic QA and record results before finish/publish.
 
 ## Safety Stops

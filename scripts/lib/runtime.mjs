@@ -124,6 +124,7 @@ export const REQUIRED_FILES = [
   "CODEX_MEMORY.md",
   ".memory-bank/index.md",
   ".memory-bank/product-charter.md",
+  ".memory-bank/starter-rule-registry.json",
   ".memory-bank/project-context.md",
   ".memory-bank/architecture-map.md",
   ".memory-bank/code-rules.md",
