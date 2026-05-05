@@ -63,14 +63,16 @@
 
 - ищет только owner-allowed active downstream проекты из ignored local config `runtime/rule-share/config.json`;
 - поддерживает `roots`, `allowlist`, `ignorelist` и `starterPath`;
-- классифицирует проекты как готовые к `update_starter_reference`, готовые к `prepare_rule_import`, требующие ручной проверки или заблокированные;
+- читает `.memory-bank/starter-rule-registry.json` и классифицирует проекты как готовые к `update_starter_reference`, готовые к `prepare_rule_import`, актуальные, требующие ручной проверки или заблокированные;
+- в snapshot пишет rule-level группы `presentRules`, `missingRules`, `presentUnregisteredRules`, `blockedRules`;
 - пишет snapshot в `runtime/rule-share/scans/*.json`;
 - остаётся read-only относительно downstream source.
 
 ### `rule-share:report`
 
 - читает последний или явно выбранный rule-share snapshot;
-- строит owner-facing сводку с секциями `Предложения к проектам`, `Готово к обновлению`, `Требует ручной проверки`, `Заблокировано`, `Диагностика`;
+- строит owner-facing сводку с секциями `Предложения к проектам`, `Готово к обновлению`, `Актуально`, `Требует ручной проверки`, `Заблокировано`, `Диагностика`;
+- внутри каждого проекта показывает конкретные правила: что уже есть, что есть текстом без registry id, что будет добавлено, что требует ручной проверки;
 - показывает project ids только как traceability для approval JSON;
 - не предлагает проекты вне локального allowlist как готовые targets.
 
@@ -79,7 +81,7 @@
 - принимает approval JSON с ids подтверждённых проектов;
 - в v1 требует `--dry-run`;
 - возвращает per-project task seeds и команды для managed `task:start` внутри выбранных downstream проектов;
-- для copied-baseline `prepare_rule_import` seed включает полный downstream implementation contract: canonical/mirror sync, сохранение product-specific wording, QA/TRIZ evidence и stop-before-publish gate;
+- для copied-baseline `prepare_rule_import` seed включает exact missing rules list, запрещает дублировать present/present-unregistered rules и содержит полный downstream implementation contract: canonical/mirror sync, сохранение product-specific wording, QA/TRIZ evidence и stop-before-publish gate;
 - не редактирует downstream source, не обновляет submodule напрямую и не делает bulk-copy правил.
 
 ### Git submodule для shared skills

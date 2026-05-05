@@ -9,6 +9,63 @@ import test from "node:test";
 import { buildShareApplyPlan, renderRuleShareReport, scanRuleShare } from "../../scripts/rule-share.mjs";
 import { runCommand } from "../../scripts/lib/runtime.mjs";
 
+/** @type {{id: string, title: string, text: string, targetFiles: string[], requiredFragments: string[], source: {type: string}, sharePolicy: "required"}} */
+const RULE_A = {
+  id: "starter.test.rule-a",
+  title: "Rule A",
+  text: "Rule A text: keep mission at project level.",
+  targetFiles: ["AGENTS.md"],
+  requiredFragments: ["Rule A text: keep mission at project level."],
+  source: { type: "test" },
+  sharePolicy: "required"
+};
+
+/** @type {{id: string, title: string, text: string, targetFiles: string[], requiredFragments: string[], source: {type: string}, sharePolicy: "required"}} */
+const RULE_B = {
+  id: "starter.test.rule-b",
+  title: "Rule B",
+  text: "Rule B text: keep decisions unapproved during hypothesis validation.",
+  targetFiles: ["AGENTS.md"],
+  requiredFragments: ["Rule B text: keep decisions unapproved during hypothesis validation."],
+  source: { type: "test" },
+  sharePolicy: "required"
+};
+
+/** @type {{id: string, title: string, text: string, targetFiles: string[], requiredFragments: string[], source: {type: string}, sharePolicy: "manual_review"}} */
+const MANUAL_RULE = {
+  id: "starter.test.manual-rule",
+  title: "Manual Rule",
+  text: "Manual rule text: only import after owner review.",
+  targetFiles: ["AGENTS.md"],
+  requiredFragments: ["Manual rule text: only import after owner review."],
+  source: { type: "test" },
+  sharePolicy: "manual_review"
+};
+
+/**
+ * @param {object[]} [rules]
+ * @returns {string}
+ */
+function registryJson(rules = [RULE_A, RULE_B]) {
+  return `${JSON.stringify({ schemaVersion: 1, updatedAt: "2026-05-05T00:00:00.000Z", rules }, null, 2)}\n`;
+}
+
+/**
+ * @param {string} repoRoot
+ * @param {object[]} [rules]
+ * @returns {Promise<void>}
+ */
+async function writeStarterRegistry(repoRoot, rules = [RULE_A, RULE_B]) {
+  await writeRepoFile(repoRoot, ".memory-bank/starter-rule-registry.json", registryJson(rules));
+}
+
+/**
+ * @returns {{presentRules: never[], missingRules: never[], presentUnregisteredRules: never[], blockedRules: never[]}}
+ */
+function emptyRuleStates() {
+  return { presentRules: [], missingRules: [], presentUnregisteredRules: [], blockedRules: [] };
+}
+
 /**
  * @param {string} repoRoot
  * @returns {void}
@@ -113,6 +170,7 @@ test("rule-share blocks dirty projects", async () => {
       initRepo(repo);
     }
     await writeRepoFile(starterRoot, "README.md", "# Starter\n");
+    await writeStarterRegistry(starterRoot);
     await commitAll(starterRoot);
     await addStarterLikeFiles(projectRoot);
     await commitAll(projectRoot);
@@ -126,10 +184,143 @@ test("rule-share blocks dirty projects", async () => {
 
     assert.equal(snapshot.projects[0].status, "blocked");
     assert.match(snapshot.projects[0].reasons.join(" "), /незакоммиченные/);
+    assert.equal(snapshot.projects[0].blockedRules.length, 2);
+    assert.throws(
+      () => buildShareApplyPlan(snapshot, { approvedProjects: [snapshot.projects[0].id] }),
+      /not ready/
+    );
   } finally {
     await rm(baseDir, { recursive: true, force: true });
   }
 });
+
+test("rule-share scanner marks project 1 rule A present and rule B missing", async () => {
+  const baseDir = await mkdtemp(path.join(os.tmpdir(), "rule-share-rule-a-"));
+  try {
+    const starterRoot = path.join(baseDir, "new-project-starter");
+    const projectRoot = path.join(baseDir, "ProjectOne");
+    for (const repo of [starterRoot, projectRoot]) {
+      await mkdir(repo, { recursive: true });
+      initRepo(repo);
+    }
+    await writeRepoFile(starterRoot, "README.md", "# Starter\n");
+    await writeStarterRegistry(starterRoot);
+    await commitAll(starterRoot);
+
+    await addStarterLikeFiles(projectRoot);
+    await writeRepoFile(projectRoot, "AGENTS.md", `# Rules\n\n${RULE_A.text}\n`);
+    await commitAll(projectRoot);
+
+    const snapshot = await scanRuleShare({
+      repoRoot: starterRoot,
+      roots: [baseDir],
+      config: { allowlist: [projectRoot] }
+    });
+
+    const project = snapshot.projects[0];
+    assert.equal(project.status, "ready");
+    assert.deepEqual(project.presentUnregisteredRules.map((rule) => rule.id), [RULE_A.id]);
+    assert.deepEqual(project.missingRules.map((rule) => rule.id), [RULE_B.id]);
+  } finally {
+    await rm(baseDir, { recursive: true, force: true });
+  }
+});
+
+test("rule-share scanner marks project 2 rule B present and rule A missing", async () => {
+  const baseDir = await mkdtemp(path.join(os.tmpdir(), "rule-share-rule-b-"));
+  try {
+    const starterRoot = path.join(baseDir, "new-project-starter");
+    const projectRoot = path.join(baseDir, "ProjectTwo");
+    for (const repo of [starterRoot, projectRoot]) {
+      await mkdir(repo, { recursive: true });
+      initRepo(repo);
+    }
+    await writeRepoFile(starterRoot, "README.md", "# Starter\n");
+    await writeStarterRegistry(starterRoot);
+    await commitAll(starterRoot);
+
+    await addStarterLikeFiles(projectRoot);
+    await writeRepoFile(projectRoot, "AGENTS.md", `# Rules\n\n${RULE_B.text}\n`);
+    await commitAll(projectRoot);
+
+    const snapshot = await scanRuleShare({
+      repoRoot: starterRoot,
+      roots: [baseDir],
+      config: { allowlist: [projectRoot] }
+    });
+
+    const project = snapshot.projects[0];
+    assert.equal(project.status, "ready");
+    assert.deepEqual(project.presentUnregisteredRules.map((rule) => rule.id), [RULE_B.id]);
+    assert.deepEqual(project.missingRules.map((rule) => rule.id), [RULE_A.id]);
+  } finally {
+    await rm(baseDir, { recursive: true, force: true });
+  }
+});
+
+test("rule-share scanner treats exact text without downstream registry as presentUnregistered", async () => {
+  const baseDir = await mkdtemp(path.join(os.tmpdir(), "rule-share-present-unregistered-"));
+  try {
+    const starterRoot = path.join(baseDir, "new-project-starter");
+    const projectRoot = path.join(baseDir, "CopiedProject");
+    for (const repo of [starterRoot, projectRoot]) {
+      await mkdir(repo, { recursive: true });
+      initRepo(repo);
+    }
+    await writeRepoFile(starterRoot, "README.md", "# Starter\n");
+    await writeStarterRegistry(starterRoot, [RULE_A]);
+    await commitAll(starterRoot);
+
+    await addStarterLikeFiles(projectRoot);
+    await writeRepoFile(projectRoot, "AGENTS.md", `# Rules\n\n${RULE_A.text}\n`);
+    await commitAll(projectRoot);
+
+    const snapshot = await scanRuleShare({
+      repoRoot: starterRoot,
+      roots: [baseDir],
+      config: { allowlist: [projectRoot] }
+    });
+
+    const project = snapshot.projects[0];
+    assert.equal(project.status, "up_to_date");
+    assert.deepEqual(project.presentUnregisteredRules.map((rule) => rule.id), [RULE_A.id]);
+    assert.deepEqual(project.missingRules, []);
+  } finally {
+    await rm(baseDir, { recursive: true, force: true });
+  }
+});
+
+test("rule-share scanner keeps manual-review registry rules out of automatic imports", async () => {
+  const baseDir = await mkdtemp(path.join(os.tmpdir(), "rule-share-manual-policy-"));
+  try {
+    const starterRoot = path.join(baseDir, "new-project-starter");
+    const projectRoot = path.join(baseDir, "ManualProject");
+    for (const repo of [starterRoot, projectRoot]) {
+      await mkdir(repo, { recursive: true });
+      initRepo(repo);
+    }
+    await writeRepoFile(starterRoot, "README.md", "# Starter\n");
+    await writeStarterRegistry(starterRoot, [MANUAL_RULE]);
+    await commitAll(starterRoot);
+
+    await addStarterLikeFiles(projectRoot);
+    await commitAll(projectRoot);
+
+    const snapshot = await scanRuleShare({
+      repoRoot: starterRoot,
+      roots: [baseDir],
+      config: { allowlist: [projectRoot] }
+    });
+
+    const project = snapshot.projects[0];
+    assert.equal(project.status, "needs_review");
+    assert.deepEqual(project.missingRules, []);
+    assert.deepEqual(project.blockedRules.map((rule) => rule.id), [MANUAL_RULE.id]);
+  } finally {
+    await rm(baseDir, { recursive: true, force: true });
+  }
+});
+
 
 test("rule-share report renders owner decision sections", () => {
   const text = renderRuleShareReport({
@@ -139,6 +330,8 @@ test("rule-share report renders owner decision sections", () => {
     starterHead: "abcdef",
     starterDirty: false,
     allowlistConfigured: true,
+    registryPath: "/tmp/starter/.memory-bank/starter-rule-registry.json",
+    registryRules: [],
     diagnostics: [],
     projects: [
       {
@@ -153,17 +346,75 @@ test("rule-share report renders owner decision sections", () => {
         hasStarterSubmodule: true,
         starterPath: "vendor/new-project-starter",
         currentStarterHead: "123456",
-        targetFiles: ["vendor/new-project-starter"]
+        targetFiles: ["vendor/new-project-starter"],
+        ...emptyRuleStates()
       }
     ]
   });
 
   assert.match(text, /Предложения к проектам/);
   assert.match(text, /Готово к обновлению/);
+  assert.match(text, /Актуально/);
   assert.match(text, /Требует ручной проверки/);
   assert.match(text, /Заблокировано/);
   assert.match(text, /JTBD/);
   assert.match(text, /rsh-agent-const/);
+});
+
+test("rule-share report shows concrete missing rule text grouped by project", () => {
+  const text = renderRuleShareReport({
+    schemaVersion: 1,
+    generatedAt: "2026-05-05T10:00:00.000Z",
+    repoRoot: "/tmp/starter",
+    starterHead: "abcdef",
+    starterDirty: false,
+    allowlistConfigured: true,
+    registryPath: "/tmp/starter/.memory-bank/starter-rule-registry.json",
+    registryRules: [RULE_A, RULE_B],
+    diagnostics: [],
+    projects: [
+      {
+        id: "rsh-project-one",
+        label: "ProjectOne",
+        repoRoot: "/tmp/project-one",
+        status: "ready",
+        recommendedAction: "prepare_rule_import",
+        reasons: ["missing B"],
+        dirty: false,
+        hasTaskFlow: true,
+        hasStarterSubmodule: false,
+        starterPath: "vendor/new-project-starter",
+        currentStarterHead: null,
+        targetFiles: ["AGENTS.md"],
+        presentRules: [],
+        presentUnregisteredRules: [
+          {
+            ...RULE_A,
+            match: "text",
+            matchedFragments: RULE_A.requiredFragments,
+            missingFragments: [],
+            reason: "Already present."
+          }
+        ],
+        missingRules: [
+          {
+            ...RULE_B,
+            match: "missing",
+            matchedFragments: [],
+            missingFragments: RULE_B.requiredFragments,
+            reason: "Missing."
+          }
+        ],
+        blockedRules: []
+      }
+    ]
+  });
+
+  assert.match(text, /ProjectOne/);
+  assert.match(text, /Будет добавлено/);
+  assert.match(text, new RegExp(RULE_B.text));
+  assert.match(text, /Есть текстом, но не зарегистрировано/);
+  assert.match(text, new RegExp(RULE_A.text));
 });
 
 test("rule-share apply-plan builds safe per-project task seeds", () => {
@@ -174,6 +425,8 @@ test("rule-share apply-plan builds safe per-project task seeds", () => {
     starterHead: "abcdef",
     starterDirty: false,
     allowlistConfigured: true,
+    registryPath: "/tmp/starter/.memory-bank/starter-rule-registry.json",
+    registryRules: [],
     diagnostics: [],
     projects: [
       {
@@ -188,7 +441,8 @@ test("rule-share apply-plan builds safe per-project task seeds", () => {
         hasStarterSubmodule: true,
         starterPath: "vendor/new-project-starter",
         currentStarterHead: "123456",
-        targetFiles: ["vendor/new-project-starter"]
+        targetFiles: ["vendor/new-project-starter"],
+        ...emptyRuleStates()
       }
     ]
   });
@@ -214,6 +468,8 @@ test("rule-share copied-baseline task seed includes evidence and stop-before-pub
     starterHead: "abcdef",
     starterDirty: false,
     allowlistConfigured: true,
+    registryPath: "/tmp/starter/.memory-bank/starter-rule-registry.json",
+    registryRules: [],
     diagnostics: [],
     projects: [
       {
@@ -235,7 +491,8 @@ test("rule-share copied-baseline task seed includes evidence and stop-before-pub
           ".cursorrules",
           "CLAUDE.md",
           "README.md"
-        ]
+        ],
+        ...emptyRuleStates()
       }
     ]
   });
@@ -253,6 +510,63 @@ test("rule-share copied-baseline task seed includes evidence and stop-before-pub
   assert.match(plan.tasks[0].seedMessage, /TRIZ_APPLIED/);
 });
 
+test("rule-share apply-plan copied-baseline task seed imports only missing rules", () => {
+  const missingRule = {
+    ...RULE_B,
+    match: "missing",
+    matchedFragments: [],
+    missingFragments: RULE_B.requiredFragments,
+    reason: "Missing."
+  };
+  const presentUnregisteredRule = {
+    ...RULE_A,
+    match: "text",
+    matchedFragments: RULE_A.requiredFragments,
+    missingFragments: [],
+    reason: "Already present."
+  };
+  const snapshot = /** @type {Parameters<typeof buildShareApplyPlan>[0]} */ ({
+    schemaVersion: 1,
+    generatedAt: "2026-05-05T10:00:00.000Z",
+    repoRoot: "/tmp/starter",
+    starterHead: "abcdef",
+    starterDirty: false,
+    allowlistConfigured: true,
+    registryPath: "/tmp/starter/.memory-bank/starter-rule-registry.json",
+    registryRules: [RULE_A, RULE_B],
+    diagnostics: [],
+    projects: [
+      {
+        id: "rsh-project-one",
+        label: "ProjectOne",
+        repoRoot: "/tmp/project-one",
+        status: "ready",
+        recommendedAction: "prepare_rule_import",
+        reasons: ["missing B"],
+        dirty: false,
+        hasTaskFlow: true,
+        hasStarterSubmodule: false,
+        starterPath: "vendor/new-project-starter",
+        currentStarterHead: null,
+        targetFiles: ["AGENTS.md"],
+        presentRules: [],
+        missingRules: [missingRule],
+        presentUnregisteredRules: [presentUnregisteredRule],
+        blockedRules: []
+      }
+    ]
+  });
+
+  const plan = buildShareApplyPlan(snapshot, {
+    approvedProjects: ["rsh-project-one"]
+  });
+
+  assert.equal(plan.status, "ready");
+  assert.match(plan.tasks[0].seedMessage, /добавить только missing rules: starter\.test\.rule-b/);
+  assert.match(plan.tasks[0].seedMessage, new RegExp(`Text: ${RULE_B.text}`));
+  assert.doesNotMatch(plan.tasks[0].seedMessage, new RegExp(`Text: ${RULE_A.text}`));
+});
+
 test("rule-share apply-plan rejects non-ready approvals", () => {
   const snapshot = /** @type {Parameters<typeof buildShareApplyPlan>[0]} */ ({
     schemaVersion: 1,
@@ -261,6 +575,8 @@ test("rule-share apply-plan rejects non-ready approvals", () => {
     starterHead: "abcdef",
     starterDirty: false,
     allowlistConfigured: true,
+    registryPath: "/tmp/starter/.memory-bank/starter-rule-registry.json",
+    registryRules: [],
     diagnostics: [],
     projects: [
       {
@@ -275,7 +591,8 @@ test("rule-share apply-plan rejects non-ready approvals", () => {
         hasStarterSubmodule: false,
         starterPath: "vendor/new-project-starter",
         currentStarterHead: null,
-        targetFiles: []
+        targetFiles: [],
+        ...emptyRuleStates()
       }
     ]
   });
@@ -291,6 +608,8 @@ test("rule-share apply-plan rejects unknown project approvals", () => {
     starterHead: "abcdef",
     starterDirty: false,
     allowlistConfigured: true,
+    registryPath: "/tmp/starter/.memory-bank/starter-rule-registry.json",
+    registryRules: [],
     diagnostics: [],
     projects: []
   });

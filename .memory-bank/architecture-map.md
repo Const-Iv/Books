@@ -18,7 +18,9 @@
 - `scripts/rule-sync.mjs`: deterministic cross-project governance scan/report/apply-plan execution seam for reusable starter rules.
 - `skills/starter-rule-share/SKILL.md`: primary Codex workflow for approval-safe outbound sharing of the current starter baseline.
 - `scripts/rule-share.mjs`: deterministic target-project scan/report/apply-plan execution seam for outbound starter rule sharing.
-- `rule-share:apply-plan` task seeds are the copied-baseline import contract: preserve downstream product boundaries, sync canonical/mirror rule surfaces, require QA/TRIZ evidence and stop before finish/merge/publish unless explicitly approved.
+- `.memory-bank/starter-rule-registry.json`: machine-readable reusable rule registry for outbound sharing; each entry carries stable id, exact text, target files, required fragments, source traceability and share policy.
+- `rule-share:scan` produces rule-level project state: `presentRules`, `missingRules`, `presentUnregisteredRules`, and `blockedRules`.
+- `rule-share:apply-plan` task seeds are the copied-baseline import contract: import only `missingRules`, preserve downstream product boundaries, avoid duplicate present text, sync canonical/mirror rule surfaces, require QA/TRIZ evidence and stop before finish/merge/publish unless explicitly approved.
 
 ## Runtime Data Flow
 
@@ -40,7 +42,8 @@
 - rule-sync classifier drift, из-за которого product-specific правила могут попасть в starter core.
 - rule-sync window drift, из-за которого scheduled automation пропускает правила после missed run вместо catch-up от последнего saved scan snapshot.
 - rule-share allowlist drift, из-за которого устаревший или paused проект может быть ошибочно предложен к обновлению.
-- rule-share delivery drift, из-за которого downstream product-specific charter может быть перезаписан вместо reusable baseline import.
+- rule-share registry drift, из-за которого starter не понимает, какое конкретное правило уже есть в downstream проекте, а какое действительно missing.
+- rule-share delivery drift, из-за которого downstream product-specific charter может быть перезаписан или present rule duplicated вместо точечного reusable baseline import.
 - capability profile drift, из-за которого product-specific provider, locale, stack, auth, billing, analytics, jobs или API-docs decisions могут ошибочно попасть в starter core вместо downstream adapters/profiles.
 - bootstrap flow drift, из-за которого фраза `стартуем новый проект` превращается в общий checklist, пропускает Project Intake approval или начинает feature work до canonical transfer.
 - echo-testing drift, из-за которого unknown root technology получает продуктовую реализацию без isolated minimal proof или blocker.
@@ -81,9 +84,10 @@
 Когда меняется rule-share:
 
 - проверить `skills/starter-rule-share/SKILL.md`;
+- проверить `.memory-bank/starter-rule-registry.json`;
 - проверить `scripts/rule-share.mjs`;
 - проверить `tests/unit/rule-share.test.mjs`;
-- проверить, что scan/report read-only, apply-plan остаётся dry-run, а проекты берутся только из локального allowlist.
+- проверить, что scan/report read-only, apply-plan остаётся dry-run, проекты берутся только из локального allowlist, а copied-baseline task seed содержит только missing rules.
 
 Когда меняются operational docs helpers:
 

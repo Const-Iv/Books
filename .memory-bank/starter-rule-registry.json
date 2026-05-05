@@ -1,0 +1,325 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-05-05T15:50:31.000Z",
+  "rules": [
+    {
+      "id": "starter.project-intake.mission-vision-project-level",
+      "title": "Mission and vision are project-level only",
+      "text": "В Project Intake миссия должна отвечать: кому проект помогает, какой результат даёт и через что; видение должно описывать желаемое будущее и роль проекта в нём. Миссия и видение пишутся только на уровне проекта, а не для отдельных задач.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "миссия должна отвечать: кому проект помогает, какой результат даёт и через что",
+        "видение должно описывать желаемое будущее и роль проекта в нём",
+        "Миссия и видение пишутся только на уровне проекта"
+      ],
+      "source": {
+        "type": "starter-rule-import",
+        "candidateIds": [
+          "rs-862a92a15e",
+          "rs-c19f2d3b9a"
+        ],
+        "importedAt": "2026-05-05T15:50:31.000Z"
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.project-intake.hypothesis-decisions-not-approved",
+      "title": "Hypothesis-stage decisions are not approved defaults",
+      "text": "Пока проект находится на этапе проверки гипотезы, нельзя считать утверждёнными архитектуру, технологии, способ запуска, коммерческую модель, зоны ответственности и важные продуктовые возможности. Эти решения становятся правилами проекта только после явного согласования в Project Intake, product charter или roadmap.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/index.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "Пока проект находится на этапе проверки гипотезы",
+        "нельзя считать утверждёнными архитектуру, технологии, способ запуска",
+        "после явного согласования в Project Intake, product charter или roadmap"
+      ],
+      "source": {
+        "type": "starter-rule-import",
+        "candidateIds": [
+          "rs-73043040ab",
+          "rs-a6dec2cab6"
+        ],
+        "importedAt": "2026-05-05T15:50:31.000Z"
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.project-bootstrap.conversational-command",
+      "title": "Conversational new-project command starts Project Intake",
+      "text": "Если пользователь пишет `стартуем новый проект`, `запусти новый проект`, `проведи bootstrap нового проекта` или сообщает, что скопировал starter в новый репозиторий, ассистент запускает `starter-project-bootstrap`: создаёт отдельную рабочую папку из чистого `main`, подключает skills из starter, проводит Project Intake и не начинает разработку функций до согласования intake. Если для `skills:link` нужно заменить конфликтующие локальные skills, ассистент отдельно запрашивает явное согласие владельца.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        ".cursorrules",
+        "CLAUDE.md",
+        "skills/starter-project-bootstrap/SKILL.md"
+      ],
+      "requiredFragments": [
+        "Если пользователь пишет `стартуем новый проект`",
+        "ассистент запускает `starter-project-bootstrap`",
+        "не начинает разработку функций до согласования intake",
+        "отдельно запрашивает явное согласие владельца"
+      ],
+      "source": {
+        "type": "starter-rule-import",
+        "candidateIds": [
+          "rs-192616fb8a",
+          "rs-4ca0b4c0ba",
+          "rs-77b6309f35",
+          "rs-f87c8b814a"
+        ],
+        "importedAt": "2026-05-05T15:50:31.000Z"
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.reports.multi-source-labels",
+      "title": "Reports with several sources label each item source",
+      "text": "Если отчёт или дайджест собирает данные из разных источников, каждая запись должна явно показывать свой источник. Конкретные каналы проекта, например Telegram или Gmail, остаются в проекте-источнике.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "Если отчёт или дайджест собирает данные из разных источников",
+        "каждая запись должна явно показывать свой источник",
+        "конкретные каналы проекта"
+      ],
+      "source": {
+        "type": "starter-rule-import",
+        "candidateIds": [
+          "rs-613bbef5f5"
+        ],
+        "importedAt": "2026-05-05T15:50:31.000Z"
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.project-intake.post-publish-local-actions",
+      "title": "Post-publish local actions stay downstream-specific",
+      "text": "Если конкретному проекту нужны действия после публикации, например перезапуск локальных агентов или сервисов, способ выполнения нужно согласовать в Project Intake этого проекта. Starter не зашивает продуктовые агенты, локальные команды и настройки конкретной среды в общую основу.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        ".cursorrules",
+        "CLAUDE.md",
+        "skills/starter-project-bootstrap/SKILL.md"
+      ],
+      "requiredFragments": [
+        "Если конкретному проекту нужны действия после публикации",
+        "способ выполнения нужно согласовать в Project Intake этого проекта",
+        "Starter не зашивает продуктовые агенты"
+      ],
+      "source": {
+        "type": "starter-rule-import",
+        "candidateIds": [
+          "rs-f366f80944"
+        ],
+        "importedAt": "2026-05-05T15:50:31.000Z"
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.rule-sync.owner-report-decision-format",
+      "title": "Rule-sync owner report is decision-first and self-contained",
+      "text": "Rule-sync report должен сохранять человекочитаемый Markdown в ignored `runtime/rule-sync/reports/` и группировать разбор по проектам: похожие находки внутри проекта объединяются в одно предложение; для каждой группы простыми словами показывать, что нашли, есть ли дубли, почему это полезно starter, точный текст правила для starter, как убрать лишние детали, куда может лечь правило и по каким ids проверить источник. Нижние decision-блоки `Кандидаты на импорт` и `Требует ручной проверки` должны быть самодостаточными: их можно читать без верхнего разбора, а пункты должны содержать `**Точный текст для starter:**`, `**Что проверить вручную:**`, `**Моё предложение:**` и `**Что ожидается от владельца:**`.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "scripts/README.md",
+        "skills/starter-rule-report/SKILL.md"
+      ],
+      "requiredFragments": [
+        "Rule-sync report должен сохранять человекочитаемый Markdown",
+        "похожие находки внутри проекта объединяются в одно предложение",
+        "`**Точный текст для starter:**`",
+        "`**Что ожидается от владельца:**`"
+      ],
+      "source": {
+        "type": "existing-governance",
+        "note": "Owner-approved readable rule-sync report format."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.rule-sync.import-logs-as-evidence",
+      "title": "QA/TRIZ logs are evidence, not ready rule text",
+      "text": "Rule-sync import использует QA/TRIZ logs только как evidence: перед импортом candidate нужно переписать в portable starter invariant, сохранить source traceability и убрать source-project symptoms, branch names, task ids and domain details from rule text.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "skills/starter-rule-import/SKILL.md"
+      ],
+      "requiredFragments": [
+        "Rule-sync import использует QA/TRIZ logs только как evidence",
+        "переписать в portable starter invariant",
+        "убрать source-project symptoms"
+      ],
+      "source": {
+        "type": "existing-governance",
+        "note": "Prevents noisy raw log imports."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.governance.owner-facing-plain-language",
+      "title": "Owner-facing governance starts with meaning and next step",
+      "text": "Owner-facing reports должны сначала объяснять смысл, решение и следующий шаг понятным языком; raw ids, commits, task ids, snippets and file lists допустимы только как traceability.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "skills/starter-rule-report/SKILL.md"
+      ],
+      "requiredFragments": [
+        "сначала объяснять смысл, решение и следующий шаг понятным языком",
+        "raw ids, commits, task ids",
+        "допустимы только как traceability"
+      ],
+      "source": {
+        "type": "existing-governance",
+        "note": "Owner-facing readability invariant from rule-sync report lessons."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.ai-behavior.eval-spec-required",
+      "title": "AI behavior changes require Eval spec",
+      "text": "Для AI/agent behavior changes обязателен `Eval spec`: хороший ответ, провал, критичные edge cases, regression examples/golden prompts, comparison method и minimum pass threshold.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "Для AI/agent behavior changes обязателен `Eval spec`",
+        "хороший ответ, провал",
+        "minimum pass threshold"
+      ],
+      "source": {
+        "type": "existing-governance",
+        "note": "Agent-behavior QA gate."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.qa.deterministic-evidence-required",
+      "title": "Code-changing work requires deterministic QA evidence",
+      "text": "Для любого code-changing task доказательством корректности считаются только детерминированные проверки. После каждого логического change batch нужно прогонять хотя бы одну релевантную deterministic check.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "доказательством корректности считаются только детерминированные проверки",
+        "После каждого логического change batch",
+        "релевантную deterministic check"
+      ],
+      "source": {
+        "type": "existing-governance",
+        "note": "QA proof invariant."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.project-intake.capability-decisions-portable",
+      "title": "Capability decisions are only-if-applicable downstream choices",
+      "text": "Capability decisions в Project Intake заполняются only-if-applicable и не должны превращать starter core в provider-specific или stack-specific baseline. Auth, payments, credits, analytics/consent, i18n, async jobs, API documentation, service layout и runtime-specific rules выбираются downstream owner'ом через adapters/profiles.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "Capability decisions в Project Intake заполняются only-if-applicable",
+        "не должны превращать starter core в provider-specific или stack-specific baseline",
+        "выбираются downstream owner'ом через adapters/profiles"
+      ],
+      "source": {
+        "type": "existing-governance",
+        "note": "Portable capability boundary."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.project-intake.unknown-root-technology-echo-test",
+      "title": "Unknown root technology requires isolated echo-test",
+      "text": "Если новый downstream-продукт, product spec или capability зависит от неизвестной корневой технологии, интеграции, provider, runtime, agent surface, bot/channel, worker или внешнего API, feature/refactor/behavior-change реализация в этой зоне начинается только после изолированного echo-test evidence или зафиксированного blocker.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/index.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        "scripts/README.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "зависит от неизвестной корневой технологии",
+        "feature/refactor/behavior-change реализация",
+        "только после изолированного echo-test evidence"
+      ],
+      "source": {
+        "type": "existing-governance",
+        "note": "Echo-testing gate for unknown root technology."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.skills.generated-trees-not-core",
+      "title": "Generated skill trees are not starter core",
+      "text": "Generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) считаются profile/tool output; starter импортирует только reusable source policy или repo-owned skills under `skills/`, а не bulk generated trees.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "Generated skill trees",
+        "starter импортирует только reusable source policy",
+        "а не bulk generated trees"
+      ],
+      "source": {
+        "type": "existing-governance",
+        "note": "Protects starter core from tool-generated skill output."
+      },
+      "sharePolicy": "required"
+    }
+  ]
+}

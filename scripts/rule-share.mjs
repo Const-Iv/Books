@@ -9,6 +9,7 @@ import { findGitRoot, formatIso, getCodexHome, isGitDirty, parseArgs, runCommand
 
 const RULE_SHARE_DIR = "runtime/rule-share";
 const SCANS_DIR = "scans";
+const RULE_REGISTRY_PATH = ".memory-bank/starter-rule-registry.json";
 const DEFAULT_MAX_DEPTH = 5;
 const DEFAULT_STARTER_PATH = "vendor/new-project-starter";
 const SKIP_DIRS = new Set([
@@ -38,11 +39,11 @@ const CANONICAL_IMPORT_TARGETS = [
 const DOWNSTREAM_EVIDENCE_TARGETS = ["Docs/qa-implementation-log.md", "Docs/triz-usage-log.md"];
 
 /**
- * @typedef {"ready"|"needs_review"|"blocked"} RuleShareStatus
+ * @typedef {"ready"|"up_to_date"|"needs_review"|"blocked"} RuleShareStatus
  */
 
 /**
- * @typedef {"update_starter_reference"|"prepare_rule_import"|"manual_review"} RuleShareAction
+ * @typedef {"update_starter_reference"|"prepare_rule_import"|"manual_review"|"none"} RuleShareAction
  */
 
 /**
@@ -51,6 +52,54 @@ const DOWNSTREAM_EVIDENCE_TARGETS = ["Docs/qa-implementation-log.md", "Docs/triz
  * @property {string[]} [allowlist]
  * @property {string[]} [ignorelist]
  * @property {string} [starterPath]
+ */
+
+/**
+ * @typedef {"required"|"manual_review"} StarterRuleSharePolicy
+ */
+
+/**
+ * @typedef {Object} StarterRuleSource
+ * @property {string} type
+ * @property {string[]} [candidateIds]
+ * @property {string} [importedAt]
+ * @property {string} [note]
+ */
+
+/**
+ * @typedef {Object} StarterRule
+ * @property {string} id
+ * @property {string} title
+ * @property {string} text
+ * @property {string[]} targetFiles
+ * @property {string[]} requiredFragments
+ * @property {StarterRuleSource} source
+ * @property {StarterRuleSharePolicy} sharePolicy
+ */
+
+/**
+ * @typedef {Object} StarterRuleRegistry
+ * @property {1} schemaVersion
+ * @property {string} updatedAt
+ * @property {StarterRule[]} rules
+ */
+
+/**
+ * @typedef {"registry"|"starter_reference"|"text"|"fragments"|"missing"|"partial"|"blocked"} RuleMatchKind
+ */
+
+/**
+ * @typedef {Object} RuleShareRuleState
+ * @property {string} id
+ * @property {string} title
+ * @property {string} text
+ * @property {string[]} targetFiles
+ * @property {string[]} requiredFragments
+ * @property {StarterRuleSharePolicy} sharePolicy
+ * @property {RuleMatchKind} match
+ * @property {string[]} matchedFragments
+ * @property {string[]} missingFragments
+ * @property {string} reason
  */
 
 /**
@@ -75,6 +124,10 @@ const DOWNSTREAM_EVIDENCE_TARGETS = ["Docs/qa-implementation-log.md", "Docs/triz
  * @property {string} starterPath
  * @property {string | null} currentStarterHead
  * @property {string[]} targetFiles
+ * @property {RuleShareRuleState[]} presentRules
+ * @property {RuleShareRuleState[]} missingRules
+ * @property {RuleShareRuleState[]} presentUnregisteredRules
+ * @property {RuleShareRuleState[]} blockedRules
  */
 
 /**
@@ -85,6 +138,8 @@ const DOWNSTREAM_EVIDENCE_TARGETS = ["Docs/qa-implementation-log.md", "Docs/triz
  * @property {string} starterHead
  * @property {boolean} starterDirty
  * @property {boolean} allowlistConfigured
+ * @property {string} registryPath
+ * @property {StarterRule[]} registryRules
  * @property {RuleShareProject[]} projects
  * @property {string[]} diagnostics
  */
@@ -138,6 +193,164 @@ async function loadLocalConfig(repoRoot) {
     ignorelist: Array.isArray(raw.ignorelist) ? raw.ignorelist.map(String) : [],
     starterPath: typeof raw.starterPath === "string" ? raw.starterPath : undefined
   };
+}
+
+/**
+ * @param {string} value
+ * @returns {string}
+ */
+function normalizeText(value) {
+  return value.replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+/**
+ * @param {string} repoRoot
+ * @returns {Promise<StarterRuleRegistry>}
+ */
+async function loadStarterRuleRegistry(repoRoot) {
+  const registryPath = path.join(repoRoot, RULE_REGISTRY_PATH);
+  if (!existsSync(registryPath)) {
+    return { schemaVersion: 1, updatedAt: formatIso(), rules: [] };
+  }
+  const raw = /** @type {Record<string, unknown>} */ (JSON.parse(await readFile(registryPath, "utf8")));
+  const rawRules = Array.isArray(raw.rules) ? raw.rules : [];
+  return {
+    schemaVersion: 1,
+    updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : formatIso(),
+    rules: rawRules.map((item) => {
+      const rule = /** @type {Record<string, unknown>} */ (item);
+      const source = rule.source && typeof rule.source === "object" ? /** @type {Record<string, unknown>} */ (rule.source) : {};
+      return {
+        id: String(rule.id),
+        title: String(rule.title),
+        text: String(rule.text),
+        targetFiles: Array.isArray(rule.targetFiles) ? rule.targetFiles.map(String) : [],
+        requiredFragments: Array.isArray(rule.requiredFragments) ? rule.requiredFragments.map(String) : [],
+        source: {
+          type: String(source.type ?? "manual"),
+          candidateIds: Array.isArray(source.candidateIds) ? source.candidateIds.map(String) : undefined,
+          importedAt: typeof source.importedAt === "string" ? source.importedAt : undefined,
+          note: typeof source.note === "string" ? source.note : undefined
+        },
+        sharePolicy: rule.sharePolicy === "manual_review" ? "manual_review" : "required"
+      };
+    })
+  };
+}
+
+/**
+ * @param {string} repoRoot
+ * @returns {Promise<Set<string>>}
+ */
+async function loadDownstreamRuleIds(repoRoot) {
+  const registryPath = path.join(repoRoot, RULE_REGISTRY_PATH);
+  if (!existsSync(registryPath)) {
+    return new Set();
+  }
+  const raw = /** @type {Record<string, unknown>} */ (JSON.parse(await readFile(registryPath, "utf8")));
+  return new Set((Array.isArray(raw.rules) ? raw.rules : []).map((item) => String(/** @type {Record<string, unknown>} */ (item).id)));
+}
+
+/**
+ * @param {string} repoRoot
+ * @param {string[]} targetFiles
+ * @returns {Promise<string>}
+ */
+async function readRuleTargetText(repoRoot, targetFiles) {
+  const files = uniqueSorted(targetFiles.length > 0 ? targetFiles : CANONICAL_IMPORT_TARGETS);
+  const chunks = [];
+  for (const relativePath of files) {
+    const filePath = path.join(repoRoot, relativePath);
+    if (!existsSync(filePath)) {
+      continue;
+    }
+    chunks.push(await readFile(filePath, "utf8"));
+  }
+  return chunks.join("\n");
+}
+
+/**
+ * @param {StarterRule} rule
+ * @param {RuleMatchKind} match
+ * @param {string[]} matchedFragments
+ * @param {string[]} missingFragments
+ * @param {string} reason
+ * @returns {RuleShareRuleState}
+ */
+function ruleState(rule, match, matchedFragments, missingFragments, reason) {
+  return {
+    id: rule.id,
+    title: rule.title,
+    text: rule.text,
+    targetFiles: rule.targetFiles,
+    requiredFragments: rule.requiredFragments,
+    sharePolicy: rule.sharePolicy,
+    match,
+    matchedFragments,
+    missingFragments,
+    reason
+  };
+}
+
+/**
+ * @param {string} repoRoot
+ * @param {StarterRule[]} rules
+ * @returns {Promise<{presentRules: RuleShareRuleState[], missingRules: RuleShareRuleState[], presentUnregisteredRules: RuleShareRuleState[], blockedRules: RuleShareRuleState[]}>}
+ */
+async function evaluateCopiedBaselineRules(repoRoot, rules) {
+  const downstreamIds = await loadDownstreamRuleIds(repoRoot);
+  /** @type {RuleShareRuleState[]} */
+  const presentRules = [];
+  /** @type {RuleShareRuleState[]} */
+  const missingRules = [];
+  /** @type {RuleShareRuleState[]} */
+  const presentUnregisteredRules = [];
+  /** @type {RuleShareRuleState[]} */
+  const blockedRules = [];
+
+  for (const rule of rules) {
+    if (downstreamIds.has(rule.id)) {
+      presentRules.push(ruleState(rule, "registry", rule.requiredFragments, [], "Rule id is already registered in downstream registry."));
+      continue;
+    }
+
+    const text = normalizeText(await readRuleTargetText(repoRoot, rule.targetFiles));
+    const exactText = normalizeText(rule.text);
+    const matchedFragments = rule.requiredFragments.filter((fragment) => text.includes(normalizeText(fragment)));
+    const missingFragments = rule.requiredFragments.filter((fragment) => !text.includes(normalizeText(fragment)));
+
+    if (exactText && text.includes(exactText)) {
+      presentUnregisteredRules.push(ruleState(rule, "text", rule.requiredFragments, [], "Rule text is already present, but downstream registry has no id entry."));
+    } else if (rule.requiredFragments.length > 0 && missingFragments.length === 0) {
+      presentUnregisteredRules.push(ruleState(rule, "fragments", matchedFragments, [], "Required fragments are already present, but downstream registry has no id entry."));
+    } else if (rule.sharePolicy === "manual_review") {
+      blockedRules.push(
+        ruleState(
+          rule,
+          matchedFragments.length > 0 ? "partial" : "blocked",
+          matchedFragments,
+          missingFragments,
+          "Rule is marked manual_review in starter registry; owner review is required before sharing."
+        )
+      );
+    } else if (matchedFragments.length > 0) {
+      blockedRules.push(ruleState(rule, "partial", matchedFragments, missingFragments, "Partial rule match found; manual review is required before importing or registering."));
+    } else {
+      missingRules.push(ruleState(rule, "missing", [], rule.requiredFragments, "Rule is missing from downstream canonical surfaces."));
+    }
+  }
+
+  return { presentRules, missingRules, presentUnregisteredRules, blockedRules };
+}
+
+/**
+ * @param {StarterRule[]} rules
+ * @param {RuleMatchKind} match
+ * @param {string} reason
+ * @returns {RuleShareRuleState[]}
+ */
+function statesForAllRules(rules, match, reason) {
+  return rules.map((rule) => ruleState(rule, match, [], rule.requiredFragments, reason));
 }
 
 /**
@@ -366,7 +579,7 @@ export async function discoverShareProjects(repoRoot, options = {}) {
 
 /**
  * @param {DiscoveredShareProject} project
- * @param {{allowlistConfigured: boolean, starterPath: string, starterHead: string}} options
+ * @param {{allowlistConfigured: boolean, starterPath: string, starterHead: string, rules: StarterRule[]}} options
  * @returns {Promise<RuleShareProject>}
  */
 async function analyzeProject(project, options) {
@@ -381,35 +594,72 @@ async function analyzeProject(project, options) {
   let recommendedAction = "manual_review";
   /** @type {string[]} */
   let targetFiles = [];
+  /** @type {RuleShareRuleState[]} */
+  let presentRules = [];
+  /** @type {RuleShareRuleState[]} */
+  let missingRules = [];
+  /** @type {RuleShareRuleState[]} */
+  let presentUnregisteredRules = [];
+  /** @type {RuleShareRuleState[]} */
+  let blockedRules = [];
 
   if (!options.allowlistConfigured) {
     status = "blocked";
     reasons.push("Локальный allowlist не настроен; проект нельзя предлагать для outbound sharing.");
+    blockedRules = statesForAllRules(options.rules, "blocked", "Project is blocked because local allowlist is not configured.");
   } else if (dirty) {
     status = "blocked";
     reasons.push("В проекте есть незакоммиченные изменения; сначала нужен clean tree.");
+    blockedRules = statesForAllRules(options.rules, "blocked", "Project is dirty; clean tree is required before sharing rules.");
   } else if (hasStarterSubmodule) {
     if (currentStarterHead === options.starterHead) {
-      status = "needs_review";
+      status = options.rules.length > 0 ? "up_to_date" : "needs_review";
+      recommendedAction = options.rules.length > 0 ? "none" : "manual_review";
+      presentRules = statesForAllRules(options.rules, "starter_reference", "Starter reference already points to current starter HEAD.");
       reasons.push("Starter reference уже указывает на текущий starter HEAD.");
     } else if (!hasTaskFlow) {
       status = "blocked";
       reasons.push("Starter submodule найден, но managed task flow в проекте не обнаружен.");
+      blockedRules = statesForAllRules(options.rules, "blocked", "Project has starter reference but no managed task flow.");
     } else {
       status = "ready";
       recommendedAction = "update_starter_reference";
       targetFiles = [options.starterPath, "package.json"];
+      missingRules = statesForAllRules(options.rules, "missing", "Updating the starter reference will bring these starter rules to the project.");
       reasons.push("Проект использует versioned starter reference; можно обновить baseline без blind copy.");
     }
   } else if (hasStarterFiles && hasTaskFlow) {
-    status = "ready";
-    recommendedAction = "prepare_rule_import";
-    targetFiles = CANONICAL_IMPORT_TARGETS;
-    reasons.push("Проект похож на starter-based copy и поддерживает managed task flow.");
+    const ruleStateByCategory = await evaluateCopiedBaselineRules(project.repoRoot, options.rules);
+    presentRules = ruleStateByCategory.presentRules;
+    missingRules = ruleStateByCategory.missingRules;
+    presentUnregisteredRules = ruleStateByCategory.presentUnregisteredRules;
+    blockedRules = ruleStateByCategory.blockedRules;
+    if (options.rules.length === 0 || missingRules.length > 0) {
+      status = "ready";
+      recommendedAction = "prepare_rule_import";
+      targetFiles =
+        missingRules.length > 0 ? uniqueSorted(missingRules.flatMap((rule) => rule.targetFiles)) : CANONICAL_IMPORT_TARGETS;
+      reasons.push("Проект похож на starter-based copy и поддерживает managed task flow.");
+      if (missingRules.length > 0) {
+        reasons.push(`Найдено недостающих starter rules: ${missingRules.length}.`);
+      }
+      if (blockedRules.length > 0) {
+        reasons.push(`Есть rule-level пункты для ручной проверки: ${blockedRules.length}.`);
+      }
+    } else if (blockedRules.length > 0) {
+      status = "needs_review";
+      reasons.push("Найдены похожие, но не полностью совпадающие starter rules; нужна ручная проверка.");
+    } else {
+      status = "up_to_date";
+      recommendedAction = "none";
+      reasons.push("Все registered starter rules уже найдены в проекте; перенос не нужен.");
+    }
   } else if (hasStarterFiles) {
     reasons.push("Starter-like canonical files найдены, но managed task flow не обнаружен.");
+    blockedRules = statesForAllRules(options.rules, "blocked", "Project has starter-like files but no managed task flow.");
   } else {
     reasons.push("Проект не выглядит подключённым к starter baseline.");
+    blockedRules = statesForAllRules(options.rules, "blocked", "Project is not recognized as starter-based.");
   }
 
   return {
@@ -424,7 +674,11 @@ async function analyzeProject(project, options) {
     hasStarterSubmodule,
     starterPath: options.starterPath,
     currentStarterHead,
-    targetFiles
+    targetFiles,
+    presentRules,
+    missingRules,
+    presentUnregisteredRules,
+    blockedRules
   };
 }
 
@@ -434,6 +688,7 @@ async function analyzeProject(project, options) {
  */
 export async function scanRuleShare(options) {
   const config = options.config ?? (await loadLocalConfig(options.repoRoot));
+  const registry = await loadStarterRuleRegistry(options.repoRoot);
   const starterHead = gitHead(options.repoRoot);
   if (!starterHead) {
     throw new Error("Cannot determine starter HEAD.");
@@ -444,7 +699,7 @@ export async function scanRuleShare(options) {
   const discovered = await discoverShareProjects(options.repoRoot, { roots: options.roots, config });
   const projects = [];
   for (const project of discovered) {
-    projects.push(await analyzeProject(project, { allowlistConfigured, starterPath, starterHead }));
+    projects.push(await analyzeProject(project, { allowlistConfigured, starterPath, starterHead, rules: registry.rules }));
   }
   const diagnostics = [];
   if (!allowlistConfigured) {
@@ -456,6 +711,9 @@ export async function scanRuleShare(options) {
   if (projects.length === 0) {
     diagnostics.push("No share targets discovered from the configured roots/allowlist.");
   }
+  if (registry.rules.length === 0) {
+    diagnostics.push(`No starter rule registry entries found in ${RULE_REGISTRY_PATH}. Rule-level sharing will use project-level readiness only.`);
+  }
 
   return {
     schemaVersion: 1,
@@ -464,6 +722,8 @@ export async function scanRuleShare(options) {
     starterHead,
     starterDirty,
     allowlistConfigured,
+    registryPath: path.join(options.repoRoot, RULE_REGISTRY_PATH),
+    registryRules: registry.rules,
     projects,
     diagnostics
   };
@@ -480,7 +740,31 @@ function actionTitle(action) {
   if (action === "prepare_rule_import") {
     return "подготовить перенос reusable rules";
   }
+  if (action === "none") {
+    return "ничего переносить не нужно";
+  }
   return "ручная проверка";
+}
+
+/**
+ * @param {RuleShareRuleState[]} rules
+ * @param {string} emptyText
+ * @returns {string[]}
+ */
+function renderRuleList(rules, emptyText) {
+  if (rules.length === 0) {
+    return [`  ${emptyText}`];
+  }
+  const lines = [];
+  for (const rule of rules) {
+    lines.push(`  - ${rule.id}: ${rule.title}`);
+    lines.push(`    Точный текст: ${rule.text}`);
+    lines.push(`    Target: ${rule.targetFiles.join(", ") || "-"}`);
+    if (rule.reason) {
+      lines.push(`    Причина: ${rule.reason}`);
+    }
+  }
+  return lines;
 }
 
 /**
@@ -494,15 +778,17 @@ export function renderRuleShareReport(snapshot) {
     `Сформировано: ${snapshot.generatedAt}`,
     `Starter HEAD: ${snapshot.starterHead}`,
     `Starter dirty: ${snapshot.starterDirty ? "yes" : "no"}`,
+    `Registry rules: ${snapshot.registryRules?.length ?? 0}`,
     "",
     "Миссия: делиться только переносимым starter baseline с выбранными активными проектами.",
-    "Цель: дать владельцу approve-list проектов до любых downstream изменений.",
-    "JTBD: когда starter обновлён, выбрать актуальные проекты и безопасно передать им новые правила.",
+    "Цель: показать по каждому выбранному проекту, какие starter rules уже есть, каких не хватает и что будет добавлено.",
+    "JTBD: когда starter обновлён, безопасно раздать недостающие reusable правила без дублей и без перезаписи продуктовой специфики.",
     "",
     "## Предложения к проектам"
   ];
 
   const ready = snapshot.projects.filter((project) => project.status === "ready");
+  const upToDate = snapshot.projects.filter((project) => project.status === "up_to_date");
   const needsReview = snapshot.projects.filter((project) => project.status === "needs_review");
   const blocked = snapshot.projects.filter((project) => project.status === "blocked");
 
@@ -517,6 +803,7 @@ export function renderRuleShareReport(snapshot) {
   /** @type {Array<[string, RuleShareProject[]]>} */
   const sections = [
     ["Готово к обновлению", ready],
+    ["Актуально", upToDate],
     ["Требует ручной проверки", needsReview],
     ["Заблокировано", blocked]
   ];
@@ -531,6 +818,14 @@ export function renderRuleShareReport(snapshot) {
       lines.push(`  Действие: ${actionTitle(project.recommendedAction)}`);
       lines.push(`  Причины: ${project.reasons.join(" ")}`);
       lines.push(`  Target: ${project.targetFiles.join(", ") || "-"}`);
+      lines.push("  Есть в проекте:");
+      lines.push(...renderRuleList(project.presentRules ?? [], "- Нет registered-present rules."));
+      lines.push("  Есть текстом, но не зарегистрировано:");
+      lines.push(...renderRuleList(project.presentUnregisteredRules ?? [], "- Нет unregistered-present rules."));
+      lines.push("  Будет добавлено:");
+      lines.push(...renderRuleList(project.missingRules ?? [], "- Нет missing rules."));
+      lines.push("  Требует ручной проверки:");
+      lines.push(...renderRuleList(project.blockedRules ?? [], "- Нет blocked/manual-review rules."));
     }
   }
 
@@ -566,6 +861,7 @@ function buildProjectTaskSeed(snapshot, project, approval) {
     "- создать managed task worktree в target project;",
     "- не затирать product-specific charter, adapters, profiles или локальные правила проекта;",
     "- переносить только reusable baseline governance/rules;",
+    "- использовать список missing rules ниже как единственный контракт переноса;",
     "- прогнать deterministic QA target project и зафиксировать evidence;",
     "- остановиться перед finish/merge/publish, если владелец явно не запросил эту стадию."
   ];
@@ -581,15 +877,40 @@ function buildProjectTaskSeed(snapshot, project, approval) {
     lines.push(
       "",
       "Действие для copied-baseline проекта:",
-      `- сравнить starter canonical files: ${project.targetFiles.join(", ")};`,
-      "- подготовить surgical diff с reusable правилами;",
+      `- добавить только missing rules: ${(project.missingRules ?? []).map((rule) => rule.id).join(", ") || "нет"};`,
+      "- не дублировать present или present-unregistered rules;",
+      "- подготовить surgical diff с reusable правилами из списка ниже;",
       "- оставлять downstream product wording в его product charter/specs;",
-      "- синхронизировать обязательное правило во всех downstream canonical/mirror surfaces: AGENTS.md, .memory-bank/*, CODEX_MEMORY.md, README.md, .cursorrules и CLAUDE.md;",
+      `- синхронизировать обязательные правила в этих target files: ${project.targetFiles.join(", ") || "-"};`,
+      "- сохранять parity на downstream canonical/mirror surfaces, когда они существуют: AGENTS.md, .memory-bank/*, CODEX_MEMORY.md, README.md, .cursorrules и CLAUDE.md;",
       `- зафиксировать evidence в downstream operational docs: ${DOWNSTREAM_EVIDENCE_TARGETS.join(", ")};`,
       "- evidence должен включать starter source, starter HEAD, approved project, imported reusable rules, skipped product-specific areas, changed canonical files и deterministic QA result;",
       "- если task QA пишет TRIZ_TRIGGER, выполнить TRIZ-pass и добавить TRIZ_APPLIED запись до финального ответа;",
       "- после всех source edits повторить target task QA, чтобы checkpoint относился к финальному diff."
     );
+  }
+  if ((project.missingRules ?? []).length > 0) {
+    lines.push("", "Missing rules to import:");
+    for (const rule of project.missingRules ?? []) {
+      lines.push(
+        `- ${rule.id}: ${rule.title}`,
+        `  Text: ${rule.text}`,
+        `  Target files: ${rule.targetFiles.join(", ") || "-"}`,
+        `  Required fragments: ${rule.requiredFragments.join(" | ") || "-"}`
+      );
+    }
+  }
+  if ((project.presentUnregisteredRules ?? []).length > 0) {
+    lines.push("", "Already present, do not duplicate; register as applied if downstream registry is maintained:");
+    for (const rule of project.presentUnregisteredRules ?? []) {
+      lines.push(`- ${rule.id}: ${rule.title}`);
+    }
+  }
+  if ((project.blockedRules ?? []).length > 0) {
+    lines.push("", "Manual-review rules; do not import automatically:");
+    for (const rule of project.blockedRules ?? []) {
+      lines.push(`- ${rule.id}: ${rule.title} — ${rule.reason}`);
+    }
   }
   const note = approval.notes?.[project.id];
   if (note) {
@@ -626,6 +947,12 @@ export function buildShareApplyPlan(snapshot, approval) {
   const blocked = selectedProjects.filter((project) => project.status !== "ready");
   if (blocked.length > 0) {
     throw new Error(`Approved projects are not ready for apply-plan: ${blocked.map((project) => project.id).join(", ")}`);
+  }
+  const empty = selectedProjects.filter(
+    (project) => (snapshot.registryRules?.length ?? 0) > 0 && project.recommendedAction === "prepare_rule_import" && (project.missingRules ?? []).length === 0
+  );
+  if (empty.length > 0) {
+    throw new Error(`Approved copied-baseline projects have no missing rules: ${empty.map((project) => project.id).join(", ")}`);
   }
   return {
     status: "ready",
@@ -713,10 +1040,14 @@ async function main() {
       starterHead: snapshot.starterHead,
       starterDirty: snapshot.starterDirty,
       allowlistConfigured: snapshot.allowlistConfigured,
+      registryRules: snapshot.registryRules.length,
       projects: snapshot.projects.length,
       ready: snapshot.projects.filter((project) => project.status === "ready").length,
+      upToDate: snapshot.projects.filter((project) => project.status === "up_to_date").length,
       needsReview: snapshot.projects.filter((project) => project.status === "needs_review").length,
-      blocked: snapshot.projects.filter((project) => project.status === "blocked").length
+      blocked: snapshot.projects.filter((project) => project.status === "blocked").length,
+      missingRules: snapshot.projects.reduce((count, project) => count + (project.missingRules ?? []).length, 0),
+      blockedRules: snapshot.projects.reduce((count, project) => count + (project.blockedRules ?? []).length, 0)
     };
     console.log(JSON.stringify(payload, null, 2));
     return;
