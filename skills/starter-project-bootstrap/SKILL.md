@@ -83,9 +83,11 @@ Stop instead of auto-starting when the repo is dirty, the task conveyor is unava
 6. Ask for missing intake information in small batches. Prefer one high-impact question at a time when answers materially affect safety or scope.
 7. Mark every required intake item as `Согласовано` or `Заблокировано`. `TBD`, placeholders, and "заполним потом" remain blockers.
 8. For capability decisions, first ask whether each block is applicable. If applicable, record owner-approved invariants before implementation in that area.
-9. After owner approval, transfer answers into canonical sources.
-10. Run baseline QA and report evidence.
-11. Only after QA passes, say the downstream project is ready for feature/refactor/behavior-change tasks.
+9. If the project is still validating a hypothesis, do not treat architecture, technologies, launch method, commercial model, ownership zones, or major product capabilities as approved until they are explicitly agreed in Project Intake, product charter, or roadmap.
+10. If the project needs actions after publishing, such as restarting local agents or services, capture the owner-approved method in Project Intake; do not turn local commands or environment settings into starter core behavior.
+11. After owner approval, transfer answers into canonical sources.
+12. Run baseline QA and report evidence.
+13. Only after QA passes, say the downstream project is ready for feature/refactor/behavior-change tasks.
 
 ## Project Intake Order
 
@@ -96,16 +98,17 @@ Collect and approve in this order:
 3. Project goal
 4. Target audience
 5. JTBD
-6. Product constraints
-7. Usage scenarios
-8. Success metrics
-9. Source-of-truth files
-10. Core / adapters / profiles boundary
-11. Stack / runtime choices
-12. QA / release choices
-13. Agent / eval choices
-14. Memory / rules ownership
-15. Capability decisions, only if applicable:
+6. Hypothesis status and approved decisions
+7. Product constraints
+8. Usage scenarios
+9. Success metrics
+10. Source-of-truth files
+11. Core / adapters / profiles boundary
+12. Stack / runtime choices
+13. QA / release choices
+14. Agent / eval choices
+15. Memory / rules ownership
+16. Capability decisions, only if applicable:
     - auth / user identity
     - payments / billing
     - credits / limits
@@ -115,6 +118,7 @@ Collect and approve in this order:
     - API documentation
     - service layout
     - runtime-specific rules
+    - post-publish local actions, such as restarting local agents or services
 
 ## Canonical Transfer
 

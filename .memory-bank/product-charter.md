@@ -28,7 +28,7 @@
 
 `Мы видим будущее, в котором [желаемое состояние мира / рынка], а наш проект — [роль в этом будущем].`
 
-Для новых downstream-проектов mission/vision в Project Intake нужно проверять по этим вопросам и формулам до переноса в canonical sources. Миссия и видение принадлежат уровню проекта; для отдельных задач используются цель изменения, `JTBD`, Job Stories, User Stories и критерии приемки.
+В Project Intake миссия должна отвечать: кому проект помогает, какой результат даёт и через что; видение должно описывать желаемое будущее и роль проекта в нём. Миссия и видение пишутся только на уровне проекта, а не для отдельных задач.
 
 ## Миссия
 
@@ -78,5 +78,6 @@
 - Product charter нельзя обходить через локальный patch, mirror-файл, временный exception или ad-hoc script. Если charter требует изменения, сначала обновить этот файл и синхронизировать обязательные правила в `AGENTS.md`, `.memory-bank/*` и `CODEX_MEMORY.md`.
 - Downstream проекты должны заменить или расширить этот charter своим product-specific charter, включая собственную целевую аудиторию, и сохранить baseline-инварианты starter core.
 - Новый downstream-проект обязан начинаться с Project Intake Gate: команда заполняет недостающие сведения о миссии, видении, цели, целевой аудитории, `JTBD`, продуктовых ограничениях, сценариях, метриках успеха, governance/QA choices и applicable capability decisions; каждый применимый пункт должен получить явное owner approval до первой feature/refactor/behavior-change реализации в этой зоне.
+- Пока проект находится на этапе проверки гипотезы, нельзя считать утверждёнными архитектуру, технологии, способ запуска, коммерческую модель, зоны ответственности и важные продуктовые возможности. Эти решения становятся правилами проекта только после явного согласования в Project Intake, product charter или roadmap.
 - Conversational bootstrap нового downstream-проекта должен идти через `$starter-project-bootstrap`: фразы вроде `стартуем новый проект` автоматически создают managed bootstrap worktree on clean `main`, запускают safe skill linking (`npm run skills:link`), guided Project Intake, перенос approved ответов в canonical sources и baseline QA вместо общего checklist.
 - Для изменений, влияющих на AI/agent behavior, рекомендации, Plan mode, rule-sync reports, rule-share reports, conversational commands или качество ответов, acceptance criteria недостаточно: задача должна иметь Eval spec с описанием хорошего ответа, провала, критичных edge cases, regression examples, способа сравнения версий и minimum pass threshold.
