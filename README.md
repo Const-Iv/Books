@@ -1,93 +1,98 @@
-# Школа ассистентов
+# Starter Kit нового проекта
 
-Проект подбора и обучения проверенных ассистентов для владельцев бизнеса, CEO и клиентов Business Booster.
+Этот репозиторий — не просто blueprint-папка, а **канонический исполняемый Node/npm baseline** для старта любого нового проекта под привычный Codex/worktree conveyor:
 
-## Что Зафиксировано
+- `codex/*` managed worktrees;
+- conversational branch-chat;
+- deterministic QA;
+- eval gate for AI/agent behavior changes;
+- Karpathy-style execution discipline;
+- BMAD-ready governance;
+- TRIZ escalation by trigger;
+- single-writer operational docs;
+- shared memory-bank governance;
+- product charter for mission/vision/goal/target-audience/JTBD;
+- local-first `release:local`.
 
-- Product Charter утверждён owner'ом 2026-05-04.
-- Project Intake утверждён owner'ом 2026-05-04.
-- Roadmap запуска утверждён owner'ом 2026-05-04.
-- Raw transcript сохранён без изменений.
+Миссия starter: помогать командам, которые запускают новый проект или репозиторий, с первого дня получать понятную и воспроизводимую операционную основу через переносимый starter baseline.
 
-## Канонические Источники
+Целевая аудитория starter: команды, которые начинают новый проект или репозиторий, технические и продуктовые лиды, инженеры и agent-operators, а также downstream maintainers, которые подключают starter как baseline.
 
-- `.memory-bank/product-charter.md` — миссия, видение, цель, целевая аудитория, `JTBD`, ограничения, сценарии и критерии успеха.
-- `.memory-bank/project-context.md` — текущее состояние проекта, утверждённые и отложенные решения.
-- `.memory-bank/architecture-map.md` — статус архитектуры и границы решений до подтверждения гипотезы.
-- `.memory-bank/code-rules.md` — правила работы ассистента и процесса.
-- `.memory-bank/qa-playbook.md` — правила проверок.
-- `plans/2026-05-04-1147-project-intake.md` — approved intake.
-- `Docs/product-discovery/2026-04-03-assistant-selection-transcript.raw` — verbatim source.
-- `Docs/product-discovery/2026-04-03-assistant-selection-product-charter-draft.md` — discovery draft.
-- `Docs/product-discovery/2026-04-03-assistant-selection-roadmap.md` — approved roadmap.
+JTBD: когда начинается новый проект, получить готовую и переносимую основу, чтобы команда сразу работала по ясным правилам, проверяла изменения воспроизводимо и не собирала governance, task flow и QA заново.
 
-## Продуктовая Суть
+Любое изменение starter нужно сверять с этой ролью: оно должно быть полезно как переносимый baseline для новых проектов. Продуктовую специфику добавляйте поверх starter через adapters/profiles, а не в core governance.
 
-Миссия: помогать владельцам бизнеса и CEO освобождать время для развития компании через подбор и обучение проверенных ассистентов.
+## Что внутри
 
-Цель: создать направление, которое даёт владельцам подготовленных помощников для разгрузки времени и внедрения изменений, а кандидатам — путь от обучения и проверки к стажировке и работе с предпринимателями.
+- `AGENTS.md` — канонический договор для Codex.
+- `CLAUDE.md` и `.cursorrules` — cross-agent mirrors.
+- `.memory-bank/` — shared long-lived knowledge.
+- `.memory-bank/product-charter.md` — миссия, видение, цель, целевая аудитория и JTBD проекта.
+- `CODEX_MEMORY.md` — оперативная память Codex.
+- `scripts/` — реальные process entrypoints, а не только README-контракты.
+- `skills/` — versioned reusable Codex skills, которые можно подключить глобально через symlink.
+- `skills/starter-project-bootstrap/` — основной conversational skill для фразы `стартуем новый проект`: ведёт owner'а по Project Intake, canonical docs, dependencies, shared skills и baseline QA.
+- `skills/starter-rule-sync/` — основной project-local skill для ручного и автоматического поиска reusable правил в downstream проектах; `scripts/rule-sync.mjs` остаётся детерминированным execution layer для scan/report/apply-plan.
+- `skills/starter-rule-share/` — основной project-local skill для передачи текущего starter baseline в выбранные active downstream проекты; `scripts/rule-share.mjs` остаётся approval-safe execution layer, а guarded one-run mode выполняет перенос только через downstream managed task worktrees и QA. Для copied-baseline проектов task seed уже включает canonical/mirror sync, QA/TRIZ evidence и stop-before-publish gate.
+- `tests/` — unit/integration/e2e проверки самого starter baseline.
+- `Docs/` — process evidence, baselines, eval evidence и review guidance.
+- `research/triz/` — канонический TRIZ pack.
+- `templates/agent-workspace/` — безопасные локальные шаблоны без коммита личных данных.
+- `templates/shared-skills-submodule/` — готовый downstream contract для подключения starter skills через git submodule.
 
-Граница продукта: Школа ассистентов — отдельное направление. При этом оно может быть встроено как в трек основной программы Business Booster, так и в отдельные составляющие платформы Business Booster.
+## Быстрый старт
 
-## Текущий Этап
-
-Проект находится на этапе проверки гипотезы.
-
-Первый шаг roadmap: быстро проверить спрос через две очереди — владельцев / CEO и будущих ассистентов, отдельно посмотреть действующих клиентов Business Booster, провести кастдевы на тарифах с сопровождением и десятках, а затем принять решение о выделении product manager и коммерческого лидера.
-
-## Что Пока Не Утверждено
-
-- Runtime / stack.
-- Product implementation architecture.
-- QA / release path для будущей реализации.
-- Коммерческая модель.
-- Agent / eval ownership.
-- Memory / rules ownership после подтверждения гипотезы.
-
-Capability decisions на этапе проверки гипотезы помечены как неприменимые.
-
-## Операционный Baseline
-
-Репозиторий стартует от `new-project-starter`, поэтому сохраняет managed worktrees, deterministic QA и memory-bank governance.
-
-Обязательные команды baseline:
+1. Скопируйте этот репозиторий или его содержимое в корень нового проекта.
+2. В чате напишите `стартуем новый проект`. Codex должен использовать `$starter-project-bootstrap`: автоматически создать безопасный bootstrap worktree, при необходимости установить зависимости, выполнить `npm run skills:link`, определить текущее состояние bootstrap, создать или продолжить Project Intake и вести вас по обязательным решениям. Если для локальных skill-конфликтов нужен `npm run skills:link -- --adopt`, Codex должен показать конкретные конфликтующие папки и спросить отдельное подтверждение.
+3. Создайте Project Intake по `plans/_project_intake_template.md`: заполните миссию, видение, цель, целевую аудиторию, `JTBD`, ограничения, сценарии, метрики, stack/runtime, QA/release choices, agent/eval choices, ownership правил и applicable capability decisions. Миссию и видение проверяйте по вопросам и формулам из `.memory-bank/product-charter.md`: миссия описывает, кому проект помогает и какой результат даёт сейчас, а видение — какое будущее проект хочет получить. Capability-блоки вроде auth, payments, credits, analytics/consent, i18n, async jobs, API documentation, service layout и runtime-specific rules заполняются только если применимы к продукту. Каждый применимый пункт должен быть явно согласован owner'ом; `TBD` и “заполним потом” считаются blocker.
+4. После approval перенесите согласованные ответы в:
+   - `AGENTS.md`
+   - `.memory-bank/product-charter.md`
+   - `.memory-bank/project-context.md`
+   - `.memory-bank/architecture-map.md`
+   - `.memory-bank/code-rules.md`
+   - `CODEX_MEMORY.md`
+   - `README.md`
+5. Установите зависимости:
 
 ```bash
-npm run lint
-npm run lint:fix:changed
+npm ci
+```
+
+6. Если хотите использовать общие repo-managed skills на этом устройстве, один раз подключите их в глобальный Codex home. При conversational bootstrap это делает агент после команды `стартуем новый проект`:
+
+```bash
 npm run skills:link
-npm run skills:status
-npm run skills:unlink
-npm run rule-sync:scan
-npm run rule-sync:report
-npm run rule-sync:apply-plan
-npm run rule-share:scan
-npm run rule-share:report
-npm run rule-share:apply-plan
-npm run typecheck
-npm test
-npm run build
+```
+
+Если в `~/.codex/skills` уже есть локальная конфликтующая копия того же skill, используйте безопасную миграцию с backup:
+
+```bash
+npm run skills:link -- --adopt
+```
+
+7. Если проект подключает shared skills через git submodule, добавьте starter как versioned dependency и линкуйте skills из него:
+
+```bash
+git submodule add <starter-repo-url> vendor/new-project-starter
+git submodule update --init --recursive
+node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/new-project-starter/skills
+```
+
+В таком режиме проект фиксирует конкретный commit starter baseline, а новые люди получают тот же набор skills после `git clone --recurse-submodules` или `git submodule update --init --recursive`.
+
+8. Прогоните baseline QA:
+
+```bash
 npm run qa:agent
 npm run qa:smoke:pr
 npm run qa:e2e:nightly
 npm run qa:security
 npm run qa:coverage:critical
 npm run qa:perf:critical
-npm run task:start -- --title "<title>" --seed-message "<request>"
-npm run task:test
-npm run task:qa:agent
-npm run task:finish:core
-npm run task:merge:main
-npm run task:history
-npm run task:ledger
-npm run task:operational-docs:capture
-npm run task:operational-docs:sync
-npm run release:local
 ```
 
-Для документальных правок минимум проверки: `npm run lint`.
-
-## Что важно понимать
+## Что перенесено из актуальной логики работы
 
 - Karpathy overlay: явные assumptions для non-trivial задач, surgical diffs и `reproduce -> fix -> verify` для bugfix/regression.
 - BMAD integration: если проект включает BMAD, каноника живёт в `_bmad/`, а `_bmad-output/` остаётся локальным scratch без коммита.
@@ -98,6 +103,43 @@ npm run release:local
 - Shared operational docs и generated history snapshots должны оставаться single-writer и синхронизироваться только на publish/release stage.
 - Активные QA/TRIZ логи должны оставаться читаемыми: большие pre-compaction snapshots уходят в `Docs/archive/*.md.gz`, а текущие `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` держат компактный хвост.
 - Finish-flow должен уметь no-op завершение: если clean task branch уже содержится в `main`, publish пропускается с `publishStatus=skipped_already_merged`, но cleanup всё равно фиксируется.
+
+## Канонические команды
+
+- `npm run lint`
+- `npm run lint:fix`
+- `npm run lint:fix:changed`
+- `npm run skills:link`
+- `npm run skills:status`
+- `npm run skills:unlink`
+- `npm run rule-sync:scan -- --since <date> --until <date>`
+- `npm run rule-sync:report -- --latest`
+- `npm run rule-sync:apply-plan -- --approval <path> --dry-run`
+- `npm run rule-share:scan`
+- `npm run rule-share:report -- --latest`
+- `npm run rule-share:apply-plan -- --approval <path> --dry-run`
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- `npm run qa:agent`
+- `npm run qa:smoke:pr`
+- `npm run qa:e2e:nightly`
+- `npm run qa:security`
+- `npm run qa:coverage:critical`
+- `npm run qa:perf:critical`
+- `npm run task:start -- --title "<title>" --seed-message "<request>"`
+- `npm run task:test -- [args]`
+- `npm run task:qa:agent`
+- `npm run task:finish:core`
+- `npm run task:merge:main`
+- `npm run task:history -- sync`
+- `npm run task:ledger -- rebuild --write-docs`
+- `npm run task:operational-docs:capture`
+- `npm run task:operational-docs:sync`
+- `npm run release:local`
+
+## Что важно понимать
+
 - Core starter не содержит продуктовый UI/API runtime. Smoke/nightly здесь проверяют process-level сценарии на временных git repos.
 - Capability decisions в Project Intake не являются core defaults: starter не мандатит конкретный frontend stack, identity provider, payment provider, fixed locales, Python-only decorators, database queue или worker model. Такие решения downstream выбирает через adapters/profiles и owner approval.
 - Repo-managed shared skills обновляются на устройстве обычным `git pull`, если symlink уже был создан. Для новых или переименованных skills повторно запускайте `npm run skills:link`.
@@ -109,5 +151,3 @@ npm run release:local
 - `task:qa:agent` всё равно создаёт `previewPreparedSha`, но по умолчанию preview status = `not_supported`. Когда реальный проект добавит preview adapter, contract уже будет готов.
 - `release:local` — обязательный core publish path. Deploy-to-server и `db:prod:*` контуры должны добавляться как optional profile поверх этой базы.
 - Если вы подключаете BMAD поверх starter, не делайте `_bmad-output/` источником истины для conveyor state, shared docs или committed plans.
-
-Перед завершением bootstrap: `npm run qa:agent`.

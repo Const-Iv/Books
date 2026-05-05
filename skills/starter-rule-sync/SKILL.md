@@ -22,6 +22,7 @@ Charter fit: reusable rule sync supports the mission and JTBD by letting downstr
 4. Run or inspect the latest rule-sync scan:
    - `npm run rule-sync:scan -- --since <YYYY-MM-DD> --until <YYYY-MM-DD>`
    - `npm run rule-sync:report -- --latest`
+   - The report command saves a human-readable Markdown artifact in `runtime/rule-sync/reports/`.
    - If the latest scan is a short zero-candidate follow-up probe immediately after a meaningful scan, `report --latest` falls back to the meaningful scan and shows traceability. Do not override a real zero-result scan for a full period.
 5. Start the owner-facing response from decision proposals, not candidate ids:
    - `Связь с charter проекта`
@@ -75,12 +76,28 @@ Scheduled jobs should keep their prompt minimal:
 Use these sections:
 
 - `Предложения к решению`
+- `Разбор по проектам`
 - `Кандидаты на импорт`
 - `Требует ручной проверки`
 - `Пропущено как product-specific`
 - `Диагностика`
 
 Each proposal must include `Связь с charter проекта`, `Цель решения`, `JTBD`, `Job Stories`, `User Stories`, `Критерии приемки`, recommendation, and traceability. For every approved candidate, preserve source project, task/commit evidence, changed files, proposed starter target, and QA result after implementation.
+
+The project breakdown must group findings by source project, collapse similar findings into one proposal, and use plain owner language: what was found, whether there are duplicates, why it helps starter, the exact starter rule text, what to remove before import, where the rule may go in starter, and which ids verify the source.
+
+The lower `Кандидаты на импорт` and `Требует ручной проверки` blocks must be self-contained decision blocks. They should group similar items by source project and rule topic, include `Точный текст для starter`, and, for manual-review groups, spell out what exactly the owner should review, the recommended decision, and what response is expected. QA/TRIZ logs must be shown as evidence-only/manual-review groups unless a concrete reusable starter rule is written separately.
+
+Golden format for this task: the owner should be able to read only `Кандидаты на импорт` and `Требует ручной проверки` first. Each group uses bold Markdown labels, especially `**Точный текст для starter:**`, `**Что проверить вручную:**`, `**Моё предложение:**`, and `**Что ожидается от владельца:**`. Do not replace this with raw candidate ids, snippets, or generic wording like "use as evidence" without naming the concrete problem and the expected owner decision.
+
+Mistakes from the report-format iteration that must not be repeated:
+
+- Do not make the owner infer the rule from candidate ids, commits, file paths, snippets, or classifier labels.
+- Do not use vague text such as "use only as evidence" unless the report also names the concrete problem, why it matters, and what decision is expected.
+- Do not list duplicate candidates separately when they represent one starter rule; group them and say that one rule should be moved, not every record.
+- Do not present QA/TRIZ logs as import-ready starter rules; they are manual-review evidence until a concrete reusable rule is written.
+- Do not make `Кандидаты на импорт` and `Требует ручной проверки` depend on reading upper sections; they are the primary decision surface.
+- Do not drop bold field labels; scannability is part of the accepted format.
 
 ## Safety Rules
 

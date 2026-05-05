@@ -1,61 +1,86 @@
-# Architecture Map: школа ассистентов
+# Architecture Map
 
-## Текущий Статус
+## High-Level Modules
 
-Продуктовая архитектура не утверждается на этапе проверки гипотезы.
+- `scripts/dependency-preflight.mjs`: dependency recovery seam.
+- `scripts/deterministic-feedback-loop.mjs`: deterministic QA orchestrator.
+- `scripts/worktree-start.mjs`: task bootstrap, branch/worktree creation, state/history START.
+- `scripts/worktree-qa-agent.mjs`: task QA checkpoint, failure classification, TRIZ trigger evaluation.
+- `scripts/worktree-finish-core.mjs`: finish orchestration, capture, commit, merge handoff, cleanup decision.
+- `scripts/worktree-merge-main.mjs`: safe merge/publish on local `main`.
+- `scripts/worktree-history.mjs` + `scripts/worktree-ledger.mjs`: docs snapshots from runtime history/state.
+- `scripts/worktree-operational-docs.mjs`: single-writer capture/sync of operational docs.
+- `scripts/release-local.mjs`: local-first release gate.
+- `skills/starter-project-bootstrap/SKILL.md`: primary Codex workflow for guided downstream Project Intake, canonical transfer, dependency/shared-skills setup, and baseline QA.
+- `skills/starter-rule-sync/SKILL.md`: primary Codex workflow for manual and automated reusable rule sync.
+- `scripts/rule-sync.mjs`: deterministic cross-project governance scan/report/apply-plan execution seam for reusable starter rules.
+- `skills/starter-rule-share/SKILL.md`: primary Codex workflow for approval-safe outbound sharing of the current starter baseline.
+- `scripts/rule-share.mjs`: deterministic target-project scan/report/apply-plan execution seam for outbound starter rule sharing.
+- `rule-share:apply-plan` task seeds are the copied-baseline import contract: preserve downstream product boundaries, sync canonical/mirror rule surfaces, require QA/TRIZ evidence and stop before finish/merge/publish unless explicitly approved.
 
-Сейчас проект существует как discovery/intake пакет:
-- verbatim transcript;
-- approved product charter;
-- approved roadmap;
-- approved intake;
-- inherited starter process baseline for worktrees, QA and operational docs.
+## Runtime Data Flow
 
-## Product Runtime
-
-Runtime, stack, package manager, test framework, build command, preview/deploy path and service layout отложены до подтверждения гипотезы.
-
-До отдельного owner approval нельзя фиксировать:
-- frontend stack;
-- backend/runtime stack;
-- identity provider;
-- payments provider;
-- analytics provider;
-- database/queue/worker model;
-- API shape;
-- production deploy path.
-
-## Current Information Flow
-
-1. Raw transcript хранится без изменений в `Docs/product-discovery/2026-04-03-assistant-selection-transcript.raw`.
-2. Product Charter фиксирует смысл, аудиторию, `JTBD`, ограничения, сценарии и критерии успеха.
-3. Roadmap фиксирует последовательность проверки спроса и развития направления.
-4. Intake фиксирует owner approval и применимость capability/runtime decisions.
-5. После подтверждения гипотезы отдельная задача должна зафиксировать product architecture, runtime and QA/release decisions.
+1. User intent входит через branch-chat или прямой npm entrypoint.
+2. Conveyor script normalizes input into task state + runtime history events.
+3. Shared helpers in `scripts/lib/*` управляют git/worktree operations, state I/O и docs sync.
+4. Deterministic QA and release gates работают только через canonical scripts.
+5. Human-readable docs snapshots (`Docs/*`) строятся из machine-readable runtime artifacts.
 
 ## Risk Hotspots
 
-- Смешать Школу ассистентов с другими идеями встречи.
-- Начать строить runtime до подтверждения спроса.
-- Зафиксировать коммерческую модель раньше, чем будет проверен отклик.
-- Подменить raw transcript пересказом.
-- Предложить владельцу неподготовленного ассистента без отбора, проверки и стажировки.
-- Заменить человека AI-ассистентом в задачах, где нужна ответственность, сложная коммуникация или чувствительный контекст без контроля владельца.
+- drift между `AGENTS.md`, `.memory-bank/*`, `README.md` и реально исполняемыми npm scripts;
+- drift между `.memory-bank/product-charter.md` и правилами в `AGENTS.md`, `.memory-bank/code-rules.md`, `CODEX_MEMORY.md`;
+- task state schema drift (`qaLastPassSha`, `previewPreparedSha`, publish markers, operational artifacts);
+- неправильная работа с git worktree lifecycle и cleanup;
+- silent overwrite shared docs вместо single-writer capture/sync;
+- разрастание active operational logs без archive snapshot, из-за чего evidence становится трудно читать или переносить;
+- flaky perf/security/coverage gates, которые выглядят “включёнными”, но не дают надёжного evidence.
+- rule-sync classifier drift, из-за которого product-specific правила могут попасть в starter core.
+- rule-sync window drift, из-за которого scheduled automation пропускает правила после missed run вместо catch-up от последнего saved scan snapshot.
+- rule-share allowlist drift, из-за которого устаревший или paused проект может быть ошибочно предложен к обновлению.
+- rule-share delivery drift, из-за которого downstream product-specific charter может быть перезаписан вместо reusable baseline import.
+- capability profile drift, из-за которого product-specific provider, locale, stack, auth, billing, analytics, jobs или API-docs decisions могут ошибочно попасть в starter core вместо downstream adapters/profiles.
+- bootstrap flow drift, из-за которого фраза `стартуем новый проект` превращается в общий checklist, пропускает Project Intake approval или начинает feature work до canonical transfer.
 
 ## Change Impact Checklist
 
-Когда меняется product charter:
-- обновить `.memory-bank/product-charter.md`;
-- проверить синхронизацию с `AGENTS.md`, `CODEX_MEMORY.md`, `README.md` and discovery docs;
-- сохранить raw transcript без изменений.
+Когда меняется conveyor/runtime:
 
-Когда меняется roadmap:
-- сверить изменение с raw transcript или owner clarification;
-- обновить traceability;
-- не переносить roadmap item в обязательную функциональность без отдельного approval.
+- проверить `scripts/lib/runtime.mjs`;
+- проверить task state/history schema;
+- проверить finish no-op path для already-in-main task branch, если меняется publish/cleanup logic;
+- проверить smoke/nightly integration tests.
 
-Когда подтверждается гипотеза и начинается реализация:
-- обновить этот файл с выбранной архитектурой;
-- заполнить runtime-specific decisions в intake или новом plan file;
-- обновить `.memory-bank/qa-playbook.md` with product-specific QA;
-- прогнать deterministic QA.
+Когда меняется governance:
+
+- синхронизировать `AGENTS.md`, `.memory-bank/*`, `.memory-bank/product-charter.md`, `CODEX_MEMORY.md`, `.cursorrules`, `CLAUDE.md`;
+- проверить README и scripts/README на parity с реальными командами.
+
+Когда меняется starter project bootstrap:
+
+- проверить `skills/starter-project-bootstrap/SKILL.md`;
+- проверить `plans/_project_intake_template.md`;
+- проверить, что trigger rules есть в `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md` и mirrors;
+- проверить manual eval по golden prompts `стартуем новый проект` и `стартуем новый проект на <stack/provider>`.
+
+Когда меняется rule-sync:
+
+- проверить `skills/starter-rule-sync/SKILL.md`;
+- проверить `scripts/rule-sync.mjs`;
+- проверить `tests/unit/rule-sync.test.mjs`;
+- проверить, что scan/report read-only, а apply-plan не меняет starter source без managed worktree.
+- проверить, что default scan window идёт от последнего saved scan snapshot, а previous-local-day остаётся только fallback.
+
+Когда меняется rule-share:
+
+- проверить `skills/starter-rule-share/SKILL.md`;
+- проверить `scripts/rule-share.mjs`;
+- проверить `tests/unit/rule-share.test.mjs`;
+- проверить, что scan/report read-only, apply-plan остаётся dry-run, а проекты берутся только из локального allowlist.
+
+Когда меняются operational docs helpers:
+
+- проверить capture/sync;
+- проверить active log compaction и archive snapshot в `Docs/archive/*.md.gz`;
+- проверить `Docs/task-history.md` и `Docs/change-ledger.md` rebuild path;
+- проверить append-only sections `CODEX_MEMORY.md`.

@@ -13,6 +13,7 @@ const THIS_FILE = fileURLToPath(import.meta.url);
 const REPO_ROOT = path.dirname(path.dirname(THIS_FILE));
 const RULE_SYNC_DIR = "runtime/rule-sync";
 const SCANS_DIR = "scans";
+const REPORTS_DIR = "reports";
 const DEFAULT_MAX_DEPTH = 5;
 const ZERO_PROBE_FALLBACK_MAX_WINDOW_MS = 15 * 60 * 1000;
 const ZERO_PROBE_FALLBACK_MAX_GENERATED_DELTA_MS = 15 * 60 * 1000;
@@ -58,6 +59,7 @@ const PRODUCT_SPECIFIC_TOKENS = [
   "gemma",
   "gantt-bb",
   "business booster",
+  "школа ассистентов",
   "industry-watch",
   "relationship",
   "inbox"
@@ -970,19 +972,19 @@ export function buildDecisionProposals(snapshot) {
 
   if (productPlanning.length > 0) {
     proposals.push({
-      title: "Сделать rule-sync report пригодным для решения",
+      title: "Сделать отчёт понятным для решения",
       recommendation: "import",
       jobStories: [
-        "Когда владелец starter смотрит найденные правила, я хочу сначала видеть пользовательскую ценность и ожидаемый результат, чтобы принять approve/reject без расшифровки candidate ids."
+        "Когда владелец starter смотрит найденные правила, я хочу сначала видеть смысл и следующий шаг, чтобы не расшифровывать служебные id."
       ],
       userStories: [
-        "Как владелец starter, я хочу получать rule-sync summary в формате решения, а не списка технических идентификаторов.",
-        "Как агент, я хочу оставлять candidate ids только как traceability после продуктового предложения."
+        "Как владелец starter, я хочу получать отчёт в формате решения, а не списка технических строк.",
+        "Как агент, я хочу оставлять служебные id только для проверки источника."
       ],
       acceptanceCriteria: [
-        "Report начинается с `Связь с charter проекта -> Цель решения -> JTBD`.",
-        "Каждая группа содержит `Job Stories`, `User Stories`, `Критерии приемки`, рекомендацию и traceability.",
-        "Сырые candidate ids не являются основным интерфейсом для решения."
+        "Отчёт начинается с связи с charter, цели и понятного пользовательского результата.",
+        "Каждая группа объясняет, что делать и как проверить источник.",
+        "Служебные id не являются основным способом принять решение."
       ],
       candidates: productPlanning
     });
@@ -990,19 +992,19 @@ export function buildDecisionProposals(snapshot) {
 
   if (operationalEvidence.length > 0) {
     proposals.push({
-      title: "Импортировать из QA/TRIZ логов только reusable invariant",
+      title: "Из журналов проверок и разбора проблем переносить только общий урок",
       recommendation: "rewrite",
       jobStories: [
-        "Когда downstream проект фиксирует QA/TRIZ опыт, я хочу переносить в starter только повторяемое правило, чтобы не засорять baseline частными инцидентами."
+        "Когда другой проект фиксирует опыт проверки или разбора проблемы, я хочу переносить в starter только общий урок, чтобы не засорять основу частными историями."
       ],
       userStories: [
-        "Как maintainer, я хочу видеть QA/TRIZ логи как evidence для формулировки правила, а не как готовый импорт.",
-        "Как downstream команда, я хочу, чтобы проектные симптомы оставались в исходном проекте."
+        "Как владелец starter, я хочу видеть такие записи как подсказку для нового правила, а не как готовый текст.",
+        "Как команда проекта-источника, я хочу, чтобы симптомы моего проекта оставались в моём проекте."
       ],
       acceptanceCriteria: [
-        "Task ids, branch names, project symptoms and UI/domain details do not enter starter core.",
-        "Imported text is rewritten as a portable governance invariant.",
-        "Evidence remains traceable through candidate ids and source commits."
+        "Номера задач, названия веток, симптомы проекта и детали интерфейса не попадают в starter.",
+        "Текст переписан как общее правило для новых проектов.",
+        "Источник можно проверить по id предложения и commit."
       ],
       candidates: operationalEvidence
     });
@@ -1030,19 +1032,19 @@ export function buildDecisionProposals(snapshot) {
 
   if (productSpecific.length > 0) {
     proposals.push({
-      title: "Отклонить product-specific runtime docs из starter core",
+      title: "Частные инструкции конкретного продукта оставить в исходном проекте",
       recommendation: "reject",
       jobStories: [
-        "Когда найденное правило связано с конкретным ботом, календарём, базой или доменной интеграцией, я хочу оставить его в исходном проекте, чтобы starter оставался переносимым."
+        "Когда найденное правило связано с конкретным ботом, календарём, базой или доменной интеграцией, я хочу оставить его в исходном проекте, чтобы starter оставался пригодным для разных новых проектов."
       ],
       userStories: [
-        "Как maintainer starter, я хочу импортировать только baseline behavior, а не product runtime commands.",
-        "Как downstream команда, я хочу сохранять свои product-specific инструкции в своём README/profile."
+        "Как владелец starter, я хочу переносить только общее поведение, а не команды и настройки конкретного продукта.",
+        "Как команда проекта-источника, я хочу хранить свои частные инструкции у себя."
       ],
       acceptanceCriteria: [
-        "Telegram, bot supervisor, DB catalog, calendar and Gantt details do not enter starter core.",
-        "Reusable ideas may be rewritten only as adapter/profile guidance.",
-        "The report marks these candidates as reject or manual rewrite, not direct import."
+        "Детали Telegram, ботов, баз, календарей и Gantt не попадают в starter.",
+        "Общая мысль может быть переписана только как правило для подключаемой надстройки.",
+        "Отчёт показывает: оставить в исходном проекте или переписать, а не переносить сразу."
       ],
       candidates: productSpecific
     });
@@ -1050,19 +1052,19 @@ export function buildDecisionProposals(snapshot) {
 
   if (sharedSkills.length > 0) {
     proposals.push({
-      title: "Не импортировать generated skill trees, извлекать только source-of-truth policy",
+      title: "Не копировать служебные папки skills, переносить только правило",
       recommendation: "rewrite",
       jobStories: [
-        "Когда downstream меняет BMAD или generated skills, я хочу переносить только правило о canonical skill source, чтобы не копировать большие generated trees в starter."
+        "Когда другой проект меняет созданные инструментами skills, я хочу переносить только правило о том, где хранится исходный skill, чтобы не копировать большие служебные папки в starter."
       ],
       userStories: [
-        "Как maintainer, я хочу хранить reusable starter skills в `skills/`, а generated teammate entrypoints держать вне starter core.",
-        "Как агент, я хочу отличать source-of-truth policy от bulk skill artifacts."
+        "Как владелец starter, я хочу хранить общие skills в `skills/`, а созданные инструментами копии держать вне starter.",
+        "Как агент, я хочу отличать исходное правило от служебных файлов, которые можно пересоздать."
       ],
       acceptanceCriteria: [
-        "Generated `.agents/skills`, `.claude/skills`, and `.cursor/skills` trees are not bulk-imported.",
-        "Only portable source-of-truth policy can be imported.",
-        "Product-specific or tool-generated files stay in their source project/profile."
+        "Папки `.agents/skills`, `.claude/skills` и `.cursor/skills` не копируются целиком.",
+        "Переносится только общее правило о хранении и подключении skills.",
+        "Файлы конкретного проекта или инструмента остаются в проекте-источнике."
       ],
       candidates: sharedSkills
     });
@@ -1077,15 +1079,605 @@ export function buildDecisionProposals(snapshot) {
  */
 function recommendationTitle(recommendation) {
   if (recommendation === "import") {
-    return "Импортировать";
+    return "Перенести";
   }
   if (recommendation === "rewrite") {
-    return "Переработать перед импортом";
+    return "Переписать перед переносом";
   }
   if (recommendation === "reject") {
-    return "Отклонить для starter core";
+    return "Не переносить в starter";
   }
-  return "Ручная сверка";
+  return "Проверить вручную";
+}
+
+/**
+ * @typedef {Object} CandidateTransferDecision
+ * @property {"вчистую"|"с адаптацией"|"отклонить"} mode
+ * @property {string} recommendation
+ * @property {string} adaptation
+ */
+
+/**
+ * @param {RuleCandidate} candidate
+ * @returns {string}
+ */
+function proposedRuleText(candidate) {
+  if (isOperationalEvidenceCandidate(candidate)) {
+    return `В проекте зафиксирован опыт проверки или разбора проблемы: "${candidate.title}". Это подсказка для общего правила, а не готовый текст для переноса.`;
+  }
+
+  if (candidate.summary.startsWith("Изменены governance paths:")) {
+    return `В проекте изменили рабочие правила в файлах: ${candidate.paths.join(", ") || "не определены"}. Нужно прочитать источник и взять только общий смысл.`;
+  }
+
+  const snippet = candidate.snippets.find((item) => {
+    const trimmed = item.trim();
+    return (
+      trimmed.length > 0 &&
+      !trimmed.startsWith("## ") &&
+      !trimmed.startsWith("- Branch:") &&
+      !trimmed.startsWith("- Reasons:") &&
+      !trimmed.startsWith("- Status:")
+    );
+  });
+  if (snippet) {
+    return snippet.length > 260 ? `${snippet.slice(0, 257)}...` : snippet;
+  }
+  return candidate.summary;
+}
+
+/**
+ * @param {RuleCandidate} candidate
+ * @returns {boolean}
+ */
+function containsProductSpecificText(candidate) {
+  const searchable = `${candidate.title} ${candidate.summary} ${candidate.snippets.join(" ")}`.toLowerCase();
+  return PRODUCT_SPECIFIC_TOKENS.some((token) => searchable.includes(token));
+}
+
+/**
+ * @typedef {Object} CandidateReportGroup
+ * @property {string} key
+ * @property {string} title
+ * @property {string} action
+ * @property {string} whyUseful
+ * @property {string} starterText
+ * @property {string} rewriteNotes
+ */
+/**
+ * @param {RuleCandidate} candidate
+ * @returns {CandidateReportGroup}
+ */
+function candidateReportGroup(candidate) {
+  const searchable = `${candidate.title} ${candidate.summary} ${candidate.snippets.join(" ")}`.toLowerCase();
+
+  if (isOperationalEvidenceCandidate(candidate)) {
+    return {
+      key: "qa-triz-evidence",
+      title: "Журналы проверок и разбора проблем",
+      action: "Не переносить сейчас.",
+      whyUseful:
+        "Такие записи полезны как сигнал, что где-то возник повтор или конфликт, но сами по себе они не объясняют новое правило для starter.",
+      starterText:
+        "Текст для starter пока не добавлять. Сначала вручную прочитать источник и сформулировать отдельное правило только если там есть повторяемый урок для всех новых проектов.",
+      rewriteNotes:
+        "Не переносить номера задач, ветки, симптомы конкретного проекта и описание единичного инцидента. Если общего урока нет, оставить только как подтверждение в проекте-источнике."
+    };
+  }
+
+  if (searchable.includes("стартуем новый проект") || searchable.includes("starter-project-bootstrap")) {
+    return {
+      key: "bootstrap-command-flow",
+      title: "Старт нового проекта через разговорную команду",
+      action: "Перенести одним правилом после подтверждения.",
+      whyUseful:
+        "Это напрямую помогает starter выполнять свою главную работу: новый проект стартует не с ручного чеклиста, а с понятного безопасного процесса.",
+      starterText:
+        "Если пользователь пишет `стартуем новый проект`, `запусти новый проект`, `проведи bootstrap нового проекта` или сообщает, что скопировал starter в новый репозиторий, ассистент запускает `starter-project-bootstrap`: создаёт отдельную рабочую папку из чистого `main`, подключает skills из starter, проводит Project Intake и не начинает разработку функций до согласования intake. Если для `skills:link` нужно заменить конфликтующие локальные skills, ассистент отдельно запрашивает явное согласие владельца.",
+      rewriteNotes:
+        "Объединить похожие источники в одно правило. Не копировать формулировки про конкретный проект; оставить только общий bootstrap-порядок."
+    };
+  }
+
+  if (searchable.includes("skills:link") || searchable.includes("generated skill") || isSharedSkillCandidate(candidate)) {
+    return {
+      key: "shared-skills-source",
+      title: "Где хранить и как подключать общие skills",
+      action: "Перенести только как одно общее правило.",
+      whyUseful: "Это защищает starter от копирования служебных папок и оставляет один понятный источник reusable skills.",
+      starterText:
+        "Общие skills хранятся в repo `skills/` и подключаются через безопасный link flow. Созданные инструментами папки `.agents/skills`, `.claude/skills`, `.cursor/skills` нельзя копировать в starter целиком.",
+      rewriteNotes: "Не переносить generated skill trees. Если правило уже покрыто bootstrap-командой, не добавлять второй дубль."
+    };
+  }
+
+  if (
+    searchable.includes("проверки гипотезы") ||
+    searchable.includes("hypothesis") ||
+    searchable.includes("discovery/intake") ||
+    searchable.includes("не считаются утверждёнными")
+  ) {
+    return {
+      key: "hypothesis-stage-not-approved",
+      title: "Пока гипотеза не подтверждена, не считать решения утверждёнными",
+      action: "Перенести как правило для новых downstream-проектов.",
+      whyUseful:
+        "Это защищает новые проекты от преждевременных технических и продуктовых решений, которые потом трудно откатить.",
+      starterText:
+        "Пока проект находится на этапе проверки гипотезы, нельзя считать утверждёнными архитектуру, технологии, способ запуска, коммерческую модель, зоны ответственности и важные продуктовые возможности. Эти решения становятся правилами проекта только после явного согласования в Project Intake, product charter или roadmap.",
+      rewriteNotes: "Убрать название проекта-источника и оставить правило как общий guard для downstream-проектов."
+    };
+  }
+
+  if (
+    searchable.includes("mission") ||
+    searchable.includes("vision") ||
+    searchable.includes("миссия") ||
+    searchable.includes("видение")
+  ) {
+    return {
+      key: "mission-vision-intake",
+      title: "Миссия и видение формулируются только на уровне проекта",
+      action: "Перенести как правило Project Intake.",
+      whyUseful:
+        "Это не даёт задачам придумывать отдельные миссии и удерживает смысл проекта в одном источнике правды.",
+      starterText:
+        "В Project Intake миссия должна отвечать: кому проект помогает, какой результат даёт и через что; видение должно описывать желаемое будущее и роль проекта в нём. Миссия и видение пишутся только на уровне проекта, а не для отдельных задач.",
+      rewriteNotes: "Сохранить как правило intake; не переносить детали конкретной продуктовой гипотезы."
+    };
+  }
+
+  if (searchable.includes("project intake") || searchable.includes("capability decisions") || searchable.includes("stack")) {
+    return {
+      key: "project-intake-before-feature-work",
+      title: "Project Intake должен быть согласован до разработки функций",
+      action: "Перенести как обязательное правило bootstrap.",
+      whyUseful: "Это не даёт новому проекту начать разработку на неподтверждённых допущениях.",
+      starterText:
+        "Новый downstream-проект сначала проходит Project Intake: mission, vision, цель, аудитория, JTBD, ограничения, сценарии, метрики, выбранные технологии, способ запуска и применимые capability decisions должны быть согласованы до feature/refactor работы.",
+      rewriteNotes: "Заменить stack/runtime жаргон на понятные поля intake; не добавлять конкретный provider или stack."
+    };
+  }
+
+  if (isMainProtectionCandidate(candidate)) {
+    return {
+      key: "main-worktree-protection",
+      title: "Обычные изменения не выполняются напрямую в main",
+      action: "Сверить с уже существующим правилом starter.",
+      whyUseful: "Это защищает основной проект от случайных правок и сохраняет безопасный рабочий процесс.",
+      starterText:
+        "Обычные feature, bugfix, refactor и governance изменения выполняются в отдельной рабочей папке/ветке. Прямая правка `main` допустима только после отдельного явного разрешения владельца.",
+      rewriteNotes: "Если такое правило уже есть, не добавлять дубль; можно обновить только более понятную формулировку."
+    };
+  }
+
+  if (searchable.includes("product charter") || searchable.includes("jtbd") || searchable.includes("job stories")) {
+    return {
+      key: "product-decision-charter-anchor",
+      title: "Продуктовое или рабочее решение начинается со смысла, а не с технического списка",
+      action: "Перенести как правило для отчётов владельцу.",
+      whyUseful:
+        "Это делает решения понятными владельцу и снижает риск перенести в starter технический шум вместо полезного правила.",
+      starterText:
+        "Любое продуктовое или рабочее решение должно начинаться со связи с project charter, затем показывать цель, JTBD, Job Stories, User Stories и критерии приемки. Технический список изменений не должен заменять объяснение смысла и ожидаемого результата.",
+      rewriteNotes: "Оставить только общий порядок объяснения решения; не переносить название продукта-источника."
+    };
+  }
+
+  if (searchable.includes("reload") || searchable.includes("launchd") || searchable.includes("agent-runtime")) {
+    return {
+      key: "product-agent-reload-profile",
+      title: "Перезапуск продуктовых агентов не должен попадать в основу starter",
+      action: "Не переносить в основу starter; оставить как настройку конкретного проекта.",
+      whyUseful:
+        "Это защищает starter от правил, полезных только проектам с конкретными локальными агентами.",
+      starterText:
+        "Если проекту нужен автоперезапуск локальных агентов после публикации изменений, это оформляется как отдельная настройка конкретного проекта. Starter не должен зашивать Telegram-агентов или локальные команды macOS.",
+      rewriteNotes: "Убрать Telegram, launchd и названия локальных агентов из starter. Оставить только мысль: такие настройки живут в конкретном проекте, если они ему действительно нужны."
+    };
+  }
+
+  if (searchable.includes("telegram") || searchable.includes("gmail") || searchable.includes("inbox")) {
+    return {
+      key: "multi-source-output-labels",
+      title: "В отчётах с несколькими источниками нужно помечать источник записи",
+      action: "Переписать без названий конкретных каналов.",
+      whyUseful:
+        "Это полезно starter как общее правило для отчётов и дайджестов: владелец должен понимать, откуда пришла каждая запись.",
+      starterText:
+        "Если отчёт или дайджест собирает данные из разных источников, каждая запись должна явно показывать свой источник. Конкретные каналы проекта, например Telegram или Gmail, остаются в проекте-источнике.",
+      rewriteNotes: "Не переносить `Telegram`, `Gmail`, `inbox_agent` и локальные названия. Переписать как общее правило для отчётов из нескольких источников."
+    };
+  }
+
+  const snippet = candidate.snippets.find((item) => item.trim().length > 0);
+  if (snippet) {
+    return {
+      key: `manual-${candidate.id}`,
+      title: "Требуется ручная формулировка правила",
+      action: "Не переносить без ручной проверки.",
+      whyUseful: "Автоматический отчёт не смог достаточно надёжно выделить общее правило.",
+      starterText: snippet.length > 320 ? `${snippet.slice(0, 317)}...` : snippet,
+      rewriteNotes: "Перед переносом владелец должен подтвердить, что это действительно правило для starter, а не частная деталь проекта."
+    };
+  }
+  return {
+    key: `manual-${candidate.id}`,
+    title: "Требуется ручная формулировка правила",
+    action: "Не переносить без ручной проверки.",
+    whyUseful: "Автоматический отчёт не смог достаточно надёжно выделить общее правило.",
+    starterText: "Текст для starter пока не сформулирован.",
+    rewriteNotes: "Прочитать источник и явно сформулировать правило перед approval."
+  };
+}
+
+/**
+ * @param {RuleCandidate} candidate
+ * @returns {CandidateTransferDecision}
+ */
+function candidateTransferDecision(candidate) {
+  if (candidate.category === "product_specific") {
+    return {
+      mode: "отклонить",
+      recommendation: "Не переносить в starter.",
+      adaptation:
+        "Оставить как правило этого проекта. Если в нём есть общая мысль для всех новых проектов, переписать её отдельно без названий сервисов, команд запуска и деталей конкретного продукта."
+    };
+  }
+
+  if (isOperationalEvidenceCandidate(candidate)) {
+    return {
+      mode: "с адаптацией",
+      recommendation: "Использовать как подсказку, а не как готовое правило.",
+      adaptation:
+        "Сформулировать общее правило для starter. Убрать номера задач, названия веток, симптомы конкретного проекта, детали интерфейса и описание единичного инцидента."
+    };
+  }
+
+  if (isSharedSkillCandidate(candidate)) {
+    return {
+      mode: "с адаптацией",
+      recommendation: "Переносить только смысл правила.",
+      adaptation:
+        "Не копировать созданные инструментами папки skills целиком. Оставить только правило: общие skills хранятся в `skills/`, подключаются безопасно, а конфликтующие локальные версии заменяются только после отдельного согласия."
+    };
+  }
+
+  if (candidate.category === "needs_review" || isProductSpecificCandidate(candidate) || containsProductSpecificText(candidate)) {
+    return {
+      mode: "с адаптацией",
+      recommendation: "Нужно сначала отделить общее от частного.",
+      adaptation:
+        "Перенести только правило, полезное всем новым проектам. Названия продуктов, провайдеров, локальные команды запуска и частные детали оставить в исходном проекте."
+    };
+  }
+
+  if (isMainProtectionCandidate(candidate)) {
+    return {
+      mode: "с адаптацией",
+      recommendation: "Сравнить с уже существующим правилом starter.",
+      adaptation: "Если такое правило уже есть, не добавлять дубль. Можно заменить только формулировку, если новая понятнее."
+    };
+  }
+
+  return {
+    mode: "вчистую",
+    recommendation: "Можно перенести после подтверждения владельца.",
+    adaptation: "Не требуется. Достаточно сохранить понятную общую формулировку; технические id и запись Git оставить только в строке проверки."
+  };
+}
+
+/**
+ * @param {"high"|"medium"|"low"} confidence
+ * @returns {string}
+ */
+function confidenceTitle(confidence) {
+  if (confidence === "high") {
+    return "высокая";
+  }
+  if (confidence === "medium") {
+    return "средняя";
+  }
+  return "низкая";
+}
+
+/**
+ * @param {RuleCandidate[]} candidates
+ * @returns {Map<string, RuleCandidate[]>}
+ */
+function groupCandidatesByProject(candidates) {
+  const groups = /** @type {Map<string, RuleCandidate[]>} */ (new Map());
+  for (const candidate of candidates) {
+    const existing = groups.get(candidate.sourceProject) ?? [];
+    existing.push(candidate);
+    groups.set(candidate.sourceProject, existing);
+  }
+  const entries = [...groups.entries()].sort(([left], [right]) => left.localeCompare(right));
+  return new Map(entries.map(([project, items]) => [project, items.sort((left, right) => left.id.localeCompare(right.id))]));
+}
+
+/**
+ * @param {RuleCandidate[]} candidates
+ * @returns {Map<string, {group: CandidateReportGroup, candidates: RuleCandidate[]}>}
+ */
+function groupCandidatesByRule(candidates) {
+  const groups = /** @type {Map<string, {group: CandidateReportGroup, candidates: RuleCandidate[]}>} */ (new Map());
+  for (const candidate of candidates) {
+    const group = candidateReportGroup(candidate);
+    const existing = groups.get(group.key) ?? { group, candidates: [] };
+    existing.candidates.push(candidate);
+    groups.set(group.key, existing);
+  }
+
+  return new Map(
+    [...groups.entries()]
+      .sort(([, left], [, right]) => left.group.title.localeCompare(right.group.title))
+      .map(([key, value]) => [
+        key,
+        { group: value.group, candidates: value.candidates.sort((left, right) => left.id.localeCompare(right.id)) }
+      ])
+  );
+}
+
+/**
+ * @param {RuleCandidate[]} candidates
+ * @returns {string}
+ */
+function duplicateSummary(candidates) {
+  if (candidates.length <= 1) {
+    return "Нет, это одиночный источник.";
+  }
+  return `Да, это одна тема из нескольких источников: ${candidates.map((candidate) => candidate.id).join(", ")}. В starter нужно переносить одно правило, а не повторять каждую запись.`;
+}
+
+/**
+ * @param {RuleCandidate[]} candidates
+ * @returns {string}
+ */
+function joinedTargets(candidates) {
+  return [...new Set(candidates.flatMap((candidate) => candidate.suggestedTargetFiles))].sort().join(", ");
+}
+
+/**
+ * @param {RuleCandidate[]} candidates
+ * @returns {string}
+ */
+function foundSummary(candidates) {
+  if (candidates.length === 1) {
+    const [candidate] = candidates;
+    return `${proposedRuleText(candidate)} Источник: ${candidate.id}.`;
+  }
+  return `Найдено ${candidates.length} похожих записей: ${candidates.map((candidate) => `${candidate.id} (${candidate.title})`).join("; ")}.`;
+}
+
+/**
+ * @param {string} label
+ * @param {string} value
+ * @returns {string}
+ */
+function reportField(label, value) {
+  return `- **${label}:** ${value}`;
+}
+
+/**
+ * @param {string} label
+ * @returns {string}
+ */
+function reportFieldHeader(label) {
+  return `- **${label}:**`;
+}
+
+/**
+ * @param {RuleCandidate[]} candidates
+ * @returns {string[]}
+ */
+function renderProjectCandidateBreakdown(candidates) {
+  const lines = ["## Разбор по проектам"];
+  if (candidates.length === 0) {
+    lines.push("", "- Нет найденных правил для разбора.");
+    return lines;
+  }
+
+  for (const [project, items] of groupCandidatesByProject(candidates)) {
+    lines.push("", `### ${project}`);
+    for (const { group, candidates: groupedCandidates } of groupCandidatesByRule(items).values()) {
+      lines.push("", `#### ${group.title}`);
+      lines.push(reportField("Что делать", group.action));
+      lines.push(reportField("Дубли или похожие записи", duplicateSummary(groupedCandidates)));
+      lines.push(reportField("Что нашли", foundSummary(groupedCandidates)));
+      lines.push(reportField("Почему это полезно starter", group.whyUseful));
+      lines.push(reportField("Точный текст для starter", group.starterText));
+      lines.push(reportField("Как переписать без лишнего", group.rewriteNotes));
+      lines.push(reportField("Куда может лечь в starter", joinedTargets(groupedCandidates) || "нужно определить вручную"));
+      lines.push(reportFieldHeader("Источники для проверки"));
+      for (const candidate of groupedCandidates) {
+        lines.push(
+          `  - ${candidate.id}: ${candidate.title}; ${candidate.evidence}; файлы: ${candidate.paths.join(", ") || "не определены"}; уверенность ${confidenceTitle(candidate.confidence)}`
+        );
+      }
+    }
+  }
+
+  return lines;
+}
+
+/**
+ * @param {RuleCandidate[]} candidates
+ * @returns {string}
+ */
+function candidateIds(candidates) {
+  return candidates.map((candidate) => candidate.id).join(", ");
+}
+
+/**
+ * @param {string} value
+ * @returns {string}
+ */
+function compactReportText(value) {
+  return value.replace(/\s+/g, " ").replace(/^-\s*/, "").trim();
+}
+
+/**
+ * @param {RuleCandidate[]} candidates
+ * @param {string} label
+ * @returns {string | null}
+ */
+function firstLabeledSnippet(candidates, label) {
+  for (const candidate of candidates) {
+    for (const snippet of candidate.snippets) {
+      const line = snippet
+        .split("\n")
+        .map((item) => item.trim())
+        .find((item) => item.toLowerCase().startsWith(`- ${label.toLowerCase()}:`));
+      if (line) {
+        return compactReportText(line.replace(new RegExp(`^- ${label}:\\s*`, "i"), ""));
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * @param {RuleCandidate[]} candidates
+ * @returns {string}
+ */
+function qaEvidenceProblemSummary(candidates) {
+  const contradiction = firstLabeledSnippet(candidates, "Contradiction");
+  if (contradiction) {
+    if (contradiction.includes("owner needs faster human review") && contradiction.includes("technical")) {
+      return "Конкретная проблема из источника: в сводке главный результат терялся среди технических деталей; решение в источнике было показать главное сверху, а техническое перенести вниз.";
+    }
+    return `Конкретная проблема из источника: ${contradiction}`;
+  }
+  const reasons = firstLabeledSnippet(candidates, "Reasons");
+  if (reasons) {
+    if (reasons.includes("cross_module_conflict") && reasons.includes("historical_recurrence")) {
+      return "Конкретный сигнал из источника: похожая проблема повторялась и затрагивала несколько частей проекта.";
+    }
+    if (reasons.includes("historical_recurrence")) {
+      return "Конкретный сигнал из источника: похожая проблема уже повторялась.";
+    }
+    return `Конкретный сигнал из источника: сработал разбор "${reasons}".`;
+  }
+  return "Конкретная проблема в источнике не описана достаточно ясно; есть только служебная запись о проверке.";
+}
+
+/**
+ * @param {CandidateReportGroup} group
+ * @param {RuleCandidate[]} candidates
+ * @returns {string[]}
+ */
+function manualReviewLines(group, candidates) {
+  if (group.key === "qa-triz-evidence") {
+    return [
+      reportField(
+        "Что проверить вручную",
+        `${qaEvidenceProblemSummary(candidates)} Нужно решить, есть ли здесь отдельное правило для всех новых проектов, или это только доказательство уже понятого урока.`
+      ),
+      reportField(
+        "Моё предложение",
+        "не добавлять отдельное правило сейчас. Если вы видите повторяемый урок, сформулировать его отдельно; иначе оставить эти записи только как подтверждение источника."
+      )
+    ];
+  }
+
+  if (group.key === "product-agent-reload-profile") {
+    return [
+      reportField(
+        "Что проверить вручную",
+        "нужен ли starter общий пункт про настройки конкретного проекта после завершения задачи. В источнике речь про автоперезапуск Telegram-агентов, поэтому Telegram, launchd и локальные команды нельзя переносить в основу starter."
+      ),
+      reportField("Моё предложение", "не переносить в основу starter. Если нужно, оформить как пример настройки конкретного проекта.")
+    ];
+  }
+
+  if (group.key === "multi-source-output-labels") {
+    return [
+      reportField(
+        "Что проверить вручную",
+        "согласны ли вы с общей мыслью без названий конкретных каналов: если отчёт смешивает источники, у каждой записи должен быть понятный источник."
+      ),
+      reportField(
+        "Моё предложение",
+        "принять предложенный общий текст, но не переносить Telegram, Gmail, inbox_agent и другие названия из проекта-источника."
+      )
+    ];
+  }
+
+  return [
+    reportField(
+      "Что проверить вручную",
+      `является ли эта формулировка правилом для всех новых проектов, а не частной настройкой проекта ${candidates[0]?.sourceProject ?? "источника"}.`
+    ),
+    reportField("Моё предложение", group.action)
+  ];
+}
+
+/**
+ * @param {CandidateReportGroup} group
+ * @param {RuleCandidate[]} candidates
+ * @param {RuleCategory} category
+ * @returns {string}
+ */
+function ownerDecisionForGroup(group, candidates, category) {
+  if (group.key === "qa-triz-evidence") {
+    return `Выбрать одно: оставить ${candidateIds(candidates)} только как доказательство; или дать короткую формулировку общего правила, если вы видите повторяемую проблему.`;
+  }
+  if (category === "needs_review") {
+    return `Выбрать одно: принять предложенный текст; оставить правило только в проекте-источнике; или написать свою формулировку для ${candidateIds(candidates)}.`;
+  }
+  if (category === "product_specific") {
+    return `Ничего не переносить, если согласны с оценкой. Подтверждать перенос ${candidateIds(candidates)} нужно только если это всё-таки правило для всех новых проектов.`;
+  }
+  return `Ответить: перенести, пропустить или переписать. Если согласны, переносить одну формулировку для всей группы: ${candidateIds(candidates)}.`;
+}
+
+/**
+ * @param {RuleCandidate} candidate
+ * @returns {RuleCategory}
+ */
+function reportCategory(candidate) {
+  if (candidateReportGroup(candidate).key === "qa-triz-evidence") {
+    return "needs_review";
+  }
+  return candidate.category;
+}
+
+/**
+ * @param {RuleCategory} category
+ * @param {RuleCandidate[]} allCandidates
+ * @returns {string[]}
+ */
+function renderCategoryDecisionBlock(category, allCandidates) {
+  const items = allCandidates.filter((candidate) => reportCategory(candidate) === category);
+  const lines = [`## ${categoryTitle(category)}`];
+  if (items.length === 0) {
+    lines.push("- Нет.");
+    return lines;
+  }
+
+  lines.push("_Этот блок можно читать отдельно. Верхний разбор нужен только если хочется больше контекста._");
+
+  for (const [project, projectCandidates] of groupCandidatesByProject(items)) {
+    lines.push("", `### ${project}`);
+    for (const { group, candidates } of groupCandidatesByRule(projectCandidates).values()) {
+      lines.push("", `#### ${group.title}`);
+      lines.push(reportField("Пункты в группе", candidateIds(candidates)));
+      lines.push(reportField("Дубли или похожие записи", duplicateSummary(candidates)));
+      lines.push(reportField("Что нашли", foundSummary(candidates)));
+      lines.push(reportField("Что предлагается", group.action));
+      lines.push(reportField("Почему это полезно starter", group.whyUseful));
+      lines.push(reportField("Точный текст для starter", group.starterText));
+      if (category === "needs_review") {
+        lines.push(...manualReviewLines(group, candidates));
+      }
+      lines.push(reportField("Как переписать без лишнего", group.rewriteNotes));
+      lines.push(reportField("Куда может лечь в starter", joinedTargets(candidates) || "нужно определить вручную"));
+      lines.push(reportField("Что ожидается от владельца", ownerDecisionForGroup(group, candidates, category)));
+    }
+  }
+
+  return lines;
 }
 
 /**
@@ -1096,9 +1688,9 @@ function renderDecisionProposals(proposals) {
   const lines = [
     "## Предложения к решению",
     "",
-    "Связь с charter проекта: предложения должны сохранять переносимую starter-основу, deterministic QA, safe task flow и reusable shared skills.",
-    "Цель решения: сгруппировать найденные изменения в approve/rewrite/reject решения с понятными критериями.",
-    "JTBD: когда я смотрю найденные правила, я хочу понимать, что именно импортировать и зачем, чтобы быстро принять безопасное решение."
+    "Связь с charter проекта: переносим в starter только то, что помогает новым проектам стартовать по понятным правилам.",
+    "Цель решения: показать, что можно перенести сразу, что нужно переписать, а что должно остаться в исходном проекте.",
+    "JTBD: когда я смотрю найденные правила, я хочу быстро понять источник, смысл и следующий шаг по каждому предложению."
   ];
 
   if (proposals.length === 0) {
@@ -1121,7 +1713,7 @@ function renderDecisionProposals(proposals) {
     for (const criterion of proposal.acceptanceCriteria) {
       lines.push(`- ${criterion}`);
     }
-    lines.push(`Traceability: ${proposal.candidates.map((candidate) => candidate.id).join(", ")}.`);
+    lines.push(`Проверить по id: ${proposal.candidates.map((candidate) => candidate.id).join(", ")}.`);
   }
 
   return lines;
@@ -1141,25 +1733,10 @@ export function renderRuleSyncReport(snapshot) {
   ];
 
   lines.push("", ...renderDecisionProposals(buildDecisionProposals(snapshot)));
+  lines.push("", ...renderProjectCandidateBreakdown(snapshot.candidates));
 
   for (const category of /** @type {RuleCategory[]} */ (["import_candidate", "needs_review", "product_specific"])) {
-    const items = snapshot.candidates.filter((candidate) => candidate.category === category);
-    lines.push("", `## ${categoryTitle(category)}`);
-    if (items.length === 0) {
-      lines.push("- Нет.");
-      continue;
-    }
-    for (const candidate of items) {
-      lines.push(`- ${candidate.id}: [${candidate.sourceProject}] ${candidate.title}`);
-      lines.push(`  Источник: ${candidate.evidence}; confidence=${candidate.confidence}`);
-      lines.push(`  Файлы: ${candidate.paths.join(", ") || "не определены"}`);
-      lines.push(`  Target: ${candidate.suggestedTargetFiles.join(", ")}`);
-      lines.push(`  Смысл: ${candidate.summary}`);
-      if (candidate.snippets.length > 0) {
-        lines.push(`  Фрагменты: ${candidate.snippets.slice(0, 3).join(" / ")}`);
-      }
-      lines.push(`  Причины классификации: ${candidate.classifierReasons.join(", ")}`);
-    }
+    lines.push("", ...renderCategoryDecisionBlock(category, snapshot.candidates));
   }
 
   lines.push("", "## Диагностика");
@@ -1305,6 +1882,21 @@ async function writeSnapshot(repoRoot, snapshot, outputPath) {
 }
 
 /**
+ * @param {string} repoRoot
+ * @param {RuleSyncSnapshot} snapshot
+ * @param {string} text
+ * @param {string | undefined} outputPath
+ * @returns {Promise<string>}
+ */
+async function writeReport(repoRoot, snapshot, text, outputPath) {
+  const targetPath =
+    outputPath ?? path.join(repoRoot, RULE_SYNC_DIR, REPORTS_DIR, `rule-sync-${formatDateStamp(new Date(snapshot.generatedAt))}.md`);
+  await mkdir(path.dirname(targetPath), { recursive: true });
+  await writeFile(targetPath, `${text.trimEnd()}\n`, "utf8");
+  return targetPath;
+}
+
+/**
  * @param {RuleSyncSnapshot} snapshot
  * @param {ApplyApproval} approval
  * @returns {{status: "ready", title: string, seedMessage: string, command: string[], selectedCandidates: RuleCandidate[]}}
@@ -1346,7 +1938,7 @@ function usage() {
     [
       "Usage:",
       "  node scripts/rule-sync.mjs scan [--since <date>] [--until <date>] [--output <path>] [--json]",
-      "  node scripts/rule-sync.mjs report --latest|--scan <path> [--json]",
+      "  node scripts/rule-sync.mjs report --latest|--scan <path> [--output <path>] [--json]",
       "  node scripts/rule-sync.mjs apply-plan --approval <path> --dry-run [--scan <path>] [--json]"
     ].join("\n")
   );
@@ -1408,10 +2000,11 @@ async function main() {
           ]
         : [];
     const text = [renderRuleSyncReport(snapshot), ...fallbackLines].join("\n");
+    const reportPath = await writeReport(repoRoot, snapshot, text, typeof flags.output === "string" ? flags.output : undefined);
     if (flags.json === true) {
-      console.log(JSON.stringify({ status: "ok", scanPath, selection, text, snapshot }, null, 2));
+      console.log(JSON.stringify({ status: "ok", scanPath, reportPath, selection, text, snapshot }, null, 2));
     } else {
-      console.log(text);
+      console.log([text, "", `Report saved: ${reportPath}`].join("\n"));
     }
     return;
   }

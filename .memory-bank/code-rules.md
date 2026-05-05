@@ -1,14 +1,5 @@
 # Code Rules
 
-## Product-Specific Rules
-
-- Канонический product charter проекта: `.memory-bank/product-charter.md`.
-- Любое продуктовое решение по Школе ассистентов должно сохранять миссию, видение, цель, целевую аудиторию, `JTBD`, продуктовые ограничения и критерии успеха из charter.
-- Raw transcript `Docs/product-discovery/2026-04-03-assistant-selection-transcript.raw` не редактировать.
-- Roadmap items не считать готовой функциональностью без отдельного implementation approval.
-- До подтверждения гипотезы не фиксировать runtime, stack, коммерческую модель, governance/runtime ownership или capability decisions как готовые решения.
-- Capability decisions на этапе проверки гипотезы: не применимо.
-
 ## Core Rules
 
 - Product charter в `.memory-bank/product-charter.md` — первичный gate для любых продуктовых решений и feature/behavior/process/governance изменений: сначала прочитать документ целиком, проверить миссию, видение, цель, целевую аудиторию и `JTBD`, затем выбирать implementation path.
@@ -28,6 +19,8 @@
 - Rule-sync default scan window должен идти от `until` последнего saved scan snapshot до текущего запуска; previous-local-day допустим только как fallback, когда валидного snapshot ещё нет.
 - Rule-sync report fallback должен защищать owner report от коротких нулевых follow-up scans: `--latest` может выбрать предшествующий meaningful scan только когда latest scan выглядит как technical probe сразу после содержательного run; реальный нулевой период остаётся нулевым результатом.
 - Rule-sync owner report должен сначала показывать decision proposals через `Связь с charter проекта -> Цель решения -> JTBD -> Job Stories -> User Stories -> Критерии приемки`; candidate ids используются как traceability, а не как основной decision interface.
+- Rule-sync report должен сохранять человекочитаемый Markdown в ignored `runtime/rule-sync/reports/` и группировать разбор по проектам: похожие находки внутри проекта объединяются в одно предложение; для каждой группы простыми словами показывать, что нашли, есть ли дубли, почему это полезно starter, точный текст правила для starter, как убрать лишние детали, куда может лечь правило и по каким ids проверить источник. Нижние decision-блоки `Кандидаты на импорт` и `Требует ручной проверки` — эталонный owner-facing формат для этой задачи: их можно читать самостоятельно без верхнего разбора; они группируют похожие пункты по проекту и теме; каждая группа содержит bold labels вроде `**Точный текст для starter:**`, `**Что проверить вручную:**`, `**Моё предложение:**`, `**Что ожидается от владельца:**`; ручная проверка явно пишет, что проверить, рекомендуемое решение и какой ответ ожидается от владельца.
+- Rule-sync report anti-regressions: нельзя возвращаться к raw списку ids, generic формулировкам вроде “использовать как evidence” без конкретной проблемы, отдельным повторяющимся пунктам для дублей, technical jargon без объяснения, или нижним блокам, которые требуют читать верхний разбор, чтобы понять решение. QA/TRIZ logs нельзя показывать как готовые правила; они остаются ручной проверкой, пока не написан конкретный reusable starter text.
 - Rule-sync import использует QA/TRIZ logs только как evidence: перед импортом candidate нужно переписать в portable starter invariant, сохранить source traceability и убрать source-project symptoms, branch names, task ids and domain details from rule text.
 - Owner-facing reports должны сначала объяснять смысл, решение и следующий шаг понятным языком; raw ids, commits, task ids, snippets and file lists допустимы только как traceability.
 - `starter-rule-share` является основным project-local skill для outbound sharing текущего подтверждённого starter baseline в выбранные active downstream проекты; `rule-share:*` scripts остаются deterministic execution layer.
