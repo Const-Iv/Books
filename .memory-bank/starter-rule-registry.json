@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-05-05T15:50:31.000Z",
+  "updatedAt": "2026-05-05T17:10:45.000Z",
   "rules": [
     {
       "id": "starter.project-intake.mission-vision-project-level",
@@ -143,8 +143,8 @@
     },
     {
       "id": "starter.rule-sync.owner-report-decision-format",
-      "title": "Rule-sync owner report is decision-first and self-contained",
-      "text": "Rule-sync report должен сохранять человекочитаемый Markdown в ignored `runtime/rule-sync/reports/` и группировать разбор по проектам: похожие находки внутри проекта объединяются в одно предложение; для каждой группы простыми словами показывать, что нашли, есть ли дубли, почему это полезно starter, точный текст правила для starter, как убрать лишние детали, куда может лечь правило и по каким ids проверить источник. Нижние decision-блоки `Кандидаты на импорт` и `Требует ручной проверки` должны быть самодостаточными: их можно читать без верхнего разбора, а пункты должны содержать `**Точный текст для starter:**`, `**Что проверить вручную:**`, `**Моё предложение:**` и `**Что ожидается от владельца:**`.",
+      "title": "Rule-sync owner report is decision-first and self-checked",
+      "text": "Rule-sync report должен сохранять человекочитаемый Markdown в ignored `runtime/rule-sync/reports/` и группировать разбор по проектам: похожие находки внутри проекта объединяются в одно предложение; для каждой группы простыми словами показывать, что нашли, есть ли дубли, почему это полезно starter, точный текст правила для starter, как убрать лишние детали, куда может лечь правило и по каким ids проверить источник. Нижние decision-блоки `Кандидаты на импорт` и `Требует ручной проверки` должны быть самодостаточными: их можно читать без верхнего разбора, а пункты должны содержать `**Точный текст для starter:**`, `**Что Codex проверяет сам:**`, `**Моё предложение:**` и `**Что ожидается от владельца:**`. Если Codex может read-only проверить источник, он делает self-check сам и пишет конкретную рекомендацию, а не просит владельца искать фрагменты вручную.",
       "targetFiles": [
         "AGENTS.md",
         ".memory-bank/code-rules.md",
@@ -156,11 +156,34 @@
         "Rule-sync report должен сохранять человекочитаемый Markdown",
         "похожие находки внутри проекта объединяются в одно предложение",
         "`**Точный текст для starter:**`",
+        "`**Что Codex проверяет сам:**`",
         "`**Что ожидается от владельца:**`"
       ],
       "source": {
         "type": "existing-governance",
         "note": "Owner-approved readable rule-sync report format."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.rule-share.blocked-rules-codex-self-check",
+      "title": "Rule-share partial matches require Codex self-check before owner decision",
+      "text": "Rule-share report не должен перекладывать read-only проверку partial/blocked rules на владельца. Для `blockedRules` в ready-проекте Codex сначала проверяет target files сам и пишет конкретную рекомендацию: уже покрыто, добавить как написано, добавить с адаптацией или не добавлять; владелец только согласует рекомендацию или снимает настоящий blocker.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "scripts/README.md",
+        "skills/starter-rule-share/SKILL.md"
+      ],
+      "requiredFragments": [
+        "Rule-share report не должен перекладывать read-only проверку",
+        "Для `blockedRules` в ready-проекте Codex сначала проверяет target files сам",
+        "уже покрыто, добавить как написано, добавить с адаптацией или не добавлять"
+      ],
+      "source": {
+        "type": "existing-governance",
+        "note": "Owner-approved rule-share self-check format for partial matches."
       },
       "sharePolicy": "required"
     },

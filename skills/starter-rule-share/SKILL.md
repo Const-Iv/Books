@@ -42,7 +42,7 @@ Charter fit: outbound sharing supports the mission and JTBD by letting active do
    - `Есть текстом, но не зарегистрировано`: exact text or required fragments are already present; do not duplicate them.
    - `Будет добавлено`: exact missing rule text that can be imported automatically.
    - `Требует ручной проверки`: similar or manual-review rules that must not be auto-imported.
-   For `Требует ручной проверки`, explain the missing starter signals or partial rule match before recommending any next step.
+   For `Требует ручной проверки`, do not hand the search work to the owner. Codex must first inspect the target project read-only when possible, then report a concrete recommendation: already covered, add as written, add with adaptation, skip, or blocked. Owner action is only to approve that recommendation or clear a real blocker such as dirty tree / missing starter signals.
 6. Ask the owner to approve the target project list before apply-plan. Use project ids only as traceability after the project names and recommended actions are clear.
 7. After explicit approval, write an ignored approval JSON such as `runtime/rule-share/approvals/<date>-approval.json`:
    ```json
@@ -156,6 +156,15 @@ Treat a project as starter-connected only when one of these signals is present:
 - Copied-baseline signals exist: `AGENTS.md`, `.memory-bank/product-charter.md`, `CODEX_MEMORY.md`, and managed `task:start`.
 
 For a partially connected project, explain which signals are missing. Example: a project with `task:start`, `AGENTS.md`, and `CODEX_MEMORY.md`, but no `.memory-bank/product-charter.md` and no `vendor/new-project-starter`, is not ready for outbound sharing because Codex cannot distinguish reusable baseline rules from downstream product-specific governance.
+
+For rule-level partial matches inside an otherwise ready project, Codex performs the manual review itself before asking the owner:
+
+- read the target files and nearby governance surfaces read-only;
+- decide whether the starter rule is already covered, missing, partially covered, or unsafe to import;
+- if already covered, mark it as do-not-duplicate;
+- if missing, provide the exact text to import;
+- if partially covered, provide the adapted text and explain what changes;
+- if blocked, name the concrete blocker and the owner action needed to unblock.
 
 Recommended safe paths:
 

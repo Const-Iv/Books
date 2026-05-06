@@ -768,6 +768,38 @@ function renderRuleList(rules, emptyText) {
 }
 
 /**
+ * @param {RuleShareRuleState[]} rules
+ * @param {RuleShareProject} project
+ * @returns {string[]}
+ */
+function renderBlockedRuleList(rules, project) {
+  if (rules.length === 0) {
+    return ["  - Нет blocked/manual-review rules."];
+  }
+  const lines = [
+    "  Важно: это не задача владельца искать правило по файлам. Codex сначала делает read-only self-check по проекту и только потом выносит владельцу конкретное решение."
+  ];
+  for (const rule of rules) {
+    lines.push(`  - ${rule.id}: ${rule.title}`);
+    lines.push(`    Точный текст: ${rule.text}`);
+    lines.push(`    Target: ${rule.targetFiles.join(", ") || "-"}`);
+    if (rule.reason) {
+      lines.push(`    Причина: ${rule.reason}`);
+    }
+    if (project.dirty || rule.match === "blocked") {
+      lines.push("    Что Codex делает: не классифицирует правило до снятия блокировки проекта, чтобы не принять промежуточные локальные изменения за итоговое состояние.");
+      lines.push("    Что ожидается от владельца: сначала привести проект к clean tree, затем заново запустить rule-share scan.");
+    } else {
+      lines.push(
+        "    Что Codex проверяет сам: read-only сверяет target files и похожие формулировки в проекте; итог должен быть одним из вариантов: уже покрыто, добавить как написано, добавить с адаптацией или не добавлять."
+      );
+      lines.push("    Что ожидается от владельца: согласовать готовую рекомендацию Codex, а не искать фрагменты вручную.");
+    }
+  }
+  return lines;
+}
+
+/**
  * @param {RuleShareSnapshot} snapshot
  * @returns {string}
  */
@@ -825,7 +857,7 @@ export function renderRuleShareReport(snapshot) {
       lines.push("  Будет добавлено:");
       lines.push(...renderRuleList(project.missingRules ?? [], "- Нет missing rules."));
       lines.push("  Требует ручной проверки:");
-      lines.push(...renderRuleList(project.blockedRules ?? [], "- Нет blocked/manual-review rules."));
+      lines.push(...renderBlockedRuleList(project.blockedRules ?? [], project));
     }
   }
 
@@ -907,7 +939,7 @@ function buildProjectTaskSeed(snapshot, project, approval) {
     }
   }
   if ((project.blockedRules ?? []).length > 0) {
-    lines.push("", "Manual-review rules; do not import automatically:");
+    lines.push("", "Codex self-check required before future import; do not import automatically:");
     for (const rule of project.blockedRules ?? []) {
       lines.push(`- ${rule.id}: ${rule.title} — ${rule.reason}`);
     }
