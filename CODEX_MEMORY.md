@@ -70,6 +70,7 @@
 - Echo-testing lesson: перед строительством продукта на неизвестной корневой связке сначала проверять минимальный изолированный loop/result, фиксировать limitations and decision, и только потом разрешать product feature work.
 - Approved reusable starter rules должны фиксироваться в `.memory-bank/starter-rule-registry.json`; без stable id и exact text `starter-rule-share` не может надёжно отличить уже применённое правило от missing rule.
 - Outbound rule sharing переносит в copied-baseline проекты только `missingRules`; `presentUnregisteredRules` нельзя дублировать как новый текст, а partial/manual-review matches требуют owner review.
+- Outbound rule sharing переносит в copied-baseline проекты только `missingRules`; `presentUnregisteredRules` нельзя дублировать как новый текст, а partial/manual-review matches сначала требуют Codex read-only self-check с конкретной рекомендацией для владельца.
 
 ## Project Notes
 
@@ -90,3 +91,5 @@
 - Starter содержит `starter-rule-report`, `starter-rule-import` и temporary `starter-rule-sync` router как approval-safe контур регулярного переноса reusable правил из downstream проектов обратно в baseline.
 - Scheduled automations должны вызывать `starter-rule-report` для read-only scan/report; утреннее owner approval и import должны идти через `starter-rule-import`; `starter-rule-sync` только направляет старые prompt'ы к одному из этих двух skills. `rule-sync:*` commands остаются approval-safe execution layer, default scan window идёт от последнего saved scan snapshot до текущего запуска, а owner report начинается с decision proposals вместо raw candidate ids.
 - Starter содержит `.memory-bank/starter-rule-registry.json` как machine-readable реестр reusable правил; `starter-rule-import` обновляет его при новом approved import, а `starter-rule-share` использует его для project-level отчёта `present/missing/presentUnregistered/blocked`.
+- Ночной `starter-rule-report` и исходящий `starter-rule-share` не должны отдавать владельцу read-only поиск по проектам: если Codex может проверить source/target files сам, он делает self-check и пишет итог `уже покрыто / добавить как написано / добавить с адаптацией / не добавлять`; владелец согласует решение или снимает настоящий blocker.
+- Rule-share report не должен перекладывать read-only проверку partial/blocked rules на владельца; для `blockedRules` в ready-проекте Codex сначала проверяет target files сам и пишет конкретную рекомендацию.

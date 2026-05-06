@@ -114,3 +114,27 @@
 - Branch: `codex/20260505-082304-ffc7-readable-rule-sync-report`
 - Reasons: historical_recurrence
 - Status: trigger recorded
+
+## 2026-05-05T17:11:43.039Z 20260505-170240-5c0b
+
+- Branch: `codex/20260505-170240-5c0b-self-check-manual-rule-review-in-reports`
+- Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
+
+## 2026-05-05T17:12:30.000Z 20260505-170240-5c0b — TRIZ_APPLIED
+
+- Principle: preliminary action / mediator / separation by stage.
+- Changes: read-only source/target inspection is moved before owner decision in both `starter-rule-report` and `starter-rule-share`: reports now require Codex self-check for ambiguous items, while owner approval remains the separate gate for import/share and true blockers such as dirty projects.
+- Guard: `tests/unit/rule-sync.test.mjs` verifies the self-check wording in nightly rule-sync reports; `tests/unit/rule-share.test.mjs` verifies rule-share blockedRules show Codex self-check instead of owner homework; `npm run qa:agent` and `npm run task:qa:agent` passed.
+
+## 2026-05-05T17:13:41.609Z 20260505-170240-5c0b
+
+- Branch: `codex/20260505-170240-5c0b-self-check-manual-rule-review-in-reports`
+- Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
+
+## 2026-05-05T17:14:10.000Z 20260505-170240-5c0b — TRIZ_APPLIED
+
+- Principle: preliminary action / mediator / separation by stage.
+- Changes: final task QA repeated the same trigger after verification; the selected solution remains the same: Codex performs read-only self-check before owner approval, while deterministic scripts keep ambiguous rules out of automatic imports.
+- Guard: final `npm run qa:agent` and `npm run task:qa:agent` passed; no additional code path was introduced after the TRIZ decision.
