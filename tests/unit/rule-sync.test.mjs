@@ -380,9 +380,9 @@ test("rule-sync report saves readable markdown artifact", async () => {
     assert.match(report, /\*\*Что нашли:\*\* В проекте изменили рабочие правила/);
     assert.match(report, /\*\*Источники для проверки:\*\*/);
     assert.match(report, /## Требует ручной проверки[\s\S]*\*\*Точный текст для starter:\*\* Если отчёт или дайджест собирает данные из разных источников/);
-    assert.match(report, /\*\*Что проверить вручную:\*\* согласны ли вы с общей мыслью без названий конкретных каналов/);
+    assert.match(report, /\*\*Что Codex проверяет сам:\*\* Codex должен read-only проверить источник/);
     assert.match(report, /\*\*Моё предложение:\*\* принять предложенный общий текст/);
-    assert.match(report, /\*\*Что ожидается от владельца:\*\* Выбрать одно: принять предложенный текст/);
+    assert.match(report, /\*\*Что ожидается от владельца:\*\* После Codex self-check выбрать одно: принять предложенный текст/);
   } finally {
     await rm(repoRoot, { recursive: true, force: true });
   }

@@ -36,9 +36,10 @@ If no report exists, stop and run `$starter-rule-report` first.
    - `Согласовать с правкой`: ask for or propose the exact replacement text before approval.
    - `Не согласовываю / нужен ответ`: do not import yet; capture the question or blocker.
 6. For every `Требует ручной проверки` group, include:
-   - `**Что проверить вручную:**`
+   - `**Что Codex проверяет сам:**`
    - `**Моё предложение:**`
    - `**Что ожидается от владельца:**`
+   If the report still uses older wording `**Что проверить вручную:**`, treat it as a regression unless the item is a true owner-only product decision or blocked source.
 7. After all decisions, produce a plain-language approval summary grouped by:
    - `Что переносим в starter`
    - `Что переносим с правкой`

@@ -405,7 +405,15 @@ test("rule-share report shows concrete missing rule text grouped by project", ()
             reason: "Missing."
           }
         ],
-        blockedRules: []
+        blockedRules: [
+          {
+            ...MANUAL_RULE,
+            match: "partial",
+            matchedFragments: ["Manual"],
+            missingFragments: ["rule"],
+            reason: "Partial match."
+          }
+        ]
       }
     ]
   });
@@ -415,6 +423,9 @@ test("rule-share report shows concrete missing rule text grouped by project", ()
   assert.match(text, new RegExp(RULE_B.text));
   assert.match(text, /Есть текстом, но не зарегистрировано/);
   assert.match(text, new RegExp(RULE_A.text));
+  assert.match(text, /Codex сначала делает read-only self-check/);
+  assert.match(text, /Что Codex проверяет сам: read-only сверяет target files/);
+  assert.match(text, /Что ожидается от владельца: согласовать готовую рекомендацию Codex/);
 });
 
 test("rule-share apply-plan builds safe per-project task seeds", () => {
