@@ -12,28 +12,32 @@ These rules apply to the whole repository.
 - В Project Intake миссия должна отвечать: кому проект помогает, какой результат даёт и через что; видение должно описывать желаемое будущее и роль проекта в нём. Миссия и видение пишутся только на уровне проекта, а не для отдельных задач.
 
 Миссия:
-- Мы помогаем командам, которые запускают новый проект или репозиторий, с первого дня получать понятную и воспроизводимую операционную основу через переносимый starter baseline: правила работы, безопасное ведение задач, проверяемое качество, память проекта и разговорное управление процессом без ручной сборки заново.
+- Мы помогаем любому пользователю превращать книгу в применимый рабочий toolkit на русском языке через структурное извлечение моделей, принципов, техник, anti-patterns, сценариев применения и быстрых шпаргалок вместо обычного пересказа.
 
 Видение:
-- Мы видим будущее, в котором новый проект начинается не с ручной сборки правил, процессов и проверок, а с готовой переносимой основы; `new-project-starter` становится базовым слоем для таких репозиториев, где команда добавляет продуктовую специфику поверх через adapters/profiles без изменения core governance.
+- Мы видим будущее, в котором книга после чтения или загрузки не остаётся разовым текстом, а становится рабочим инструментом для решений, действий и обучения; Books — продукт, который превращает содержание книги в навигационный практический toolkit, готовый к повторному применению.
 
 Цель проекта:
-- Поддерживать runnable local-first starter baseline, который можно подключать или копировать в downstream проекты, чтобы они сразу имели canonical sources of truth, managed worktrees, deterministic QA, task state/history, operational docs и reusable shared skills.
+- Создать local-first прототип, который берёт официально предоставленную пользователем книгу или фрагмент книги и создаёт русскоязычный практический toolkit: карта книги, framework'и автора, принципы, техники, anti-patterns, практические выводы по главам, glossary, patterns / techniques, cheatsheet и topic index.
 
 Целевая аудитория:
-- Команды, которые начинают новый проект или новый репозиторий и хотят с первого дня работать по понятным правилам без ручной сборки governance заново.
-- Технические и продуктовые лиды, которые отвечают за переносимую операционную основу: task flow, проверки, правила, память проекта и безопасное завершение задач.
-- Инженеры и agent-operators, которые ведут задачи через Codex/worktree conveyor и должны получать воспроизводимый, проверяемый процесс.
-- Downstream maintainers, которые подключают starter как baseline и добавляют продуктовую специфику поверх него через adapters/profiles.
-- Конечные пользователи downstream-продуктов не являются целевой аудиторией starter core; их аудитория должна быть отдельно описана в product charter и product specs downstream-проекта.
+- Занятые специалисты, предприниматели, студенты, самообучающиеся читатели и люди, которые используют книги как источник решений, идей, действий и рабочих моделей.
+- Не основная аудитория текущего этапа: пользователи, которым нужен простой краткий пересказ, полный заменитель книги, публичный библиотечный сервис, аккаунты, оплата или социальные функции.
 
 JTBD:
-- Когда начинается новый проект, я хочу получить готовую и переносимую операционную основу, чтобы команда сразу работала по ясным правилам, проверяла изменения воспроизводимо и не собирала governance, task flow и QA заново.
+- Когда у меня есть книга и я хочу применить её идеи в жизни, работе или обучении, я хочу превратить её в понятный toolkit с моделями, принципами, техниками, anti-patterns, сценариями применения и шпаргалками, чтобы быстро находить нужное и сразу действовать.
+
+Главный продуктовый принцип:
+- Извлекать структуру применения, а не summary.
+- Books output должен быть reusable toolkit: модели, принципы, техники, anti-patterns, сценарии применения, шпаргалки, glossary, patterns / techniques and topic index.
+- Входные книги могут быть на разных языках; output первой версии всегда русский.
 
 Product Charter Gate:
 - Перед любым продуктовым решением, feature, behavior, process или governance изменением нужно сначала прочитать `.memory-bank/product-charter.md` целиком и сверить решение с миссией, видением, целью, целевой аудиторией и `JTBD`.
 - Feature, behavior, process и governance изменения должны явно показывать, какую часть миссии, видения, цели, целевой аудитории или `JTBD` они поддерживают. Maintenance-изменения должны явно сохранять charter.
-- Нельзя реализовывать изменение, которое противоречит `.memory-bank/product-charter.md`, ослабляет переносимость baseline, deterministic QA, safe task flow, source-of-truth governance или hardcode'ит product-specific поведение в starter core.
+- Нельзя реализовывать изменение, которое противоречит `.memory-bank/product-charter.md`, превращает Books в простой summary generator, создаёт дословное воспроизведение книги как product output, ослабляет переносимость baseline, deterministic QA, safe task flow или source-of-truth governance.
+- Books v1 product runtime утверждён 2026-05-07 как local CLI contour on Node/npm orchestration with optional Python extraction adapter. Product source должен жить под `src/books/`; generated local artifacts — под ignored `runtime/books/`.
+- Product feature/refactor/behavior-change work требует feature-level plan and QA evidence. Для неизвестной корневой связки нужен isolated echo-test до implementation. AI/model provider, public UI/API, multi-user storage and deploy требуют отдельного owner-approved adapter decision.
 - В Plan mode все уточняющие вопросы, варианты выбора и рекомендации ассистента должны быть отфильтрованы через Product Charter; recommended option обязан явно сохранять или усиливать миссию, видение, цель, целевую аудиторию и `JTBD`, а charter-конфликтный вариант нельзя подавать как равнозначно рекомендуемый.
 - Если запрос конфликтует с charter, ассистент обязан остановиться, коротко объяснить конфликт и предложить ближайший безопасный вариант.
 - Product charter нельзя обходить через локальный patch, mirror-файл, temporary exception или ad-hoc script; при изменении charter сначала обновить `.memory-bank/product-charter.md`, `AGENTS.md`, релевантные `.memory-bank/*` и `CODEX_MEMORY.md`.
@@ -56,6 +60,7 @@ Project Intake Gate для нового downstream-проекта:
 - Новый проект, который стартует от starter baseline, сначала заполняет Project Intake по `plans/_project_intake_template.md`; feature/refactor/behavior-change реализация начинается только после owner approval по всем обязательным пунктам.
 - Обязательные сведения: миссия, видение, цель, целевая аудитория, `JTBD`, продуктовые ограничения, сценарии использования, метрики успеха, границы core/adapters/profiles, stack/runtime choices, echo-testing для unknown root technology, QA/release choices, agent/eval ownership, source-of-truth files, rules/memory ownership и applicable capability decisions.
 - Миссия и видение в Project Intake должны быть сформулированы по правилам из `.memory-bank/product-charter.md`: миссия должна отвечать, кому проект помогает, какой результат даёт и через что; видение должно описывать желаемое будущее и роль проекта в нём. Миссия и видение пишутся только на уровне проекта, а не для отдельных задач.
+- В conversational Project Intake миссию сначала формулирует owner. После согласования миссии ассистент предлагает формулировки следующих пунктов intake на основе уже согласованных ответов, а owner подтверждает или корректирует каждую формулировку.
 - Пока проект находится на этапе проверки гипотезы, нельзя считать утверждёнными архитектуру, технологии, способ запуска, коммерческую модель, зоны ответственности и важные продуктовые возможности. Эти решения становятся правилами проекта только после явного согласования в Project Intake, product charter или roadmap.
 - Capability decisions в Project Intake заполняются only-if-applicable: auth / user identity, payments / billing, credits / limits, analytics / consent, i18n / localization, async jobs / workers, API documentation, service layout и runtime-specific rules. Применимый блок требует owner approval до feature/refactor/behavior-change работы в этой зоне; неприменимый блок явно помечается как not applicable.
 - Echo-testing Gate для нового продукта или capability: если Project Intake, product spec или feature plan опирается на неизвестную корневую технологию, интеграцию, provider, runtime, agent surface, bot/channel, worker или внешний API, до feature/refactor/behavior-change реализации нужно выполнить изолированный минимальный echo-test. Echo-test проверяет только корневой путь: входной сигнал проходит через выбранную связку и возвращается как same payload, фиксированный ответ или другой минимальный observable result. Evidence фиксирует hypothesis, setup, команду/сценарий, фактический результат, ограничения и решение `proceed | blocked | narrow spike | choose alternative`. Echo-test не заменяет full QA, security checks, product acceptance и owner approval; real secrets, production user data и insecure bypass запрещены.
@@ -175,6 +180,7 @@ Eval Gate для AI/agent behavior:
 - если repo на clean `main` и доступен `task:start`, автоматически создать managed bootstrap worktree; не спрашивать owner отдельно про этот безопасный шаг;
 - если repo-managed skills ещё не подключены, установить зависимости через `npm ci` при необходимости и выполнить `npm run skills:link`; при конфликте не запускать `--adopt` без explicit owner approval;
 - определить состояние bootstrap: `fresh-copy`, `intake-in-progress`, `intake-approved`, `canonical-ready` или `qa-ready`;
+- в conversational intake получить owner-authored миссию первой, затем предлагать каждый следующий пункт на основе уже согласованных ответов и ждать подтверждения или правки owner'а;
 - если Project Intake не approved, создать или продолжить intake и не начинать feature/refactor/behavior-change работу;
 - если intake approved, перенести ответы в canonical sources и mirrors as applicable;
 - после canonical transfer установить зависимости, подключить repo-managed skills при необходимости и прогнать baseline QA;

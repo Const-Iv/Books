@@ -1,7 +1,21 @@
 # Architecture Map
 
+## Product Architecture Status
+
+- Product charter approved 2026-05-07: Books превращает книгу в применимый русскоязычный toolkit, а не в обычное summary.
+- Product runtime and service layout for v1 were approved 2026-05-07: local CLI contour on Node/npm orchestration with optional Python extraction adapter.
+- AI/model provider, public UI/API, multi-user storage and deploy are not approved yet.
+- Первый approved contour: local-first prototype. Owner передаёт книгу или фрагмент локально, output первой версии всегда русский.
+- Будущий product pipeline должен сохранять последовательность: supported input -> text extraction -> metadata / pre-flight -> book structure map -> chapter / section extraction -> toolkit artifacts.
+- Toolkit artifacts: главный файл, разбор по главам, glossary, patterns / techniques, cheatsheet, topic index, usage layer, scope & limits and extraction report.
+- Starter governance modules below remain process baseline for safe task flow and QA; they are not the Books product runtime.
+
 ## High-Level Modules
 
+- `src/books/cli/`: future local CLI orchestration for Books v1; no public UI/API in the first contour.
+- `src/books/extraction/`: future PDF/EPUB extraction boundary; Python helpers are allowed here only after echo-test / feature plan.
+- `src/books/toolkit/`: future toolkit schema, ranking rules, artifact generation contracts, quality checks and eval fixtures.
+- `runtime/books/`: ignored per-run workspace for extracted text, metadata and generated local toolkit artifacts.
 - `scripts/dependency-preflight.mjs`: dependency recovery seam.
 - `scripts/deterministic-feedback-loop.mjs`: deterministic QA orchestrator.
 - `scripts/worktree-start.mjs`: task bootstrap, branch/worktree creation, state/history START.
@@ -30,10 +44,26 @@
 4. Deterministic QA and release gates работают только через canonical scripts.
 5. Human-readable docs snapshots (`Docs/*`) строятся из machine-readable runtime artifacts.
 
+## Books V1 Product Flow
+
+1. Validate local input path and supported format: PDF / EPUB by extension and magic bytes.
+2. Ask book type: technical / text-heavy / not sure.
+3. Extract text through the approved extraction adapter boundary.
+4. Write per-run extracted text and metadata under ignored `runtime/books/`.
+5. Show pre-flight estimate and ask explicit proceed or analyze-only choice.
+6. Build structure map: title, author, chapters/parts/ToC, core themes, subject domain, frameworks, principles, techniques, anti-patterns.
+7. Generate layered toolkit artifacts: core file, chapter files/sections, glossary, patterns, cheatsheet, topic index, usage layer, scope & limits, extraction report.
+8. Run quality checks against Books Product QA before treating output as usable.
+
 ## Risk Hotspots
 
 - drift между `AGENTS.md`, `.memory-bank/*`, `README.md` и реально исполняемыми npm scripts;
 - drift между `.memory-bank/product-charter.md` и правилами в `AGENTS.md`, `.memory-bank/code-rules.md`, `CODEX_MEMORY.md`;
+- drift от approved Books charter к обычному summary generator вместо reusable toolkit;
+- преждевременный выбор AI/model provider, public storage, UI/API или deploy без owner-approved adapter decision and echo-test;
+- плохое извлечение текста, которое приводит к уверенному, но неверному русскоязычному toolkit вместо понятного blocker;
+- потеря границы между идеями книги, продуктовой интерпретацией и профессиональной консультацией;
+- публикация или хранение полного текста книги как product output без отдельного owner-approved решения;
 - task state schema drift (`qaLastPassSha`, `previewPreparedSha`, publish markers, operational artifacts);
 - неправильная работа с git worktree lifecycle и cleanup;
 - silent overwrite shared docs вместо single-writer capture/sync;
