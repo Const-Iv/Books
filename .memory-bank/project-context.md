@@ -2,25 +2,33 @@
 
 ## Product Charter
 
-- Миссия: помогать командам, которые запускают новый проект или репозиторий, с первого дня получать понятную и воспроизводимую операционную основу через переносимый starter baseline: правила работы, безопасное ведение задач, проверяемое качество, память проекта и разговорное управление процессом без ручной сборки заново.
-- Видение: новый проект начинается не с ручной сборки правил, процессов и проверок, а с готовой переносимой основы; `new-project-starter` становится базовым слоем для таких репозиториев, где команда добавляет продуктовую специфику поверх через adapters/profiles без изменения core governance.
-- Цель: поддерживать runnable local-first starter baseline, который можно подключать или копировать в downstream проекты, чтобы они сразу имели canonical sources of truth, managed worktrees, deterministic QA, task state/history, operational docs и reusable shared skills.
-- Целевая аудитория: команды, которые начинают новый проект или репозиторий; технические и продуктовые лиды, отвечающие за переносимую операционную основу; инженеры и agent-operators, ведущие задачи через Codex/worktree conveyor; downstream maintainers, подключающие starter как baseline.
-- Не ЦА starter core: конечные пользователи downstream-продуктов; их аудитория описывается в charter и product specs конкретного downstream-проекта.
-- JTBD: когда начинается новый проект, я хочу получить готовую и переносимую операционную основу, чтобы команда сразу работала по ясным правилам, проверяла изменения воспроизводимо и не собирала governance, task flow и QA заново.
-- Core starter не является продуктовым runtime. Новые правила и скрипты должны быть переносимыми baseline-контрактами; product-specific capabilities добавляются поверх starter через adapters/profiles.
+- Статус charter: approved by owner 2026-05-07.
+- Миссия: помогать любому пользователю превращать книгу в применимый рабочий toolkit на русском языке через структурное извлечение моделей, принципов, техник, anti-patterns, сценариев применения и быстрых шпаргалок вместо обычного пересказа.
+- Видение: книга после чтения или загрузки не остаётся разовым текстом, а становится рабочим инструментом для решений, действий и обучения; Books превращает содержание книги в навигационный практический toolkit, готовый к повторному применению.
+- Цель: создать local-first прототип, который берёт официально предоставленную пользователем книгу или фрагмент книги и создаёт русскоязычный практический toolkit: карта книги, framework'и автора, принципы, техники, anti-patterns, практические выводы по главам, glossary, patterns / techniques, cheatsheet и topic index.
+- Целевая аудитория: занятые специалисты, предприниматели, студенты, самообучающиеся читатели и люди, которые используют книги как источник решений, идей, действий и рабочих моделей.
+- Не основная аудитория текущего этапа: пользователи, которым нужен простой краткий пересказ, полный заменитель книги, публичный библиотечный сервис, аккаунты, оплата или социальные функции.
+- JTBD: когда у меня есть книга и я хочу применить её идеи в жизни, работе или обучении, я хочу превратить её в понятный toolkit с моделями, принципами, техниками, anti-patterns, сценариями применения и шпаргалками, чтобы быстро находить нужное и сразу действовать.
+- Главный продуктовый принцип Books: извлекать структуру применения, а не summary.
+- Product runtime для Books v1 утверждён 2026-05-07: local CLI contour on Node/npm orchestration with optional Python extraction adapter. Starter governance, task/worktree conveyor, deterministic QA, memory-bank rules and reusable skills остаются процессной основой проекта, но не являются product feature logic.
 - Перед любым продуктовым решением, feature, behavior, process или governance изменением нужно прочитать `.memory-bank/product-charter.md` целиком и сверить решение с миссией, видением, целью, целевой аудиторией и `JTBD`.
+- Books-specific изменения не должны превращать продукт в обычный summary generator, создавать дословное воспроизведение книги как product output или добавлять публичный UI, аккаунты, оплату, аналитику, provider или deploy без отдельного owner approval.
 - В Project Intake миссия должна отвечать: кому проект помогает, какой результат даёт и через что; видение должно описывать желаемое будущее и роль проекта в нём. Миссия и видение пишутся только на уровне проекта, а не для отдельных задач.
 - Новый downstream-проект сначала проходит Project Intake Gate по `plans/_project_intake_template.md`: недостающие product/governance сведения заполняются, согласуются owner'ом и только затем переносятся в canonical sources и используются для feature work.
+- В conversational Project Intake миссию сначала формулирует owner; после её согласования Codex предлагает следующие формулировки на основе уже согласованных ответов, а owner подтверждает или корректирует их.
 - Пока проект находится на этапе проверки гипотезы, нельзя считать утверждёнными архитектуру, технологии, способ запуска, коммерческую модель, зоны ответственности и важные продуктовые возможности. Эти решения становятся правилами проекта только после явного согласования в Project Intake, product charter или roadmap.
 - Project Intake включает applicable capability decisions для auth, payments, credits, analytics/consent, i18n, async jobs, API documentation, service layout и runtime-specific rules. Эти блоки заполняются только если применимы к downstream-продукту; provider/stack-specific решения остаются adapters/profiles, а не starter core.
-- Если downstream-продукт или capability зависит от неизвестной корневой технологии, интеграции, provider, runtime, agent surface, bot/channel, worker или внешнего API, Project Intake фиксирует isolated echo-test evidence или blocker до feature/refactor/behavior-change работы в этой зоне.
+- Если Books capability зависит от неизвестной корневой технологии, интеграции, provider, runtime, agent surface, worker или внешнего API, feature plan фиксирует isolated echo-test evidence или blocker до feature/refactor/behavior-change работы в этой зоне.
 - Если конкретному проекту нужны действия после публикации, например перезапуск локальных агентов или сервисов, способ выполнения нужно согласовать в Project Intake этого проекта. Starter не зашивает продуктовые агенты, локальные команды и настройки конкретной среды в общую основу.
 - Conversational bootstrap для нового downstream-проекта идёт через `starter-project-bootstrap`: если пользователь пишет `стартуем новый проект`, `запусти новый проект`, `проведи bootstrap нового проекта` или сообщает, что скопировал starter в новый репозиторий, ассистент создаёт отдельную рабочую папку из чистого `main`, подключает skills из starter, проводит Project Intake и не начинает разработку функций до согласования intake. Если для `skills:link` нужно заменить конфликтующие локальные skills, ассистент отдельно запрашивает явное согласие владельца.
-- Agent/eval surfaces starter core: Plan mode questions/recommendations, Product Charter gate, Project Intake Gate, rule-sync owner reports, conversational task commands и TRIZ trigger/decision behavior.
+- Agent/eval surfaces для Books: качество book-to-toolkit generation, проверки “structure not summary”, Product Charter gate, Project Intake Gate, Plan mode recommendations, conversational task commands and future extraction-quality assistant behavior.
 
 ## Repository Layout
 
+- `src/books/`: approved future home for Books product source when product implementation starts.
+- `src/books/cli/`: future local CLI orchestration entrypoints for the first contour.
+- `src/books/extraction/`: future adapter boundary for PDF/EPUB extraction; may call Python helpers after echo-test.
+- `src/books/toolkit/`: future toolkit schema, ranking, artifact contracts and quality checks.
 - `scripts/`: канонические conveyor, QA, release и operational-doc entrypoints.
 - `scripts/rule-sync.mjs`: deterministic scanner, report renderer и approval-safe apply-plan seam для starter rule sync.
 - `scripts/rule-share.mjs`: deterministic scanner, report renderer и approval-safe apply-plan seam для outbound sharing текущего starter baseline в выбранные active downstream проекты.
@@ -38,15 +46,19 @@
 - `research/triz/`: canonical TRIZ pack.
 - `templates/agent-workspace/`: локальные безопасные шаблоны для agent profiles и memory.
 - `tests/unit`, `tests/integration`, `tests/e2e`: deterministic coverage самого process-layer.
+- `runtime/books/`: ignored local workspace for per-run extracted text, metadata and generated toolkit artifacts; never canonical source.
 
 ## Tech Stack
 
-- Runtime: Node.js CLI baseline.
-- Main language: JavaScript (`.mjs`) + JSDoc typing.
+- Process runtime: Node.js CLI baseline.
+- Books v1 product contour: local CLI on Node/npm orchestration with optional Python extraction adapter.
+- Main language for orchestration: JavaScript (`.mjs`) + JSDoc typing.
+- Extraction adapter language: Python allowed only behind `src/books/extraction/` boundary after echo-test / feature plan.
 - Typecheck: TypeScript `checkJs`.
 - Tests: built-in Node test runner.
 - Persistence: git worktrees + JSON/NDJSON state in `.git/codex-task-pipeline/*`.
-- Release target: local-first `release:local`.
+- Local generated artifacts: ignored `runtime/books/`.
+- Release target: local-first `release:local`; no deploy in v1.
 
 ## Source of Truth
 
@@ -101,7 +113,7 @@
 - Дефолтный implementation path для feature/refactor/bugfix/process/governance задач — отдельный managed worktree и ветка `codex/*`.
 - `task:start` по умолчанию работает с managed worktrees under `$CODEX_HOME/worktrees/<taskId>/`.
 - Reusable starter skills публикуются в `$CODEX_HOME/skills` через symlink-based `skills:link`; после `git pull` существующие ссылки подхватывают обновления сразу, а для новых или переименованных skills нужно повторно запустить `skills:link`.
-- `starter-project-bootstrap` — основной Codex entrypoint для `стартуем новый проект`: сначала автоматически создать managed bootstrap worktree on clean `main`, обеспечить skill availability через `npm ci` при необходимости и `npm run skills:link`, затем определить bootstrap state, провести Project Intake Gate, canonical docs transfer и baseline QA; product-specific choices остаются downstream adapters/profiles.
+- `starter-project-bootstrap` — основной Codex entrypoint для `стартуем новый проект`: сначала автоматически создать managed bootstrap worktree on clean `main`, обеспечить skill availability через `npm ci` при необходимости и `npm run skills:link`, затем определить bootstrap state, получить owner-authored миссию, предлагать следующие intake-формулировки на подтверждение owner'у, провести canonical docs transfer и baseline QA; product-specific choices остаются downstream adapters/profiles.
 - `starter-rule-report` — основной Codex entrypoint для scheduled automation и быстрого ручного rule discovery/report: он запускает read-only scan/report, сохраняет readable Markdown artifact в `runtime/rule-sync/reports/`, показывает decision proposals до raw ids и не готовит import.
 - `starter-rule-import` — основной Codex entrypoint для утреннего согласования: он ведёт owner'а по `Кандидаты на импорт` и `Требует ручной проверки`, задаёт вопросы по проекту, сути и `**Точный текст для starter:**`, затем после explicit approval готовит approval JSON и preliminary check без изменений. Каждый approved reusable rule добавляется или обновляется в `.memory-bank/starter-rule-registry.json`. `rule-sync:apply-plan` в v1 только готовит seed для managed `task:start` и не применяет изменения автоматически.
 - `starter-rule-sync` — временный compatibility router для старых prompt'ов, который направляет к report/import skill.

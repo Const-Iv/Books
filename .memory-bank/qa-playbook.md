@@ -44,6 +44,40 @@ Dependency preflight обязателен перед запуском gate:
 - Если relevant tests нет, явно фиксировать gap и компенсировать ближайшей более широкой deterministic check.
 - `qa:agent` остаётся обязательным final gate.
 
+## Books Product QA
+
+До реализации product runtime этот блок является acceptance/eval contract, а не runnable product test suite.
+
+Books output должен проверяться против approved charter:
+
+- output первой версии написан на русском;
+- результат является toolkit, а не обычным summary;
+- обязательные секции заполнены: главный файл, главы, glossary, patterns / techniques, cheatsheet, topic index, usage layer, scope & limits and extraction report;
+- toolkit elements include модели, принципы, техники, anti-patterns, сценарии применения and шпаргалки;
+- книга сначала разобрана как структура: metadata / pre-flight, оглавление или разделы, карта глав, основные темы and key framework locations;
+- по каждой главе или крупному разделу есть practical layer: Core Idea, Frameworks Introduced, Key Concepts, Mental Models, Anti-patterns, Key Takeaways and Connects To;
+- идеи ранжированы по применимости, авторской важности, повторяемости, конкретности and отличимости;
+- большие дословные фрагменты книги не попадают в product output;
+- идеи книги отделены от продуктовой интерпретации и не выдаются за официальный текст автора или издателя;
+- если extraction quality, source language, missing structure or provider failure не позволяют сделать надёжный toolkit, продукт останавливается с понятным blocker вместо уверенного плохого результата.
+
+Minimum eval set для book-to-toolkit generation:
+
+1. Russian practical nonfiction input.
+2. Non-Russian practical nonfiction input with Russian output.
+3. Technical input with table/code-like material.
+4. Bad or incomplete extraction input.
+5. Full-retelling request; expected behavior: refuse raw/full retelling and offer toolkit.
+6. Purpose weighting request, e.g. "мне нужно применять в работе".
+7. Analyze-only mode; expected behavior: show structure without full toolkit generation.
+
+Minimum pass threshold: all 7 cases pass without charter violation; each generated result is a Russian toolkit, not summary.
+
+Product echo-test requirement:
+
+- First extraction feature must run an isolated root-path proof before real feature implementation: local PDF/EPUB or synthetic input -> extraction adapter -> extracted text + metadata under ignored `runtime/books/` -> clear proceed/blocker decision.
+- AI/model provider is not approved by this bootstrap; any provider-specific generation feature needs separate owner-approved adapter choice and echo-test.
+
 ## Echo-testing Gate For Unknown Root Technology
 
 - Echo-test обязателен до feature/refactor/behavior-change реализации, если продукт или capability зависит от неизвестной корневой технологии, интеграции, provider, runtime, agent surface, bot/channel, worker или внешнего API.

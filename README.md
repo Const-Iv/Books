@@ -1,6 +1,18 @@
-# Starter Kit нового проекта
+# Books
 
-Этот репозиторий — не просто blueprint-папка, а **канонический исполняемый Node/npm baseline** для старта любого нового проекта под привычный Codex/worktree conveyor:
+Books — local-first проект для превращения официально предоставленной пользователем книги в русскоязычный применимый toolkit.
+
+**Миссия:** помогать любому пользователю превращать книгу в применимый рабочий toolkit на русском языке через структурное извлечение моделей, принципов, техник, anti-patterns, сценариев применения и быстрых шпаргалок вместо обычного пересказа.
+
+**Видение:** книга после чтения или загрузки не остаётся разовым текстом, а становится рабочим инструментом для решений, действий и обучения; Books превращает содержание книги в навигационный практический toolkit, готовый к повторному применению.
+
+**Главный принцип:** извлекать структуру применения, а не summary.
+
+Первый контур — локальный CLI-прототип. Runtime утверждён: Node/npm orchestration with optional Python extraction adapter. Product source должен жить под `src/books/`, generated local artifacts — под ignored `runtime/books/`. AI/model provider, public UI/API, multi-user storage and deploy пока не утверждены и требуют отдельного adapter decision.
+
+## Процессная основа
+
+Этот репозиторий стартовал от **канонического исполняемого Node/npm baseline** для привычного Codex/worktree conveyor:
 
 - `codex/*` managed worktrees;
 - conversational branch-chat;
@@ -14,13 +26,7 @@
 - product charter for mission/vision/goal/target-audience/JTBD;
 - local-first `release:local`.
 
-Миссия starter: помогать командам, которые запускают новый проект или репозиторий, с первого дня получать понятную и воспроизводимую операционную основу через переносимый starter baseline.
-
-Целевая аудитория starter: команды, которые начинают новый проект или репозиторий, технические и продуктовые лиды, инженеры и agent-operators, а также downstream maintainers, которые подключают starter как baseline.
-
-JTBD: когда начинается новый проект, получить готовую и переносимую основу, чтобы команда сразу работала по ясным правилам, проверяла изменения воспроизводимо и не собирала governance, task flow и QA заново.
-
-Любое изменение starter нужно сверять с этой ролью: оно должно быть полезно как переносимый baseline для новых проектов. Продуктовую специфику добавляйте поверх starter через adapters/profiles, а не в core governance.
+Процессная основа нужна только для безопасной разработки Books. Она не является product runtime и не должна подменять product charter Books.
 
 ## Что внутри
 
@@ -47,7 +53,7 @@ JTBD: когда начинается новый проект, получить 
 
 1. Скопируйте этот репозиторий или его содержимое в корень нового проекта.
 2. В чате напишите `стартуем новый проект`. Codex должен использовать `$starter-project-bootstrap`: создать отдельную рабочую папку из чистого `main`, подключить skills из starter, провести Project Intake и не начинать разработку функций до согласования intake. Если для `skills:link` нужно заменить конфликтующие локальные skills, Codex отдельно запрашивает явное согласие владельца.
-3. Создайте Project Intake по `plans/_project_intake_template.md`: заполните миссию, видение, цель, целевую аудиторию, `JTBD`, ограничения, сценарии, метрики, stack/runtime, echo-testing для неизвестной корневой технологии, QA/release choices, agent/eval choices, ownership правил и applicable capability decisions. Миссия должна отвечать, кому проект помогает, какой результат даёт и через что; видение должно описывать желаемое будущее и роль проекта в нём. Пока проект находится на этапе проверки гипотезы, нельзя считать утверждёнными архитектуру, технологии, способ запуска, коммерческую модель, зоны ответственности и важные продуктовые возможности. Эти решения становятся правилами проекта только после явного согласования в Project Intake, product charter или roadmap. Capability-блоки вроде auth, payments, credits, analytics/consent, i18n, async jobs, API documentation, service layout и runtime-specific rules заполняются только если применимы к продукту. Каждый применимый пункт должен быть явно согласован owner'ом; `TBD` и “заполним потом” считаются blocker.
+3. Создайте Project Intake по `plans/_project_intake_template.md`: заполните миссию, видение, цель, целевую аудиторию, `JTBD`, ограничения, сценарии, метрики, stack/runtime, echo-testing для неизвестной корневой технологии, QA/release choices, agent/eval choices, ownership правил и applicable capability decisions. Миссия должна отвечать, кому проект помогает, какой результат даёт и через что; видение должно описывать желаемое будущее и роль проекта в нём. В conversational intake миссию сначала формулирует owner; после её согласования Codex предлагает формулировки следующих пунктов на основе уже согласованных ответов, а owner подтверждает или корректирует их. Пока проект находится на этапе проверки гипотезы, нельзя считать утверждёнными архитектуру, технологии, способ запуска, коммерческую модель, зоны ответственности и важные продуктовые возможности. Эти решения становятся правилами проекта только после явного согласования в Project Intake, product charter или roadmap. Capability-блоки вроде auth, payments, credits, analytics/consent, i18n, async jobs, API documentation, service layout и runtime-specific rules заполняются только если применимы к продукту. Каждый применимый пункт должен быть явно согласован owner'ом; `TBD` и “заполним потом” считаются blocker.
 4. После approval перенесите согласованные ответы в:
    - `AGENTS.md`
    - `.memory-bank/product-charter.md`
@@ -148,7 +154,7 @@ npm run qa:perf:critical
 - Core starter не содержит продуктовый UI/API runtime. Smoke/nightly здесь проверяют process-level сценарии на временных git repos.
 - Capability decisions в Project Intake не являются core defaults: starter не мандатит конкретный frontend stack, identity provider, payment provider, fixed locales, Python-only decorators, database queue или worker model. Такие решения downstream выбирает через adapters/profiles и owner approval.
 - Repo-managed shared skills обновляются на устройстве обычным `git pull`, если symlink уже был создан. Для новых или переименованных skills повторно запускайте `npm run skills:link`.
-- `starter-project-bootstrap` — основной вход для conversational bootstrap: если пользователь пишет `стартуем новый проект`, `запусти новый проект`, `проведи bootstrap нового проекта` или сообщает, что скопировал starter в новый репозиторий, агент создаёт отдельную рабочую папку из чистого `main`, подключает skills из starter, проводит Project Intake и не начинает разработку функций до согласования intake.
+- `starter-project-bootstrap` — основной вход для conversational bootstrap: если пользователь пишет `стартуем новый проект`, `запусти новый проект`, `проведи bootstrap нового проекта` или сообщает, что скопировал starter в новый репозиторий, агент создаёт отдельную рабочую папку из чистого `main`, подключает skills из starter, получает owner-authored миссию, затем предлагает следующие intake-формулировки на подтверждение owner'у и не начинает разработку функций до согласования intake.
 - `starter-rule-report` — основной вход для ночной автоматизации и ручного read-only отчёта по reusable rule updates. Автоматизации должны вызывать этот skill, а не дублировать scan/report логику. Report начинается с decision proposals, candidate ids остаются traceability, default scan window идёт от последнего сохранённого scan snapshot до текущего запуска.
 - `starter-rule-import` — основной вход для утреннего согласования: он ведёт owner'а по последнему report, задаёт вопросы по проекту, сути и `**Точный текст для starter:**`, готовит preliminary check без изменений и переносит только явно согласованные reusable правила через managed worktree и QA. Каждый новый approved reusable rule добавляется или обновляется в `.memory-bank/starter-rule-registry.json`.
 - `starter-rule-sync` — временный compatibility router для старых prompt'ов; новые сценарии должны использовать `starter-rule-report` или `starter-rule-import`.

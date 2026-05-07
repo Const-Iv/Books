@@ -80,15 +80,16 @@ Stop instead of auto-starting when the repo is dirty, the task conveyor is unava
 3. If the repo is on clean `main`, create a managed bootstrap worktree automatically using the rule above before editing files.
 4. Ensure repo-managed skills are linked using the safe flow above, unless this was already done in the current bootstrap session.
 5. If there is no approved Project Intake, create or continue an intake file from `plans/_project_intake_template.md`.
-6. Ask for missing intake information in small batches. Prefer one high-impact question at a time when answers materially affect safety or scope.
-7. Mark every required intake item as `Согласовано` or `Заблокировано`. `TBD`, placeholders, and "заполним потом" remain blockers.
-8. For capability decisions, first ask whether each block is applicable. If applicable, record owner-approved invariants before implementation in that area.
-9. If the project is still validating a hypothesis, do not treat architecture, technologies, launch method, commercial model, ownership zones, or major product capabilities as approved until they are explicitly agreed in Project Intake, product charter, or roadmap.
-10. If the project depends on an unknown root technology, integration, provider, runtime, agent surface, bot/channel, worker, or external API, require isolated echo-test evidence or a recorded blocker before feature/refactor/behavior-change work in that area.
-11. If the project needs actions after publishing, such as restarting local agents or services, capture the owner-approved method in Project Intake; do not turn local commands or environment settings into starter core behavior.
-12. After owner approval, transfer answers into canonical sources.
-13. Run baseline QA and report evidence.
-14. Only after QA passes, say the downstream project is ready for feature/refactor/behavior-change tasks.
+6. Collect the mission as owner-authored input first. After the mission is owner-approved, Codex should propose each next intake formulation from the already approved answers and ask the owner to confirm or correct it, instead of asking every field as a blank question.
+7. Ask for missing intake information in small batches. Prefer one high-impact question at a time when answers materially affect safety or scope.
+8. Mark every required intake item as `Согласовано` or `Заблокировано`. `TBD`, placeholders, and "заполним потом" remain blockers.
+9. For capability decisions, first ask whether each block is applicable. If applicable, record owner-approved invariants before implementation in that area.
+10. If the project is still validating a hypothesis, do not treat architecture, technologies, launch method, commercial model, ownership zones, or major product capabilities as approved until they are explicitly agreed in Project Intake, product charter, or roadmap.
+11. If the project depends on an unknown root technology, integration, provider, runtime, agent surface, bot/channel, worker, or external API, require isolated echo-test evidence or a recorded blocker before feature/refactor/behavior-change work in that area.
+12. If the project needs actions after publishing, such as restarting local agents or services, capture the owner-approved method in Project Intake; do not turn local commands or environment settings into starter core behavior.
+13. After owner approval, transfer answers into canonical sources.
+14. Run baseline QA and report evidence.
+15. Only after QA passes, say the downstream project is ready for feature/refactor/behavior-change tasks.
 
 ## Project Intake Order
 
