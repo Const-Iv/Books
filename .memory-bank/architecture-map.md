@@ -7,7 +7,7 @@
 - AI/model provider, public UI/API, multi-user storage and deploy are not approved yet.
 - Первый approved contour: local-first prototype. Owner передаёт книгу или фрагмент локально, output первой версии всегда русский.
 - Будущий product pipeline должен сохранять последовательность: supported input -> text extraction -> metadata / pre-flight -> book structure map -> chapter / section extraction -> toolkit artifacts.
-- Toolkit artifacts: главный файл, разбор по главам, glossary, patterns / techniques, cheatsheet, topic index, usage layer, scope & limits and extraction report.
+- Toolkit artifacts: главный файл, раздел `Лайфхаки, приемы и инструменты к внедрению`, разбор по главам, glossary, patterns / techniques, cheatsheet, topic index, usage layer, scope & limits and extraction report.
 - Starter governance modules below remain process baseline for safe task flow and QA; they are not the Books product runtime.
 
 ## High-Level Modules
@@ -52,10 +52,11 @@
 3. Extract text through the approved extraction adapter boundary.
 4. Write per-run original / extracted text and metadata under ignored `runtime/books/`.
 5. Show pre-flight estimate and ask explicit proceed or analyze-only choice.
-6. Build structure map: title, author, chapters/parts/ToC, core themes, subject domain, frameworks, principles, techniques, anti-patterns.
-7. Generate layered toolkit artifacts: core file, chapter files/sections, glossary, patterns, cheatsheet, topic index, usage layer, scope & limits, extraction report.
-8. Save the shareable toolkit copy under tracked `books/<book-slug>/`; keep the full original only under ignored `runtime/books/<book-slug>/`.
-9. Run quality checks against Books Product QA before treating output as usable.
+6. Build structure map: title, author, chapters/parts/ToC, core themes, subject domain, frameworks, principles, techniques, кандидаты для раздела внедрения, anti-patterns.
+7. Generate layered toolkit artifacts: core file, `Лайфхаки, приемы и инструменты к внедрению` сразу после `Быстрая карта`, chapter files/sections, glossary, patterns, cheatsheet, topic index, usage layer, scope & limits, extraction report.
+8. Собрать раздел внедрения из всей книги как карточки: `Что внедрить`, `Когда применять`, `Первый шаг`, `Источник / где искать в книге`; не называть пользовательский раздел `Белки`.
+9. Save the shareable toolkit copy under tracked `books/<book-slug>/`; keep the full original only under ignored `runtime/books/<book-slug>/`.
+10. Run quality checks against Books Product QA before treating output as usable.
 
 ## Risk Hotspots
 
