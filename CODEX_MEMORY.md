@@ -71,6 +71,7 @@
 - Approved reusable starter rules должны фиксироваться в `.memory-bank/starter-rule-registry.json`; без stable id и exact text `starter-rule-share` не может надёжно отличить уже применённое правило от missing rule.
 - Outbound rule sharing переносит в copied-baseline проекты только `missingRules`; `presentUnregisteredRules` нельзя дублировать как новый текст, а partial/manual-review matches требуют owner review.
 - Outbound rule sharing переносит в copied-baseline проекты только `missingRules`; `presentUnregisteredRules` нельзя дублировать как новый текст, а partial/manual-review matches сначала требуют Codex read-only self-check с конкретной рекомендацией для владельца.
+- Books artifacts rule: tracked `books/<book-slug>/` хранит shareable toolkit и manifest без полного оригинала; ignored `runtime/books/<book-slug>/` хранит локальный оригинал и рабочие artifacts, а `task:finish:core` переносит `runtime/books` в main перед cleanup.
 
 ## Project Notes
 
