@@ -36,7 +36,7 @@ Product Charter Gate:
 - Перед любым продуктовым решением, feature, behavior, process или governance изменением нужно сначала прочитать `.memory-bank/product-charter.md` целиком и сверить решение с миссией, видением, целью, целевой аудиторией и `JTBD`.
 - Feature, behavior, process и governance изменения должны явно показывать, какую часть миссии, видения, цели, целевой аудитории или `JTBD` они поддерживают. Maintenance-изменения должны явно сохранять charter.
 - Нельзя реализовывать изменение, которое противоречит `.memory-bank/product-charter.md`, превращает Books в простой summary generator, создаёт дословное воспроизведение книги как product output, ослабляет переносимость baseline, deterministic QA, safe task flow или source-of-truth governance.
-- Books v1 product runtime утверждён 2026-05-07 как local CLI contour on Node/npm orchestration with optional Python extraction adapter. Product source должен жить под `src/books/`; generated local artifacts — под ignored `runtime/books/`.
+- Books v1 product runtime утверждён 2026-05-07 как local CLI contour on Node/npm orchestration with optional Python extraction adapter. Product source должен жить под `src/books/`; shareable toolkit artifacts — под tracked `books/<book-slug>/`; full originals and generated local artifacts — под ignored `runtime/books/`.
 - Product feature/refactor/behavior-change work требует feature-level plan and QA evidence. Для неизвестной корневой связки нужен isolated echo-test до implementation. AI/model provider, public UI/API, multi-user storage and deploy требуют отдельного owner-approved adapter decision.
 - В Plan mode все уточняющие вопросы, варианты выбора и рекомендации ассистента должны быть отфильтрованы через Product Charter; recommended option обязан явно сохранять или усиливать миссию, видение, цель, целевую аудиторию и `JTBD`, а charter-конфликтный вариант нельзя подавать как равнозначно рекомендуемый.
 - Если запрос конфликтует с charter, ассистент обязан остановиться, коротко объяснить конфликт и предложить ближайший безопасный вариант.
@@ -219,6 +219,7 @@ Eval Gate для AI/agent behavior:
 - если `HEAD == qaLastPassSha`, переиспользовать QA checkpoint вместо повторного full task QA;
 - если finish стартует из dirty task tree, `task:finish:core` должен сначала зафиксировать task commit/checkpoint, затем прогнать task QA уже на committed `HEAD`, и только после этого переходить к publish stage;
 - если task branch не получила собственного task commit, её `HEAD` уже содержится в `main`, а worktree clean, `task:finish:core` должен пропустить publish stage, записать `publishStatus=skipped_already_merged` и всё равно довести cleanup до `passed|kept`;
+- перед cleanup `task:finish:core` должен переносить ignored `runtime/books` из task-worktree в main-worktree, чтобы локальные оригиналы и рабочие toolkit artifacts сохранялись после удаления task-worktree;
 - shared operational docs сначала capture'ить из task branch, а sync'ить обратно только на publish/release stage как single-writer artifacts;
 - `task:finish:core` не должен спрашивать legacy `--preview ok|skip`;
 - для cleanup/publish resume из `main` использовать `--task-id <id>` как канонический селектор, `--branch codex/<task-branch>` оставить совместимым fallback;

@@ -152,7 +152,8 @@ node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/n
 - после capture нормализует shared operational snapshots, чтобы они не попадали в task commit;
 - пушит task branch при наличии `origin`;
 - запускает merge/publish handoff через `task:merge:main`;
-- пишет `QA_REUSE`, `COMMIT_PUSH`, `CLEANUP`, `FINISH`;
+- перед cleanup переносит ignored `runtime/books` из task-worktree в main-worktree и пишет `BOOKS_ARTIFACTS_PRESERVE`;
+- пишет `QA_REUSE`, `COMMIT_PUSH`, `BOOKS_ARTIFACTS_PRESERVE`, `CLEANUP`, `FINISH`;
 - требует явное решение `--cleanup 1|2` как canonical path; legacy `yes|no` остаётся совместимым.
 - branch-chat cleanup gate задаётся фиксированно как `1. Удалить` / `2. Оставить`; ответ `1` маппится на `--cleanup yes`, ответ `2` — на `--cleanup no`.
 - успешный delete cleanup требует `cleanupStatus = passed` только после проверки exact `state.worktreePath`, отсутствия этого пути в `git worktree list`, удаления `$CODEX_HOME/worktrees/<taskId>/` и отсутствия task-scoped leftovers; один `cleanupDecision`, похожий worktree name или exit code не считается доказательством фактической уборки.

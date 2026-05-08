@@ -105,6 +105,7 @@
 - Если `HEAD == qaLastPassSha`, finish-flow должен переиспользовать checkpoint, а не повторять full task QA.
 - `task:finish:core` не имеет права завершать commit/merge/release path при failed task QA.
 - Если clean task branch уже содержится в `main` и task commit ещё не записан, finish-flow должен пропустить publish stage, поставить `publishStatus=skipped_already_merged` и всё равно записать итоговый cleanup status.
+- Перед delete/keep cleanup `task:finish:core` должен переносить ignored `runtime/books` из task-worktree в main-worktree, чтобы локальные оригиналы и рабочие toolkit artifacts не терялись при удалении task-worktree; conflicting destination files сохраняются рядом с task-id suffix без silent overwrite.
 - Cleanup gate должен задаваться в виде фиксированного numbered choice: `1. Удалить`, `2. Оставить`; пользовательские ответы `1`/`2` маппятся на delete/keep без необходимости писать слова.
 - Delete cleanup может получить `cleanupStatus=passed` только после проверки exact `state.worktreePath`, отсутствия этого пути в `git worktree list`, удаления managed task root `$CODEX_HOME/worktrees/<taskId>/` и отсутствия task-scoped leftovers. Похожие worktrees других `taskId` или проектов не считаются cleanup текущей задачи и требуют отдельного fixed choice.
 - Shared operational docs и generated `Docs/task-history.md` — single-writer; task branch обновления проходят только через capture, а sync/rebuild происходят на publish/release stage.
