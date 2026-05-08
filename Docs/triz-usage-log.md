@@ -144,3 +144,35 @@
 - Branch: `codex/20260506-142645-fa0e-bootstrap-new-project`
 - Reasons: historical_recurrence
 - Status: trigger recorded
+
+## 2026-05-08T11:59:12.795Z 20260508-115446-01aa
+
+- Branch: `codex/20260508-115446-01aa-share-starter-rules-with-books`
+- Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
+
+## 2026-05-08T12:00:39.969Z 20260508-115446-01aa — TRIZ_APPLIED
+
+- Branch: `codex/20260508-115446-01aa-share-starter-rules-with-books`
+- Reasons: cross_module_conflict, historical_recurrence
+- Противоречие: нужно быстро разнести reusable starter governance в несколько downstream-проектов, но нельзя превращать это в bulk-copy, затирать product charter wording или импортировать manual-review rules.
+- ИКР: каждый проект получает только утверждённые missing rules в своём managed task worktree; product-specific документы и runtime state сохраняются, а manual-review/blocked rules остаются вне автоматического импорта.
+- Подходы: segmentation / separation by project and rule status; preliminary action через owner-approved target list и dry-run task seed; standard interface через downstream `task:start`, registry dedupe и deterministic QA.
+- Что устранено: риск повторить ошибку слепого выбора проектов и риск governance drift, где правило появляется только в одном mirror-файле или дублируется вместо registry-aware импорта.
+- Guard: `npm run lint`, targeted rule import guard и `npm run task:qa:agent` прошли; excluded/dirty projects не изменялись.
+
+## 2026-05-08T12:18:39.478Z 20260508-115446-01aa
+
+- Branch: `codex/20260508-115446-01aa-share-starter-rules-with-books`
+- Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
+
+## 2026-05-08T12:18:55.000Z 20260508-115446-01aa — TRIZ_APPLIED
+
+- Branch: `codex/20260508-115446-01aa-share-starter-rules-with-books`
+- Reasons: cross_module_conflict, historical_recurrence
+- Противоречие: финальный source commit уже готов к публикации, но повторный QA снова подсветил риск cross-module governance drift и исторически повторяемого rule-share импорта.
+- ИКР: publish идёт только после финального task QA на committed `HEAD`; operational evidence остаётся в single-writer capture/sync контуре, а reusable rules уже лежат в canonical surfaces и registry.
+- Подходы: preliminary action через отдельный source commit до finish; separation between source commit and operational logs; standard interface через `task:finish:core`.
+- Что устранено: риск потерять `CODEX_MEMORY.md` как target surface и риск опубликовать diff без QA checkpoint на финальном коммите.
+- Guard: `npm run task:qa:agent` прошёл на `8c1b54534285d2138817bbcfd2e8a130baee3fd7`; finish дальше должен reuse этот checkpoint после capture operational docs.
