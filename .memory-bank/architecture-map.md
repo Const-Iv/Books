@@ -15,12 +15,13 @@
 - `src/books/cli/`: future local CLI orchestration for Books v1; no public UI/API in the first contour.
 - `src/books/extraction/`: future PDF/EPUB extraction boundary; Python helpers are allowed here only after echo-test / feature plan.
 - `src/books/toolkit/`: future toolkit schema, ranking rules, artifact generation contracts, quality checks and eval fixtures.
-- `runtime/books/`: ignored per-run workspace for extracted text, metadata and generated local toolkit artifacts.
+- `books/<book-slug>/`: tracked shareable toolkit artifacts and source manifests; full book originals do not live here.
+- `runtime/books/`: ignored per-run workspace for originals, extracted text, metadata and generated local toolkit artifacts.
 - `scripts/dependency-preflight.mjs`: dependency recovery seam.
 - `scripts/deterministic-feedback-loop.mjs`: deterministic QA orchestrator.
 - `scripts/worktree-start.mjs`: task bootstrap, branch/worktree creation, state/history START.
 - `scripts/worktree-qa-agent.mjs`: task QA checkpoint, failure classification, TRIZ trigger evaluation.
-- `scripts/worktree-finish-core.mjs`: finish orchestration, capture, commit, merge handoff, cleanup decision.
+- `scripts/worktree-finish-core.mjs`: finish orchestration, capture, commit, merge handoff, Books runtime preservation and cleanup decision.
 - `scripts/worktree-merge-main.mjs`: safe merge/publish on local `main`.
 - `scripts/worktree-history.mjs` + `scripts/worktree-ledger.mjs`: docs snapshots from runtime history/state.
 - `scripts/worktree-operational-docs.mjs`: single-writer capture/sync of operational docs.
@@ -49,11 +50,12 @@
 1. Validate local input path and supported format: PDF / EPUB by extension and magic bytes.
 2. Ask book type: technical / text-heavy / not sure.
 3. Extract text through the approved extraction adapter boundary.
-4. Write per-run extracted text and metadata under ignored `runtime/books/`.
+4. Write per-run original / extracted text and metadata under ignored `runtime/books/`.
 5. Show pre-flight estimate and ask explicit proceed or analyze-only choice.
 6. Build structure map: title, author, chapters/parts/ToC, core themes, subject domain, frameworks, principles, techniques, anti-patterns.
 7. Generate layered toolkit artifacts: core file, chapter files/sections, glossary, patterns, cheatsheet, topic index, usage layer, scope & limits, extraction report.
-8. Run quality checks against Books Product QA before treating output as usable.
+8. Save the shareable toolkit copy under tracked `books/<book-slug>/`; keep the full original only under ignored `runtime/books/<book-slug>/`.
+9. Run quality checks against Books Product QA before treating output as usable.
 
 ## Risk Hotspots
 

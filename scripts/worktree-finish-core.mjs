@@ -1,6 +1,7 @@
 // @ts-check
 
 import { buildCommitMessage } from "./lib/conveyor-utils.mjs";
+import { preserveBooksRuntimeArtifacts } from "./lib/books-artifacts.mjs";
 import { executeTaskCleanup, normalizeCleanupChoice } from "./lib/worktree-cleanup.mjs";
 import {
   OPERATIONAL_DOCS,
@@ -285,6 +286,15 @@ async function finalizeTask(repoRoot, state, cleanup) {
   state.cleanupDecision = cleanup;
   state.finishedAt = formatIso();
   state.status = "finished";
+  const booksArtifacts = await preserveBooksRuntimeArtifacts(state.worktreePath, mainWorktreePath, state.taskId);
+  await appendHistoryEvent(stateRepoRoot, {
+    at: formatIso(),
+    type: "BOOKS_ARTIFACTS_PRESERVE",
+    taskId: state.taskId,
+    branch: state.branch,
+    payload: booksArtifacts
+  });
+
   const cleanupResult = await executeTaskCleanup(repoRoot, state, mainWorktreePath);
   state.cleanupDecision = cleanupResult.decision;
   state.cleanupStatus = cleanupResult.status;

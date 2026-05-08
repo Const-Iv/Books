@@ -29,6 +29,7 @@
 - `src/books/cli/`: future local CLI orchestration entrypoints for the first contour.
 - `src/books/extraction/`: future adapter boundary for PDF/EPUB extraction; may call Python helpers after echo-test.
 - `src/books/toolkit/`: future toolkit schema, ranking, artifact contracts and quality checks.
+- `books/<book-slug>/`: tracked shareable toolkit artifacts and source manifests; full book originals are not committed.
 - `scripts/`: канонические conveyor, QA, release и operational-doc entrypoints.
 - `scripts/rule-sync.mjs`: deterministic scanner, report renderer и approval-safe apply-plan seam для starter rule sync.
 - `scripts/rule-share.mjs`: deterministic scanner, report renderer и approval-safe apply-plan seam для outbound sharing текущего starter baseline в выбранные active downstream проекты.
@@ -46,7 +47,7 @@
 - `research/triz/`: canonical TRIZ pack.
 - `templates/agent-workspace/`: локальные безопасные шаблоны для agent profiles и memory.
 - `tests/unit`, `tests/integration`, `tests/e2e`: deterministic coverage самого process-layer.
-- `runtime/books/`: ignored local workspace for per-run extracted text, metadata and generated toolkit artifacts; never canonical source.
+- `runtime/books/`: ignored local workspace for originals, per-run extracted text, metadata and generated toolkit artifacts; finish-flow preserves it into the main worktree before delete cleanup.
 
 ## Tech Stack
 
@@ -57,7 +58,8 @@
 - Typecheck: TypeScript `checkJs`.
 - Tests: built-in Node test runner.
 - Persistence: git worktrees + JSON/NDJSON state in `.git/codex-task-pipeline/*`.
-- Local generated artifacts: ignored `runtime/books/`.
+- Shareable Books artifacts: tracked `books/<book-slug>/` without full originals.
+- Local generated artifacts and full originals: ignored `runtime/books/`.
 - Release target: local-first `release:local`; no deploy in v1.
 
 ## Source of Truth

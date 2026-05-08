@@ -153,6 +153,7 @@ Acceptance criteria проверяют пользовательский резу
 - Для echo-testing фиксировать root capability, minimal scenario, actual observed result, limitations and decision; отсутствие echo-test для unknown root technology считается blocker, а не QA pass.
 - `task:finish:core` не должен publish'ить commit, который не прошёл task QA: если finish стартует из dirty task tree, сначала нужен task commit/checkpoint, затем новый QA checkpoint уже на committed `HEAD`.
 - Для no-op finish, где clean task branch уже содержится в `main`, acceptance evidence — `publishStatus=skipped_already_merged`, `PUBLISH_SKIP` в runtime history и итоговый `cleanupStatus=passed|kept`.
+- Для Books runtime preservation acceptance evidence — files from task `runtime/books` exist under main `runtime/books`, full originals remain ignored, and runtime history contains `BOOKS_ARTIFACTS_PRESERVE`.
 - Для delete cleanup acceptance evidence требует проверки exact `state.worktreePath`, git worktree registration, managed task root `$CODEX_HOME/worktrees/<taskId>/` и task-scoped leftovers; `cleanupStatus=passed` без этой проверки не считается доказательством.
 - Большие `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` должны compact'иться только через publish/release sync: полный pre-compaction snapshot уходит в `Docs/archive/*.md.gz`, активный лог остаётся читаемым.
 
