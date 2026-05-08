@@ -373,3 +373,7 @@ Owner approval получен 2026-05-07 по трём пунктам:
 1. **Новая миссия**: Books превращает книгу в применимый русскоязычный toolkit, а не просто в практическую выжимку.
 2. **Новый центр продукта**: главный результат — модели, принципы, техники, anti-patterns, сценарии применения, шпаргалки и topic index.
 3. **Статус документа**: после approval этот charter становится canonical product source of truth для Books. Логика toolkit, minimum eval set, local CLI runtime and service layout approved 2026-05-07; feature work дальше идёт через feature-level plan, applicable echo-test and deterministic QA.
+
+## Shared Starter Baseline Rules
+
+- `starter.project-intake.integration-review-path`: Integration / review path в Project Intake фиксирует, как изменения попадают в основной проект: managed task conveyor, Pull Request review или hybrid. Pull Request review является явным owner/team choice для risky, broad, external-review или team-review работы и не должен обходить deterministic QA, source-of-truth governance, task finish и merge gates.
