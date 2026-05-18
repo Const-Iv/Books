@@ -181,10 +181,18 @@
 ## 2026-05-18 — starter-rule-share
 
 - Project: Books.
-- TRIZ status: not applied yet; no trigger observed before deterministic QA.
+- TRIZ status: applied after task QA reported rule-share recurrence.
 
 ## 2026-05-18T11:28:07.723Z 20260518-111740-9fa4
 
 - Branch: `codex/20260518-111740-9fa4-share-starter-rules-with-books`
 - Reasons: cross_module_conflict, historical_recurrence
 - Status: trigger recorded
+
+## 2026-05-18T12:49:00Z 20260518-111740-9fa4 — TRIZ_APPLIED
+
+- Branch: `codex/20260518-111740-9fa4-share-starter-rules-with-books`
+- Противоречие: нужно включить Books в общий starter-rule-share перенос, но не превратить Books в источник product-specific starter behavior и не подменить его charter/local state.
+- ИКР: Books получает только approved reusable starter rules через managed task conveyor; product identity остаётся в Books, а shared rules фиксируются в canonical/mirror surfaces и registry.
+- Подходы: segmentation между reusable governance и product wording; local quality через Books-specific clean-tree recheck; preliminary action через owner-confirmed project set до apply-plan.
+- Guard: rule-fragment self-check `11/11`, targeted worktree-start tests, `npm run lint`, `npm run qa:agent`, `npm run task:qa:agent` и publish to `origin/main` прошли.
