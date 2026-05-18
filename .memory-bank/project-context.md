@@ -30,7 +30,7 @@
 - `src/books/cli/`: future local CLI orchestration entrypoints for the first contour.
 - `src/books/extraction/`: future adapter boundary for PDF/EPUB extraction; may call Python helpers after echo-test.
 - `src/books/toolkit/`: future toolkit schema, ranking, artifact contracts and quality checks.
-- `books/<book-slug>/`: tracked shareable toolkit artifacts and source manifests; full book originals are not committed.
+- `books/<topic>/<book-slug>/`: tracked shareable toolkit artifacts and source manifests grouped by practical domain; full book originals are not committed.
 - `scripts/`: канонические conveyor, QA, release и operational-doc entrypoints.
 - `scripts/rule-sync.mjs`: deterministic scanner, report renderer и approval-safe apply-plan seam для starter rule sync.
 - `scripts/rule-share.mjs`: deterministic scanner, report renderer и approval-safe apply-plan seam для outbound sharing текущего starter baseline в выбранные active downstream проекты.
@@ -59,7 +59,7 @@
 - Typecheck: TypeScript `checkJs`.
 - Tests: built-in Node test runner.
 - Persistence: git worktrees + JSON/NDJSON state in `.git/codex-task-pipeline/*`.
-- Shareable Books artifacts: tracked `books/<book-slug>/` without full originals.
+- Shareable Books artifacts: tracked `books/<topic>/<book-slug>/` without full originals.
 - Local generated artifacts and full originals: ignored `runtime/books/`.
 - Release target: local-first `release:local`; no deploy in v1.
 

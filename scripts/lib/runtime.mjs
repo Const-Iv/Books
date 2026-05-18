@@ -676,12 +676,10 @@ export async function findMainWorktree(repoRoot) {
  * @returns {Promise<string[]>}
  */
 export async function getChangedFiles(repoRoot) {
-  const result = runCommand(repoRoot, "git", ["status", "--porcelain"], { allowFailure: true }).stdout;
-  return result
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => line.slice(3).trim())
-    .filter(Boolean);
+  const result = runCommand(repoRoot, "git", ["status", "--porcelain=v1", "-z", "--untracked-files=all"], {
+    allowFailure: true
+  }).stdout;
+  return parsePorcelainStatusPaths(result);
 }
 
 /**
@@ -689,12 +687,37 @@ export async function getChangedFiles(repoRoot) {
  * @returns {Promise<string[]>}
  */
 export async function getTrackedChangedFiles(repoRoot) {
-  const result = runCommand(repoRoot, "git", ["status", "--porcelain", "--untracked-files=no"], {
+  const result = runCommand(repoRoot, "git", ["status", "--porcelain=v1", "-z", "--untracked-files=no"], {
     allowFailure: true
   }).stdout;
-  return result
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => line.slice(3).trim())
-    .filter(Boolean);
+  return parsePorcelainStatusPaths(result);
+}
+
+/**
+ * @param {string} output
+ * @returns {string[]}
+ */
+function parsePorcelainStatusPaths(output) {
+  const records = output.split("\0").filter(Boolean);
+  /** @type {string[]} */
+  const paths = [];
+
+  for (let index = 0; index < records.length; index += 1) {
+    const record = records[index] ?? "";
+    if (record.length < 4) {
+      continue;
+    }
+
+    const status = record.slice(0, 2);
+    const changedPath = record.slice(3);
+    if (changedPath) {
+      paths.push(changedPath);
+    }
+
+    if (status.includes("R") || status.includes("C")) {
+      index += 1;
+    }
+  }
+
+  return paths;
 }

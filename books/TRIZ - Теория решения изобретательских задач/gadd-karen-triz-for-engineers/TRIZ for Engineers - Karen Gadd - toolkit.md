@@ -7,7 +7,7 @@
 ## 1. Отчет извлечения
 
 Источник:
-- Локальный оригинал для уточнения концептов: [runtime/books/gadd-karen-triz-for-engineers/Gadd_Karen_TRIZ_for_Engineers_original.txt](../../runtime/books/gadd-karen-triz-for-engineers/Gadd_Karen_TRIZ_for_Engineers_original.txt)
+- Локальный оригинал для уточнения концептов: [runtime/books/gadd-karen-triz-for-engineers/Gadd_Karen_TRIZ_for_Engineers_original.txt](../../../runtime/books/gadd-karen-triz-for-engineers/Gadd_Karen_TRIZ_for_Engineers_original.txt)
 - Локальная копия PDF: `runtime/books/gadd-karen-triz-for-engineers/Gadd_Karen_TRIZ_for_Engineers_original.pdf`
 - Локальный extraction report: `runtime/books/gadd-karen-triz-for-engineers/extraction-report.json`
 - Формат: `PDF`
@@ -25,7 +25,7 @@
 Ограничения первого прогона:
 - Это ручной Codex-прогон, а не готовый автоматический `src/books/` runtime.
 - PDF хорошо извлекается текстом, но часть таблиц и схем сохранена как разреженный layout; toolkit поэтому фиксирует прикладную структуру и source landmarks, а не пытается воспроизвести схемы.
-- Локальный оригинал хранится в ignored `runtime/books`, а shareable toolkit хранится в tracked `books/gadd-karen-triz-for-engineers`.
+- Локальный оригинал хранится в ignored `runtime/books`, а shareable toolkit хранится в tracked `books/TRIZ - Теория решения изобретательских задач/gadd-karen-triz-for-engineers`.
 - В документе нет больших цитат; line landmarks используются только как навигация к локальному исходному тексту.
 
 ## 2. Как пользоваться toolkit
@@ -44,7 +44,7 @@
 3. Если нужен метод глубже, перейди в `Patterns / techniques`.
 4. Перед решением проверь себя по `Anti-patterns`.
 5. Для сессии с командой используй `Cheatsheet`.
-6. Если нужно уточнить контекст по книге, открой [локальный оригинал](../../runtime/books/gadd-karen-triz-for-engineers/Gadd_Karen_TRIZ_for_Engineers_original.txt); `Topic index` подскажет, где искать.
+6. Если нужно уточнить контекст по книге, открой [локальный оригинал](../../../runtime/books/gadd-karen-triz-for-engineers/Gadd_Karen_TRIZ_for_Engineers_original.txt); `Topic index` подскажет, где искать.
 
 ## 3. Быстрая карта
 
