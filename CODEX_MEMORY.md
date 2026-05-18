@@ -72,6 +72,8 @@
 - Outbound rule sharing переносит в copied-baseline проекты только `missingRules`; `presentUnregisteredRules` нельзя дублировать как новый текст, а partial/manual-review matches требуют owner review.
 - Outbound rule sharing переносит в copied-baseline проекты только `missingRules`; `presentUnregisteredRules` нельзя дублировать как новый текст, а partial/manual-review matches сначала требуют Codex read-only self-check с конкретной рекомендацией для владельца.
 - Books artifacts rule: tracked `books/<topic>/<book-slug>/` хранит shareable toolkit и manifest без полного оригинала; ignored `runtime/books/<topic>/<book-slug>/` хранит локальный оригинал и рабочие artifacts с такой же тематической иерархией, а `task:finish:core` переносит весь `runtime/books` tree в main перед cleanup.
+- Books artifacts rule: tracked `books/<book-slug>/` хранит shareable toolkit и manifest без полного оригинала; ignored `runtime/books/<book-slug>/` хранит локальный оригинал и рабочие artifacts, а `task:finish:core` переносит `runtime/books` в main перед cleanup.
+- Books artifacts rule: tracked `books/<topic>/<book-slug>/` хранит shareable toolkit и manifest без полного оригинала; ignored `runtime/books/<book-slug>/` хранит локальный оригинал и рабочие artifacts, а `task:finish:core` переносит `runtime/books` в main перед cleanup.
 
 ## Project Notes
 

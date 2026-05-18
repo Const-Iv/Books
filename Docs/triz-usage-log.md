@@ -2,11 +2,6 @@
 
 Журнал срабатываний TRIZ-триггеров и применённых решений.
 
-## `<YYYY-MM-DD HH:MM:SS>` — TRIZ_TRIGGER
-
-- Reason: `<qa_repeat_stage|qa_chunk_exhausted|cross_module_conflict|historical_recurrence>`
-- Details: `<json or concise structured summary>`
-
 ## `<YYYY-MM-DD HH:MM:SS>` — TRIZ_APPLIED
 
 - Principle: `<chosen principle or structural move>`
@@ -187,4 +182,10 @@
 
 - Branch: `codex/20260518-101151-04fd-sortirovka-books-toolkit-po-temam`
 - Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
+
+## 2026-05-18T11:06:08.591Z 20260518-101728-1d1a
+
+- Branch: `codex/20260518-101728-1d1a-triz`
+- Reasons: historical_recurrence
 - Status: trigger recorded
