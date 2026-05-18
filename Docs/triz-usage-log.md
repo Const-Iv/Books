@@ -2,18 +2,6 @@
 
 Журнал срабатываний TRIZ-триггеров и применённых решений.
 
-## `<YYYY-MM-DD HH:MM:SS>` — TRIZ_APPLIED
-
-- Principle: `<chosen principle or structural move>`
-- Changes: `<what changed>`
-- Guard: `<what reusable guard was added>`
-
-## 2026-04-22T12:52:38.438Z 20260422-123751-07b0
-
-- Branch: `codex/20260422-123751-07b0-agent-const-plan-template-sync`
-- Reasons: historical_recurrence
-- Status: trigger recorded
-
 ## 2026-04-23T12:19:01.968Z 20260423-105805-90fc
 
 - Branch: `codex/20260423-105805-90fc-finish-cleanup-contract`
@@ -188,4 +176,15 @@
 
 - Branch: `codex/20260518-101728-1d1a-triz`
 - Reasons: historical_recurrence
+- Status: trigger recorded
+
+## 2026-05-18 — starter-rule-share
+
+- Project: Books.
+- TRIZ status: not applied yet; no trigger observed before deterministic QA.
+
+## 2026-05-18T11:28:07.723Z 20260518-111740-9fa4
+
+- Branch: `codex/20260518-111740-9fa4-share-starter-rules-with-books`
+- Reasons: cross_module_conflict, historical_recurrence
 - Status: trigger recorded

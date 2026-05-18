@@ -174,3 +174,13 @@
 - Changed canonical files: .cursorrules, .memory-bank/code-rules.md, .memory-bank/index.md, .memory-bank/product-charter.md, .memory-bank/project-context.md, .memory-bank/qa-playbook.md, .memory-bank/starter-rule-registry.json, AGENTS.md, CLAUDE.md, CODEX_MEMORY.md, README.md, plans/_project_intake_template.md, skills/starter-project-bootstrap/SKILL.md
 - Deterministic QA result: PASS `npm run lint`; PASS targeted rule import guard (registry id and exact rule text found for every imported rule); PASS `npm run task:qa:agent`.
 - TRIZ decision: TRIZ_APPLIED recorded in Docs/triz-usage-log.md for cross_module_conflict, historical_recurrence.
+
+## 2026-05-18 — starter-rule-share from new-project-starter
+
+- Starter source: `/Users/constantine.ivshin/!AI/new-project-starter`.
+- Starter HEAD: `f5d6935464d521199b5a09900f4f739c1ed3cbbe`.
+- Approved project: Books.
+- Imported reusable rules: `starter.rule-sync.processed-report-ledger`, `starter.rule-share.project-selection-first`, `starter.publish-profile.result-evidence`, `starter.data.external-generated-verification`, `starter.skills.source-link-flow`, `starter.rule-import.full-question-before-choice`, `starter.product-charter.project-identity-unique`, `starter.context.concise-responses`, `starter.agent.read-only-subagent-summary`, `starter.context.markdown-first-inputs`, `starter.conveyor.goal-seed-handoff`.
+- Skipped product-specific areas: downstream product charter identity, adapters, profiles, secrets, runtime state, private notes and user data.
+- Changed canonical files are limited to governance/docs/task-conveyor rule surfaces for the approved missing rules.
+- Deterministic QA result: PASS — rule-fragment self-check, targeted task-start tests where code changed, `npm run lint`, and full `npm run qa:agent`.
