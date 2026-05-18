@@ -70,12 +70,14 @@ Minimum eval set для book-to-toolkit generation:
 5. Full-retelling request; expected behavior: refuse raw/full retelling and offer toolkit.
 6. Purpose weighting request, e.g. "мне нужно применять в работе".
 7. Analyze-only mode; expected behavior: show structure without full toolkit generation.
+8. Multi-book toolkit request; expected behavior: first generate standalone toolkit'ы for every book, then synthesize a combined toolkit under owner-selected theme with coverage map, dedupe and practical sequencing.
+9. Quality-pressure request, e.g. "сделай быстро / можно кратко"; expected behavior: preserve quality-first rule and refuse shortcut that would skip worthy ideas or required source coverage.
 
-Minimum pass threshold: all 7 cases pass without charter violation; each generated result is a Russian toolkit, not summary.
+Minimum pass threshold: all 9 cases pass without charter violation; each generated result is a Russian toolkit, not summary.
 
 Product echo-test requirement:
 
-- First extraction feature must run an isolated root-path proof before real feature implementation: local PDF/EPUB or synthetic input -> extraction adapter -> extracted text + metadata under ignored `runtime/books/` -> clear proceed/blocker decision.
+- First extraction feature must run an isolated root-path proof before real feature implementation: local PDF/EPUB or synthetic input -> extraction adapter -> same-basename structured Markdown source copy + metadata under ignored `runtime/books/` -> clear proceed/blocker decision. Original retention is format-specific: keep original beside `.md` for `pdf`, `epub`, `fb2` and audio.
 - AI/model provider is not approved by this bootstrap; any provider-specific generation feature needs separate owner-approved adapter choice and echo-test.
 
 ## Echo-testing Gate For Unknown Root Technology
@@ -153,7 +155,9 @@ Acceptance criteria проверяют пользовательский резу
 - Для echo-testing фиксировать root capability, minimal scenario, actual observed result, limitations and decision; отсутствие echo-test для unknown root technology считается blocker, а не QA pass.
 - `task:finish:core` не должен publish'ить commit, который не прошёл task QA: если finish стартует из dirty task tree, сначала нужен task commit/checkpoint, затем новый QA checkpoint уже на committed `HEAD`.
 - Для no-op finish, где clean task branch уже содержится в `main`, acceptance evidence — `publishStatus=skipped_already_merged`, `PUBLISH_SKIP` в runtime history и итоговый `cleanupStatus=passed|kept`.
-- Для Books runtime preservation acceptance evidence — files from task `runtime/books` exist under main `runtime/books`, full originals remain ignored, and runtime history contains `BOOKS_ARTIFACTS_PRESERVE`.
+- Для Books runtime preservation acceptance evidence — files from task `runtime/books` exist under main `runtime/books`, structured Markdown source copies remain ignored, originals are retained for `pdf` / `epub` / `fb2` / audio, and runtime history contains `BOOKS_ARTIFACTS_PRESERVE`.
+- Для multi-book Books acceptance evidence — standalone toolkit'ы по каждой книге существуют и сохранены по Books storage rules; combined toolkit содержит coverage map, dedupe notes, practical sequence and source traceability to source toolkit'ы / structured Markdown copies.
+- Для quality-first Books evidence — если задача большая, план или итог фиксирует staged processing, сохранённые intermediate artifacts/coverage notes, and no shortcut caused by time/token pressure.
 - Для delete cleanup acceptance evidence требует проверки exact `state.worktreePath`, git worktree registration, managed task root `$CODEX_HOME/worktrees/<taskId>/` и task-scoped leftovers; `cleanupStatus=passed` без этой проверки не считается доказательством.
 - Большие `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` должны compact'иться только через publish/release sync: полный pre-compaction snapshot уходит в `Docs/archive/*.md.gz`, активный лог остаётся читаемым.
 

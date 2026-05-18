@@ -7,8 +7,8 @@
 ## 1. Отчет извлечения
 
 Источник:
-- Локальный оригинал для уточнения концептов: [runtime/books/TOS - Теория ограничения систем/goldratt-the-choice/The Choice - E.M. Goldratt - original.txt](<../../../runtime/books/TOS - Теория ограничения систем/goldratt-the-choice/The%20Choice%20-%20E.M.%20Goldratt%20-%20original.txt>)
-- Локальная копия EPUB: `runtime/books/TOS - Теория ограничения систем/goldratt-the-choice/Goldratt_ashlag_Ye._Biznesroman._Vyibor_Pravila_Goldratta.epub`
+- Structured Markdown source copy для уточнения концептов: [runtime/books/TOS - Теория ограничения систем/goldratt-the-choice/E.M. Goldratt and E. Goldratt-Ashlag - The Choice.md](<../../../runtime/books/TOS - Теория ограничения систем/goldratt-the-choice/E.M. Goldratt and E. Goldratt-Ashlag - The Choice.md>)
+- Локальный исходник EPUB: `runtime/books/TOS - Теория ограничения систем/goldratt-the-choice/E.M. Goldratt and E. Goldratt-Ashlag - The Choice.epub`
 - Формат: `EPUB`
 - Название в metadata: `Выбор. Правила Голдратта`
 - Авторы в metadata: `Элияху Голдратт, Эфрат Голдратт-Ашлаг`
@@ -44,7 +44,7 @@
 3. Если нужен метод, перейди в `Patterns / techniques`.
 4. Перед решением проверь себя по `Anti-patterns`.
 5. Для рабочей встречи используй `Cheatsheet`.
-6. Если нужно уточнить концепт по книге, открой [локальный оригинал](<../../../runtime/books/TOS - Теория ограничения систем/goldratt-the-choice/The%20Choice%20-%20E.M.%20Goldratt%20-%20original.txt>); `Topic index` подскажет, где искать.
+6. Если нужно уточнить концепт по книге, открой [structured Markdown source copy](<../../../runtime/books/TOS - Теория ограничения систем/goldratt-the-choice/E.M. Goldratt and E. Goldratt-Ashlag - The Choice.md>); `Topic index` подскажет, где искать.
 
 ## 3. Быстрая карта
 

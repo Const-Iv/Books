@@ -7,7 +7,7 @@
 ## 1. Отчет извлечения
 
 Источник:
-- Локальный оригинал для уточнения концептов: [runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/The Goal - E.M. Goldratt - original.txt](<../../../runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/The%20Goal%20-%20E.M.%20Goldratt%20-%20original.txt>)
+- Structured Markdown source copy для уточнения концептов: [runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/E.M. Goldratt - The Goal.md](<../../../runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/E.M. Goldratt - The Goal.md>)
 - Формат: `text/plain`
 - Язык исходника: английский
 - Язык результата: русский
@@ -21,7 +21,7 @@
 Ограничения первого прогона:
 - Это ручной Codex-прогон, а не готовый автоматический `src/books/` runtime.
 - TXT содержит переносы слов, page numbers и технический хвост от старого ebook-конвертера.
-- В этом документе нет больших цитат; line landmarks используются только как навигация к локальному `runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/The Goal - E.M. Goldratt - original.txt`.
+- В этом документе нет больших цитат; line landmarks используются только как навигация к локальному `runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/E.M. Goldratt - The Goal.md`.
 
 ## 2. Как пользоваться toolkit
 
@@ -38,7 +38,7 @@
 3. Если нужен метод глубже, открой `Techniques`.
 4. Проверь себя по `Anti-patterns`.
 5. Используй `Cheatsheet` как рабочую шпаргалку.
-6. Если нужно уточнить концепт по книге, открой [локальный оригинал](<../../../runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/The%20Goal%20-%20E.M.%20Goldratt%20-%20original.txt>); `Topic index` подскажет, где искать нужную тему.
+6. Если нужно уточнить концепт по книге, открой [structured Markdown source copy](<../../../runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/E.M. Goldratt - The Goal.md>); `Topic index` подскажет, где искать нужную тему.
 
 ## 3. Быстрая карта
 
@@ -774,7 +774,7 @@ Signals:
 
 ## 14. Topic Index
 
-Локальные landmarks по `runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/The Goal - E.M. Goldratt - original.txt`:
+Локальные landmarks по structured Markdown source copy `runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/E.M. Goldratt - The Goal.md`:
 
 | Тема | Где смотреть в исходнике |
 |---|---|
@@ -853,7 +853,7 @@ TOC application:
 ## 16. Вопросы для следующего автоматического Books-прогона
 
 Чтобы превратить этот ручной результат в продуктовый pipeline, нужен следующий слой:
-1. Deterministic folder convention: `runtime/books/<slug>/<Book Title> - <Author> - original.<ext>` and `<Book Title> - <Author> - toolkit.md`.
+1. Deterministic source convention: for retained originals use `runtime/books/<topic>/<book-slug>/<Author> - <Title>.<ext>` and same-basename `<Author> - <Title>.md`; for verified TXT sources keep the structured `.md` as the canonical local source.
 2. Extraction report generator for TXT/PDF/EPUB.
 3. Chapter parser that distinguishes page numbers from chapter numbers.
 4. No-overwrite naming policy.
