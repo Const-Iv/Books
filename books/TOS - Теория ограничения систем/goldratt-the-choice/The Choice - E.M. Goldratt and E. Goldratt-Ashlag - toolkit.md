@@ -7,7 +7,7 @@
 ## 1. Отчет извлечения
 
 Источник:
-- Локальный оригинал для уточнения концептов: [runtime/books/goldratt-the-choice/The Choice - E.M. Goldratt - original.txt](../../runtime/books/goldratt-the-choice/The%20Choice%20-%20E.M.%20Goldratt%20-%20original.txt)
+- Локальный оригинал для уточнения концептов: [runtime/books/goldratt-the-choice/The Choice - E.M. Goldratt - original.txt](../../../runtime/books/goldratt-the-choice/The%20Choice%20-%20E.M.%20Goldratt%20-%20original.txt)
 - Локальная копия EPUB: `runtime/books/goldratt-the-choice/Goldratt_ashlag_Ye._Biznesroman._Vyibor_Pravila_Goldratta.epub`
 - Формат: `EPUB`
 - Название в metadata: `Выбор. Правила Голдратта`
@@ -24,7 +24,7 @@
 Ограничения первого прогона:
 - Это ручной Codex-прогон, а не готовый автоматический `src/books/` runtime.
 - HTML-структура EPUB повторяет название книги в начале почти каждого spine item, поэтому карта ниже построена по внутренним главам и смысловым блокам.
-- Локальный оригинал хранится в ignored `runtime/books`, а shareable toolkit хранится в tracked `books/goldratt-the-choice`.
+- Локальный оригинал хранится в ignored `runtime/books`, а shareable toolkit хранится в tracked `books/TOS - Теория ограничения систем/goldratt-the-choice`.
 - В документе нет больших цитат; line landmarks используются только как навигация к локальному исходному тексту.
 
 ## 2. Как пользоваться toolkit
@@ -44,7 +44,7 @@
 3. Если нужен метод, перейди в `Patterns / techniques`.
 4. Перед решением проверь себя по `Anti-patterns`.
 5. Для рабочей встречи используй `Cheatsheet`.
-6. Если нужно уточнить концепт по книге, открой [локальный оригинал](../../runtime/books/goldratt-the-choice/The%20Choice%20-%20E.M.%20Goldratt%20-%20original.txt); `Topic index` подскажет, где искать.
+6. Если нужно уточнить концепт по книге, открой [локальный оригинал](../../../runtime/books/goldratt-the-choice/The%20Choice%20-%20E.M.%20Goldratt%20-%20original.txt); `Topic index` подскажет, где искать.
 
 ## 3. Быстрая карта
 
