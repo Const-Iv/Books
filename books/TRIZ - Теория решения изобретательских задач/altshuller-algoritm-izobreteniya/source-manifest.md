@@ -38,4 +38,3 @@
 - Это source-specific toolkit, а не полный unified TRIZ corpus.
 - Для точной цитаты или исторической формулировки проверять локальную source copy и PDF.
 - В tracked artifact не включены большие фрагменты исходного текста.
-

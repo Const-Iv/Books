@@ -30,4 +30,3 @@
 - `ALT-FRAG` is supporting-only.
 - Combined file includes coverage map, dedupe notes, limited-source notes, action cards, anti-patterns, scenarios, cheatsheet, glossary and topic index.
 - No full source text or long quotes are included.
-

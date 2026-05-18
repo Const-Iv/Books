@@ -40,4 +40,3 @@
 - Source-specific toolkit не заменяет unified TRIZ corpus.
 - Для точной цитаты проверять локальную source copy и PDF.
 - В tracked artifact не включены большие фрагменты исходного текста.
-

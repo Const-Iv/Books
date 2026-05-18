@@ -452,4 +452,3 @@ Output:
 - compact ARIZ-85В and standards algorithm: `HLYN`;
 - Meta-ARIZ/CICO/verification: `ORLOV`;
 - accessible teaching route and STC: `ALT-INVENTOR`.
-
