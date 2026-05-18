@@ -176,3 +176,15 @@
 - Подходы: preliminary action через отдельный source commit до finish; separation between source commit and operational logs; standard interface через `task:finish:core`.
 - Что устранено: риск потерять `CODEX_MEMORY.md` как target surface и риск опубликовать diff без QA checkpoint на финальном коммите.
 - Guard: `npm run task:qa:agent` прошёл на `8c1b54534285d2138817bbcfd2e8a130baee3fd7`; finish дальше должен reuse этот checkpoint после capture operational docs.
+
+## 2026-05-18T10:12:50.238Z 20260518-101151-04fd
+
+- Branch: `codex/20260518-101151-04fd-sortirovka-books-toolkit-po-temam`
+- Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
+
+## 2026-05-18T10:15:04.137Z 20260518-101151-04fd
+
+- Branch: `codex/20260518-101151-04fd-sortirovka-books-toolkit-po-temam`
+- Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
