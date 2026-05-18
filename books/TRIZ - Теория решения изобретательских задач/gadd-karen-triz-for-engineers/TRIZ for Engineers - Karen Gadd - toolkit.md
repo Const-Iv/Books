@@ -7,8 +7,8 @@
 ## 1. Отчет извлечения
 
 Источник:
-- Локальный оригинал для уточнения концептов: [runtime/books/TRIZ - Теория решения изобретательских задач/gadd-karen-triz-for-engineers/Gadd_Karen_TRIZ_for_Engineers_original.txt](<../../../runtime/books/TRIZ - Теория решения изобретательских задач/gadd-karen-triz-for-engineers/Gadd_Karen_TRIZ_for_Engineers_original.txt>)
-- Локальная копия PDF: `runtime/books/TRIZ - Теория решения изобретательских задач/gadd-karen-triz-for-engineers/Gadd_Karen_TRIZ_for_Engineers_original.pdf`
+- Structured Markdown source copy для уточнения концептов: [runtime/books/TRIZ - Теория решения изобретательских задач/gadd-karen-triz-for-engineers/Karen Gadd - TRIZ for Engineers.md](<../../../runtime/books/TRIZ - Теория решения изобретательских задач/gadd-karen-triz-for-engineers/Karen Gadd - TRIZ for Engineers.md>)
+- Локальный исходник PDF: `runtime/books/TRIZ - Теория решения изобретательских задач/gadd-karen-triz-for-engineers/Karen Gadd - TRIZ for Engineers.pdf`
 - Локальный extraction report: `runtime/books/TRIZ - Теория решения изобретательских задач/gadd-karen-triz-for-engineers/extraction-report.json`
 - Формат: `PDF`
 - Название: `TRIZ for Engineers: Enabling Inventive Problem Solving`
@@ -44,7 +44,7 @@
 3. Если нужен метод глубже, перейди в `Patterns / techniques`.
 4. Перед решением проверь себя по `Anti-patterns`.
 5. Для сессии с командой используй `Cheatsheet`.
-6. Если нужно уточнить контекст по книге, открой [локальный оригинал](<../../../runtime/books/TRIZ - Теория решения изобретательских задач/gadd-karen-triz-for-engineers/Gadd_Karen_TRIZ_for_Engineers_original.txt>); `Topic index` подскажет, где искать.
+6. Если нужно уточнить контекст по книге, открой [structured Markdown source copy](<../../../runtime/books/TRIZ - Теория решения изобретательских задач/gadd-karen-triz-for-engineers/Karen Gadd - TRIZ for Engineers.md>); `Topic index` подскажет, где искать.
 
 ## 3. Быстрая карта
 

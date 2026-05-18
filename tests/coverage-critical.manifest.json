@@ -19,6 +19,12 @@
       ]
     },
     {
+      "module": "src/books/toolkit/toolkit-contract.mjs",
+      "tests": [
+        "tests/unit/books-toolkit-contract.test.mjs"
+      ]
+    },
+    {
       "module": "scripts/rule-sync.mjs",
       "tests": [
         "tests/unit/rule-sync.test.mjs"

@@ -7,7 +7,8 @@
 - AI/model provider, public UI/API, multi-user storage and deploy are not approved yet.
 - Первый approved contour: local-first prototype. Owner передаёт книгу или фрагмент локально, output первой версии всегда русский.
 - Будущий product pipeline должен сохранять последовательность: supported input -> text extraction -> metadata / pre-flight -> book structure map -> chapter / section extraction -> toolkit artifacts.
-- Toolkit artifacts: главный файл, раздел `Лайфхаки, приемы и инструменты к внедрению`, разбор по главам, glossary, patterns / techniques, cheatsheet, topic index, usage layer, scope & limits and extraction report.
+- Toolkit artifacts follow the ideal master-format: главный файл with usage layer, `Battle route`, `Training route`, `Быстрая карта`, `Tool selector`, `Лайфхаки, приемы и инструменты к внедрению`, deep reference body, coverage/source notes, `Excluded / limited source notes`, anti-patterns, scenarios, cheatsheet, glossary, topic index, scope & limits and extraction report.
+- Multi-book pipeline всегда staged and depth-preserving: per-book standalone toolkit'ы сначала как source-specific artifacts, затем combined toolkit под owner-selected theme; combined synthesis reads direct structured Markdown source copies/originals for depth and uses standalone toolkit'ы as coverage control, not as depth ceiling.
 - Starter governance modules below remain process baseline for safe task flow and QA; they are not the Books product runtime.
 
 ## High-Level Modules
@@ -15,8 +16,9 @@
 - `src/books/cli/`: future local CLI orchestration for Books v1; no public UI/API in the first contour.
 - `src/books/extraction/`: future PDF/EPUB extraction boundary; Python helpers are allowed here only after echo-test / feature plan.
 - `src/books/toolkit/`: future toolkit schema, ranking rules, artifact generation contracts, quality checks and eval fixtures.
+- `src/books/toolkit/toolkit-contract.mjs`: canonical deterministic contract for the ideal Books toolkit master-format and prompt rules.
 - `books/<topic>/<book-slug>/`: tracked shareable toolkit artifacts and source manifests grouped by practical domain; full book originals do not live here.
-- `runtime/books/<topic>/<book-slug>/`: ignored per-run workspace for originals, extracted text, metadata and generated local toolkit artifacts, mirroring tracked `books/<topic>/<book-slug>/`.
+- `runtime/books/<topic>/<book-slug>/`: ignored per-run workspace for same-basename structured Markdown source copies, metadata and generated local toolkit artifacts; same-basename originals are kept there for `pdf`, `epub`, `fb2` and audio.
 - `scripts/dependency-preflight.mjs`: dependency recovery seam.
 - `scripts/deterministic-feedback-loop.mjs`: deterministic QA orchestrator.
 - `scripts/worktree-start.mjs`: task bootstrap, branch/worktree creation, state/history START.
@@ -50,13 +52,25 @@
 1. Validate local input path and supported format: PDF / EPUB by extension and magic bytes.
 2. Ask book type: technical / text-heavy / not sure.
 3. Extract text through the approved extraction adapter boundary.
-4. Write per-run original / extracted text and metadata under ignored `runtime/books/<topic>/<book-slug>/`.
+4. Write same-basename structured Markdown source copy and metadata under ignored `runtime/books/<topic>/<book-slug>/`; file basenames follow `<Автор> - <Название>`.
 5. Show pre-flight estimate and ask explicit proceed or analyze-only choice.
 6. Build structure map: title, author, chapters/parts/ToC, core themes, subject domain, frameworks, principles, techniques, кандидаты для раздела внедрения, anti-patterns.
-7. Generate layered toolkit artifacts: core file, `Лайфхаки, приемы и инструменты к внедрению` сразу после `Быстрая карта`, chapter files/sections, glossary, patterns, cheatsheet, topic index, usage layer, scope & limits, extraction report.
+7. Generate master-format toolkit artifacts: usage layer, `Battle route`, `Training route`, `Быстрая карта`, `Tool selector`, `Лайфхаки, приемы и инструменты к внедрению` сразу после `Быстрая карта`, deep reference body, chapter files/sections, coverage/source notes, `Excluded / limited source notes`, anti-patterns, scenarios, cheatsheet, glossary, topic index, scope & limits, extraction report.
 8. Собрать раздел внедрения из всей книги как карточки: `Что внедрить`, `Когда применять`, `Первый шаг`, `Источник / где искать в книге`; не называть пользовательский раздел `Белки`.
-9. Save the shareable toolkit copy under tracked `books/<topic>/<book-slug>/`; keep the full original only under ignored `runtime/books/<topic>/<book-slug>/`.
-10. Run quality checks against Books Product QA before treating output as usable.
+9. Save the shareable toolkit copy under tracked `books/<topic>/<book-slug>/`; keep the structured Markdown source copy under ignored `runtime/books/<topic>/<book-slug>/`, and keep the original beside it when the original format is `pdf`, `epub`, `fb2` or audio.
+10. Point `source-manifest.md` and toolkit source references to `runtime/books/<topic>/<book-slug>/<Автор> - <Название>.md` plus heading/page/spine marker when available.
+11. Run quality checks against Books Product QA before treating output as usable.
+
+## Multi-Book Product Flow
+
+1. Validate the owner-selected common idea/theme for the combined toolkit; if absent, stop and ask for it.
+2. Generate and save a detailed standalone toolkit for each book using the normal Books V1 Product Flow.
+3. Read direct structured Markdown source copies/originals for depth; standalone toolkit'ы are mandatory coverage-control inputs, not the only synthesis input.
+4. Build a coverage map of all worthy ideas across direct sources and standalone toolkit'ы using the Books ranking criteria: applicability, author importance, repeatability, specificity and distinctiveness.
+5. Merge duplicates into one practical formulation while preserving source traceability to every contributing book/toolkit/source Markdown location.
+6. Sequence the combined toolkit by master use: charter/source status -> usage layer -> Battle route / Training route -> quick map -> tool selector -> action cards -> working process -> deep reference body -> coverage/dedupe -> limited-source notes -> anti-patterns -> scenarios -> cheatsheet -> glossary -> topic index.
+7. Save the combined toolkit under tracked `books/<topic>/<combined-slug>/`; keep combined working notes under ignored `runtime/books/<topic>/<combined-slug>/`.
+8. Verify that the combined toolkit has no avoidable duplicates, no missed worthy ideas from standalone toolkit'ы, and a readable coverage/dedupe map.
 
 ## Risk Hotspots
 
@@ -67,6 +81,10 @@
 - плохое извлечение текста, которое приводит к уверенному, но неверному русскоязычному toolkit вместо понятного blocker;
 - потеря границы между идеями книги, продуктовой интерпретацией и профессиональной консультацией;
 - публикация или хранение полного текста книги как product output без отдельного owner-approved решения;
+- drift source references, когда toolkit указывает на исходный binary/PDF/EPUB или tracked artifact вместо локальной structured Markdown copy, из-за чего будущему агенту сложнее искать по книге;
+- duplicate runtime source drift, когда после verified structured `.md` рядом остаются лишние TXT/DOCX/HTML extraction/source files instead of retaining originals only for `pdf`, `epub`, `fb2` and audio;
+- multi-book shortcut drift, когда общий toolkit создаётся без detailed standalone toolkit'ов, только из standalone summaries без direct source depth pass, теряет достойные внимания идеи, повторяется или выстроен как список summary вместо master-последовательности;
+- quality shortcut drift, когда агент экономит время или токены ценой глубины разбора Books toolkit;
 - task state schema drift (`qaLastPassSha`, `previewPreparedSha`, publish markers, operational artifacts);
 - неправильная работа с git worktree lifecycle и cleanup;
 - silent overwrite shared docs вместо single-writer capture/sync;

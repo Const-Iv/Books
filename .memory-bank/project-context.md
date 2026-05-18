@@ -11,6 +11,11 @@
 - JTBD: когда у меня есть книга и я хочу применить её идеи в жизни, работе или обучении, я хочу превратить её в понятный toolkit с моделями, принципами, техниками, anti-patterns, сценариями применения и шпаргалками, чтобы быстро находить нужное и сразу действовать.
 - Главный продуктовый принцип Books: извлекать структуру применения, а не summary.
 - Каждый новый Books toolkit должен содержать в главном файле после `Быстрая карта` раздел `Лайфхаки, приемы и инструменты к внедрению`, извлечённый из всей книги. Пункты раздела оформляются как карточки `Что внедрить`, `Когда применять`, `Первый шаг`, `Источник / где искать в книге`; пользовательское название `Белки` не используется.
+- Эталонный формат любого Books toolkit — обновленный master-format по образцу `books/TRIZ - Теория решения изобретательских задач/triz-unified-practical-toolkit/Единый практический toolkit TRIZ - по нескольким книгам.md`: usage layer, `Battle route`, `Training route`, `Быстрая карта`, `Tool selector`, action cards, deep reference body, coverage/source notes, `Excluded / limited source notes`, anti-patterns, scenarios, cheatsheet, glossary and topic index.
+- Рядом с локальным исходником книги нужно сохранять structured Markdown copy полного извлечённого текста под тем же basename: `<Автор> - <Название>.<ext>` и `<Автор> - <Название>.md`. Автор и название берутся как в оригинале или на английском. Toolkit source links и `source-manifest.md` должны ссылаться на этот локальный `.md` path plus heading/page/spine marker, а не на tracked полный оригинал.
+- Original retention rule: рядом со structured `.md` в Books runtime сохраняются originals формата `pdf`, `epub`, `fb2` или audio. Для TXT, DOCX, HTML and other formats после проверенного `.md` отдельный original/extracted `.txt` в Books runtime не нужен, если owner отдельно не попросил сохранить такой оригинал; `.md` становится canonical local source artifact.
+- Multi-book toolkit делается только после подробных standalone toolkit'ов по каждой книге, но combined synthesis не должен ограничиваться standalone toolkit summaries. Для серии книг глубина берётся напрямую из local structured Markdown source copies/originals, а standalone toolkit'ы используются как coverage-control artifacts. Общий набор сохраняет все достойные внимания идеи, не урезает справочные таблицы/модели/алгоритмы, убирает повторы, выстраивает материал master-последовательностью and keeps coverage/source traceability.
+- Quality-first rule для Books: качество разбора и подготовки toolkit важнее скорости, времени и экономии токенов. Большой объём нужно делить на этапы и сохранять coverage notes, а не делать поверхностный shortcut.
 - Product runtime для Books v1 утверждён 2026-05-07: local CLI contour on Node/npm orchestration with optional Python extraction adapter. Starter governance, task/worktree conveyor, deterministic QA, memory-bank rules and reusable skills остаются процессной основой проекта, но не являются product feature logic.
 - Перед любым продуктовым решением, feature, behavior, process или governance изменением нужно прочитать `.memory-bank/product-charter.md` целиком и сверить решение с миссией, видением, целью, целевой аудиторией и `JTBD`.
 - Books-specific изменения не должны превращать продукт в обычный summary generator, создавать дословное воспроизведение книги как product output или добавлять публичный UI, аккаунты, оплату, аналитику, provider или deploy без отдельного owner approval.
@@ -48,7 +53,7 @@
 - `research/triz/`: canonical TRIZ pack.
 - `templates/agent-workspace/`: локальные безопасные шаблоны для agent profiles и memory.
 - `tests/unit`, `tests/integration`, `tests/e2e`: deterministic coverage самого process-layer.
-- `runtime/books/<topic>/<book-slug>/`: ignored local workspace for originals, per-run extracted text, metadata and generated toolkit artifacts; it mirrors tracked `books/<topic>/<book-slug>/`, and finish-flow preserves the whole `runtime/books/` tree into the main worktree before delete cleanup.
+- `runtime/books/<topic>/<book-slug>/`: ignored local workspace for structured Markdown source copies, metadata and generated toolkit artifacts; it keeps same-basename originals for `pdf`, `epub`, `fb2` and audio, mirrors tracked `books/<topic>/<book-slug>/`, and finish-flow preserves the whole `runtime/books/` tree into the main worktree before delete cleanup.
 
 ## Tech Stack
 
@@ -60,7 +65,8 @@
 - Tests: built-in Node test runner.
 - Persistence: git worktrees + JSON/NDJSON state in `.git/codex-task-pipeline/*`.
 - Shareable Books artifacts: tracked `books/<topic>/<book-slug>/` without full originals.
-- Local generated artifacts and full originals: ignored `runtime/books/<topic>/<book-slug>/`.
+- Combined Books artifacts: tracked `books/<topic>/<combined-slug>/` only after standalone source toolkit'ы are complete; source manifests point back to included standalone toolkit'ы and local structured Markdown source copies. Combined depth comes from direct source copies/originals, with standalone toolkit'ы used for coverage control.
+- Local generated artifacts and structured Markdown source copies: ignored `runtime/books/<topic>/<book-slug>/`; keep same-basename originals there for `pdf`, `epub`, `fb2` and audio.
 - Release target: local-first `release:local`; no deploy in v1.
 
 ## Source of Truth

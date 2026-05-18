@@ -60,6 +60,18 @@ function runQaCheckpoint(worktreePath, env) {
 }
 
 /**
+ * @param {string} repoRoot
+ * @returns {void}
+ */
+function commitGeneratedDocsIfAny(repoRoot) {
+  runCommand(repoRoot, "git", ["add", "Docs"]);
+  const status = runCommand(repoRoot, "git", ["status", "--short", "--", "Docs"]).stdout.trim();
+  if (status) {
+    runCommand(repoRoot, "git", ["commit", "-m", "Record generated docs artifacts"]);
+  }
+}
+
+/**
  * @param {Array<{type: string, branch: string, payload: Record<string, unknown>}>} events
  * @param {string} type
  * @param {string} branch
@@ -245,6 +257,7 @@ test("Nightly: finish accepts numeric cleanup choices", async () => {
     const keepState = await loadTaskStateByBranch(fixture.repoRoot, startedKeep.branch);
     assert.equal(keepState?.cleanupDecision, "no");
     assert.equal(keepState?.cleanupStatus, "kept");
+    commitGeneratedDocsIfAny(fixture.repoRoot);
 
     const startedDelete = startTask(fixture.repoRoot, env, "Finish cleanup delete numeric");
     const deleteTaskRoot = path.dirname(startedDelete.worktreePath);
