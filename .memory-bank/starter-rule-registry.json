@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-05-08T11:57:31.246Z",
+  "updatedAt": "2026-05-18T11:17:40.000Z",
   "rules": [
     {
       "id": "starter.project-intake.mission-vision-project-level",
@@ -512,6 +512,294 @@
           "rs-75ec80f2cc"
         ],
         "importedAt": "2026-05-08T10:58:56.000Z"
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.rule-sync.processed-report-ledger",
+      "title": "Processed rule-sync reports are tracked in a short ignored ledger",
+      "text": "В конце работы `starter-rule-import` обработанный report отмечается в ignored `runtime/rule-sync/processed-reports.md` одной короткой append-only строкой: `YYYY-MM-DD | runtime/rule-sync/reports/<file>.md | status=<processed|partial|blocked> | next=<none|short next step>`. Последующие import runs пропускают processed reports по умолчанию, если owner явно не просит открыть конкретный отчёт; ledger не должен дублировать candidate ids, source snippets, approval JSON или QA evidence.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "skills/starter-rule-import/SKILL.md"
+      ],
+      "requiredFragments": [
+        "`runtime/rule-sync/processed-reports.md`",
+        "status=<processed|partial|blocked>",
+        "пропускают processed reports по умолчанию"
+      ],
+      "source": {
+        "type": "owner-request",
+        "note": "Owner asked to mark reports as processed at the end of starter-rule-import so old reports are not re-reviewed by default."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.rule-share.project-selection-first",
+      "title": "Rule-share starts with owner-confirmed project selection",
+      "text": "При запуске `starter-rule-share` первым owner-facing шагом должен быть выбор проектов для текущего переноса: Codex показывает полный обнаруженный список кандидатов, явно отмечает include/exclude/blocked/source-only рекомендации, получает подтверждение владельца по exact project set и только после этого запускает `rule-share:scan`, `rule-share:apply-plan`, downstream `task:start` или guarded one-run. Если окно выбора недоступно, Codex задаёт вопрос в чате и останавливается; нельзя молча трактовать “all ready projects”, прошлый approval JSON или standing approval как подтверждение текущего интерактивного запуска.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        ".memory-bank/project-context.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        "skills/starter-rule-share/SKILL.md"
+      ],
+      "requiredFragments": [
+        "первым owner-facing шагом должен быть выбор проектов",
+        "полный обнаруженный список кандидатов",
+        "нельзя молча трактовать “all ready projects”"
+      ],
+      "source": {
+        "type": "existing-governance",
+        "note": "Owner-requested guard after an incorrect rule-share run selected projects without confirmation."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.publish-profile.result-evidence",
+      "title": "Publish profile tasks report observable result evidence",
+      "text": "Если downstream-проект добавляет свой профиль публикации, завершение задачи, которое затрагивает этот профиль, должно явно сообщать владельцу: что пытались опубликовать, куда это должно попасть, было ли действие выполнено или пропущено, какой результат вернула площадка публикации, и прошла ли короткая проверка доступности или видимого результата, если её можно выполнить. Сам факт отправки изменений в основной проект не считается доказательством, что публикация уже завершилась. Названия площадок, команды и ссылки конкретного проекта остаются в его профиле, а не в starter core.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        ".memory-bank/qa-playbook.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "Если downstream-проект добавляет свой профиль публикации",
+        "Сам факт отправки изменений в основной проект не считается доказательством",
+        "Названия площадок, команды и ссылки конкретного проекта остаются в его профиле"
+      ],
+      "source": {
+        "type": "starter-rule-import",
+        "candidateIds": [
+          "rs-1c7985b170",
+          "rs-3f59805513"
+        ],
+        "importedAt": "2026-05-11T08:35:00.000Z"
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.data.external-generated-verification",
+      "title": "External or generated user-facing data requires verification disclosure",
+      "text": "Если downstream-проект использует внешний, исследовательский или сгенерированный набор данных в пользовательском результате, перед использованием нужно зафиксировать источник, степень проверки, известные ограничения и воспроизводимую проверку, которая подтверждает пригодность данных для выбранного сценария. Если данные проверены частично или с ограничениями, это должно быть видно в продукте или отчёте там, где пользователь может принять решение на основе этих данных. Неполностью проверенные данные нельзя показывать как точный факт, единственно верный ответ или лучшую рекомендацию. Конкретные источники, форматы данных и способы проверки остаются в downstream-проекте.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        ".memory-bank/qa-playbook.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "Если downstream-проект использует внешний, исследовательский или сгенерированный набор данных",
+        "зафиксировать источник, степень проверки, известные ограничения",
+        "Неполностью проверенные данные нельзя показывать как точный факт"
+      ],
+      "source": {
+        "type": "starter-rule-import",
+        "candidateIds": [
+          "rs-a82d303943",
+          "rs-b589c2210f"
+        ],
+        "relatedEvidenceIds": [
+          "rs-2802ab14bd"
+        ],
+        "importedAt": "2026-05-11T08:35:00.000Z"
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.skills.source-link-flow",
+      "title": "Reusable shared skills use repo source and safe link flow",
+      "text": "Reusable shared skills хранятся в repo `skills/` и подключаются в `$CODEX_HOME/skills` только через безопасный link flow. Downstream-проекты могут подключать starter как versioned source и линковать skills через `skills-manage.mjs --source <skills-root>`. `.system`, plugin-managed, product-specific skills и generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) не импортируются в starter core через bulk-copy.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        ".memory-bank/project-context.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "Reusable shared skills хранятся в repo `skills/`",
+        "подключаются в `$CODEX_HOME/skills` только через безопасный link flow",
+        "не импортируются в starter core через bulk-copy"
+      ],
+      "source": {
+        "type": "starter-rule-import",
+        "candidateIds": [
+          "rs-3e8d84bc02"
+        ],
+        "relatedRuleIds": [
+          "starter.skills.generated-trees-not-core"
+        ],
+        "importedAt": "2026-05-11T08:35:00.000Z"
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.rule-import.full-question-before-choice",
+      "title": "Rule import questions show full owner context before choices",
+      "text": "`starter-rule-import` должен перед каждым owner choice сначала показать полный owner-facing блок: `Статус сейчас`, `Проект-источник`, `Суть`, `Job Story`, `Что меняется в starter`, `**Точный текст для starter:**`, `**Моё предложение:**` и `Traceability`; только после этого можно показывать варианты решения. Если владелец пишет, что вопрос непонятен, агент останавливает последовательность, заново раскрывает пункт в этом полном формате и продолжает только после понятного решения.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "skills/starter-rule-import/SKILL.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "`starter-rule-import` должен перед каждым owner choice",
+        "`Статус сейчас`, `Проект-источник`, `Суть`, `Job Story`",
+        "только после этого можно показывать варианты решения"
+      ],
+      "source": {
+        "type": "owner-approved-session",
+        "note": "Owner corrected unclear starter-rule-import questions during 2026-05-11 approval flow."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.product-charter.project-identity-unique",
+      "title": "Product charter identity is unique per project",
+      "text": "Product charter каждого проекта уникален: mission, vision, goal, target audience, `JTBD`, product constraints and success criteria нельзя импортировать, шарить или подменять из другого проекта. `starter-rule-import` и `starter-rule-share` могут переносить только отдельные approved reusable governance blocks; если такой блок должен жить в product charter, он добавляется как отдельный project-local block/guard и формулируется для конкретного проекта без замены charter identity.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/product-charter.md",
+        ".memory-bank/index.md",
+        ".memory-bank/code-rules.md",
+        ".memory-bank/project-context.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        "scripts/README.md",
+        "skills/starter-rule-import/SKILL.md",
+        "skills/starter-rule-share/SKILL.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "Product charter каждого проекта уникален",
+        "нельзя импортировать, шарить или подменять из другого проекта",
+        "отдельный project-local block/guard",
+        "без замены charter identity"
+      ],
+      "source": {
+        "type": "owner-request",
+        "note": "Owner reported cross-project product charter contamination and requested an explicit guard for rule-sync import and rule-share."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.context.concise-responses",
+      "title": "Agent responses stay concise by default",
+      "text": "Ответы агента должны быть короткими и по делу; подробности добавляются только когда они нужны для решения, проверки, owner decision или safety.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/context-hygiene.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "короткими и по делу",
+        "подробности добавляются только когда они нужны",
+        "owner decision"
+      ],
+      "source": {
+        "type": "owner-approved-plan",
+        "note": "Token/context hygiene rules approved on 2026-05-13."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.agent.read-only-subagent-summary",
+      "title": "Large read-only work may use bounded subagents with structured summaries",
+      "text": "Для больших read-only анализов, ревью и независимых проверок можно использовать субагентов, когда текущая платформа и рабочий контракт это разрешают. Главный чат получает structured summary: findings, risks, checked files/sources, recommended next step. Субагенты не принимают product decisions за owner'а и не мутируют shared files без отдельного write scope.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/context-hygiene.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "больших read-only анализов",
+        "structured summary",
+        "не принимают product decisions",
+        "write scope"
+      ],
+      "source": {
+        "type": "owner-approved-plan",
+        "note": "Token/context hygiene rules approved on 2026-05-13."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.context.markdown-first-inputs",
+      "title": "Text inputs prefer Markdown or plain text unless layout fidelity matters",
+      "text": "Входные текстовые материалы по умолчанию переводятся или сохраняются как Markdown/plain text, если задача не про layout fidelity. PDF, DOCX, HTML и другие шумные форматы используются напрямую только когда формат, layout или визуальная fidelity являются частью результата.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/context-hygiene.md",
+        ".memory-bank/code-rules.md",
+        "README.md"
+      ],
+      "requiredFragments": [
+        "Markdown/plain text",
+        "layout fidelity",
+        "PDF, DOCX, HTML"
+      ],
+      "source": {
+        "type": "owner-approved-plan",
+        "note": "Token/context hygiene rules approved on 2026-05-13."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.conveyor.goal-seed-handoff",
+      "title": "Task conveyor sends a self-contained Goal Seed by default",
+      "text": "Goal Seed является стандартным форматом handoff для новых Codex-чатов, созданных task conveyor. Он выводится из исходного запроса владельца и должен быть самодостаточным plain-text prompt: цель задачи, исходные project source files, `Definition of Done`, зона влияния, safety boundaries, команды проверки, UI browser oracle rules когда релевантно, governance/eval requirements когда релевантно и stop conditions. Goal Seed может начинаться с `/goal`, но не должен зависеть от доступности slash command. `task:start` по умолчанию отправляет в новый чат effective Goal Seed; raw seed допустим только как явный opt-out владельца через `--no-goal-seed`.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        ".memory-bank/project-context.md",
+        ".memory-bank/qa-playbook.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        ".cursorrules",
+        "CLAUDE.md",
+        "scripts/README.md",
+        "skills/worktree-create/SKILL.md",
+        "scripts/worktree-start.mjs",
+        "tests/integration/worktree-start-guards.test.mjs"
+      ],
+      "requiredFragments": [
+        "Goal Seed",
+        "--no-goal-seed",
+        "buildGoalSeed"
+      ],
+      "source": {
+        "type": "starter-rule-import",
+        "candidateIds": [
+          "rs-fdba1a9a41"
+        ],
+        "approval": "runtime/rule-sync/approvals/2026-05-18-owner-approved-nps-rule-import.json",
+        "scan": "runtime/rule-sync/scans/rule-sync-2026-05-18-091748842Z.json",
+        "importedAt": "2026-05-18T10:25:00.000Z"
       },
       "sharePolicy": "required"
     }

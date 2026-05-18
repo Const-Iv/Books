@@ -184,3 +184,8 @@ Never turn manual review into direct copy. After the missing signals are fixed a
 - Treat `rule-share:apply-plan` output as preparation, not implementation. Real downstream edits still require the target project's managed worktree and QA.
 - In one-run mode, the skill may execute those downstream managed task updates automatically, but never directly in the downstream main worktree.
 - If a project is archived, paused, unclear, or not starter-based, leave it in `Требует ручной проверки` or `Заблокировано`.
+
+## Shared Starter Baseline Rules — synced 2026-05-18
+
+- `starter.rule-share.project-selection-first`: При запуске `starter-rule-share` первым owner-facing шагом должен быть выбор проектов для текущего переноса: Codex показывает полный обнаруженный список кандидатов, явно отмечает include/exclude/blocked/source-only рекомендации, получает подтверждение владельца по exact project set и только после этого запускает `rule-share:scan`, `rule-share:apply-plan`, downstream `task:start` или guarded one-run. Если окно выбора недоступно, Codex задаёт вопрос в чате и останавливается; нельзя молча трактовать “all ready projects”, прошлый approval JSON или standing approval как подтверждение текущего интерактивного запуска.
+- `starter.product-charter.project-identity-unique`: Product charter каждого проекта уникален: mission, vision, goal, target audience, `JTBD`, product constraints and success criteria нельзя импортировать, шарить или подменять из другого проекта. `starter-rule-import` и `starter-rule-share` могут переносить только отдельные approved reusable governance blocks; если такой блок должен жить в product charter, он добавляется как отдельный project-local block/guard и формулируется для конкретного проекта без замены charter identity.

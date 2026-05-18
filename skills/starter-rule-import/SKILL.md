@@ -78,3 +78,9 @@ Stop and ask the owner instead of importing when:
 - the owner chose `Не согласовываю / нужен ответ`;
 - the working tree is dirty and no managed task worktree exists;
 - the item would make starter core provider-specific, stack-specific, or product-specific.
+
+## Shared Starter Baseline Rules — synced 2026-05-18
+
+- `starter.rule-sync.processed-report-ledger`: В конце работы `starter-rule-import` обработанный report отмечается в ignored `runtime/rule-sync/processed-reports.md` одной короткой append-only строкой: `YYYY-MM-DD | runtime/rule-sync/reports/<file>.md | status=<processed|partial|blocked> | next=<none|short next step>`. Последующие import runs пропускают processed reports по умолчанию, если owner явно не просит открыть конкретный отчёт; ledger не должен дублировать candidate ids, source snippets, approval JSON или QA evidence.
+- `starter.rule-import.full-question-before-choice`: `starter-rule-import` должен перед каждым owner choice сначала показать полный owner-facing блок: `Статус сейчас`, `Проект-источник`, `Суть`, `Job Story`, `Что меняется в starter`, `**Точный текст для starter:**`, `**Моё предложение:**` и `Traceability`; только после этого можно показывать варианты решения. Если владелец пишет, что вопрос непонятен, агент останавливает последовательность, заново раскрывает пункт в этом полном формате и продолжает только после понятного решения.
+- `starter.product-charter.project-identity-unique`: Product charter каждого проекта уникален: mission, vision, goal, target audience, `JTBD`, product constraints and success criteria нельзя импортировать, шарить или подменять из другого проекта. `starter-rule-import` и `starter-rule-share` могут переносить только отдельные approved reusable governance blocks; если такой блок должен жить в product charter, он добавляется как отдельный project-local block/guard и формулируется для конкретного проекта без замены charter identity.

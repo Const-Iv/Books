@@ -55,6 +55,30 @@ test("task:start uses a readable slug from Cyrillic task title", async () => {
     const state = await loadTaskStateByBranch(fixture.repoRoot, payload.branch);
     assert.equal(state?.title, "ЭХО");
     assert.equal(state?.slug, "echo");
+    assert.match(state?.seedMessage ?? "", /^\/goal\n\nGoal Seed/);
+    assert.match(state?.seedMessage ?? "", /Исходный запрос владельца:\nWorktree Create ЭХО/);
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test("task:start can keep raw seed with explicit opt-out", async () => {
+  const fixture = await createTempStarterRepo();
+  try {
+    const env = {
+      CODEX_HOME: fixture.codexHome,
+      STARTER_NO_OPEN: "1"
+    };
+
+    const start = runStarterScript(
+      fixture.repoRoot,
+      ["scripts/worktree-start.mjs", "--title", "Raw seed", "--seed-message", "Raw message", "--no-goal-seed"],
+      { env }
+    );
+    const payload = JSON.parse(start.stdout);
+
+    const state = await loadTaskStateByBranch(fixture.repoRoot, payload.branch);
+    assert.equal(state?.seedMessage, "Raw message");
   } finally {
     await fixture.cleanup();
   }
