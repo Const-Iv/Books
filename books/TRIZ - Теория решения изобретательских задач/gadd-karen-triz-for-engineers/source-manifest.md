@@ -8,10 +8,10 @@
 ## Что не хранится в Git
 
 - Полный оригинал книги не коммитится.
-- Локальная копия PDF после текущего прогона: `runtime/books/gadd-karen-triz-for-engineers/Gadd_Karen_TRIZ_for_Engineers_original.pdf`.
-- Локальный извлеченный текст после текущего прогона: `runtime/books/gadd-karen-triz-for-engineers/Gadd_Karen_TRIZ_for_Engineers_original.txt`.
-- Локальный extraction report после текущего прогона: `runtime/books/gadd-karen-triz-for-engineers/extraction-report.json`.
-- Локальная рабочая копия toolkit после текущего прогона: `runtime/books/gadd-karen-triz-for-engineers/TRIZ for Engineers - Karen Gadd - toolkit.md`.
+- Локальная копия PDF после текущего прогона: `runtime/books/TRIZ - Теория решения изобретательских задач/gadd-karen-triz-for-engineers/Gadd_Karen_TRIZ_for_Engineers_original.pdf`.
+- Локальный извлеченный текст после текущего прогона: `runtime/books/TRIZ - Теория решения изобретательских задач/gadd-karen-triz-for-engineers/Gadd_Karen_TRIZ_for_Engineers_original.txt`.
+- Локальный extraction report после текущего прогона: `runtime/books/TRIZ - Теория решения изобретательских задач/gadd-karen-triz-for-engineers/extraction-report.json`.
+- Локальная рабочая копия toolkit после текущего прогона: `runtime/books/TRIZ - Теория решения изобретательских задач/gadd-karen-triz-for-engineers/TRIZ for Engineers - Karen Gadd - toolkit.md`.
 
 ## Почему так
 

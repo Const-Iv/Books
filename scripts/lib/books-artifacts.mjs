@@ -101,8 +101,9 @@ function allocateConflictPath(targetPath, taskId) {
 /**
  * Preserve local Books working artifacts before deleting a task worktree.
  *
- * Full book originals remain ignored under runtime/books. Shareable artifacts
- * should also have tracked copies under books/<topic>/<book-slug>/ when appropriate.
+ * Full book originals remain ignored under runtime/books/<topic>/<book-slug>/.
+ * Shareable artifacts should also have tracked copies under
+ * books/<topic>/<book-slug>/ when appropriate.
  *
  * @param {string} sourceWorktreePath
  * @param {string} mainWorktreePath

@@ -14,8 +14,8 @@ test("Books artifacts preserve copies missing files and keeps conflicting main f
   try {
     const sourceWorktree = path.join(tempRoot, "task");
     const mainWorktree = path.join(tempRoot, "main");
-    const sourceBookDir = path.join(sourceWorktree, "runtime", "books", "sample-book");
-    const mainBookDir = path.join(mainWorktree, "runtime", "books", "sample-book");
+    const sourceBookDir = path.join(sourceWorktree, "runtime", "books", "sample-topic", "sample-book");
+    const mainBookDir = path.join(mainWorktree, "runtime", "books", "sample-topic", "sample-book");
     await mkdir(sourceBookDir, { recursive: true });
     await mkdir(mainBookDir, { recursive: true });
 
@@ -27,12 +27,12 @@ test("Books artifacts preserve copies missing files and keeps conflicting main f
 
     const result = await preserveBooksRuntimeArtifacts(sourceWorktree, mainWorktree, "task-123");
 
-    assert.deepEqual(result.copied, ["sample-book/Sample - Author - original.txt"]);
-    assert.deepEqual(result.identical, ["sample-book/Same - Author - toolkit.md"]);
+    assert.deepEqual(result.copied, ["sample-topic/sample-book/Sample - Author - original.txt"]);
+    assert.deepEqual(result.identical, ["sample-topic/sample-book/Same - Author - toolkit.md"]);
     assert.deepEqual(result.conflictCopies, [
       {
-        source: "sample-book/Sample - Author - toolkit.md",
-        target: "sample-book/Sample - Author - toolkit - from task-123.md"
+        source: "sample-topic/sample-book/Sample - Author - toolkit.md",
+        target: "sample-topic/sample-book/Sample - Author - toolkit - from task-123.md"
       }
     ]);
     assert.equal(

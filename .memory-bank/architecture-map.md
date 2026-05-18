@@ -16,7 +16,7 @@
 - `src/books/extraction/`: future PDF/EPUB extraction boundary; Python helpers are allowed here only after echo-test / feature plan.
 - `src/books/toolkit/`: future toolkit schema, ranking rules, artifact generation contracts, quality checks and eval fixtures.
 - `books/<topic>/<book-slug>/`: tracked shareable toolkit artifacts and source manifests grouped by practical domain; full book originals do not live here.
-- `runtime/books/`: ignored per-run workspace for originals, extracted text, metadata and generated local toolkit artifacts.
+- `runtime/books/<topic>/<book-slug>/`: ignored per-run workspace for originals, extracted text, metadata and generated local toolkit artifacts, mirroring tracked `books/<topic>/<book-slug>/`.
 - `scripts/dependency-preflight.mjs`: dependency recovery seam.
 - `scripts/deterministic-feedback-loop.mjs`: deterministic QA orchestrator.
 - `scripts/worktree-start.mjs`: task bootstrap, branch/worktree creation, state/history START.
@@ -50,12 +50,12 @@
 1. Validate local input path and supported format: PDF / EPUB by extension and magic bytes.
 2. Ask book type: technical / text-heavy / not sure.
 3. Extract text through the approved extraction adapter boundary.
-4. Write per-run original / extracted text and metadata under ignored `runtime/books/`.
+4. Write per-run original / extracted text and metadata under ignored `runtime/books/<topic>/<book-slug>/`.
 5. Show pre-flight estimate and ask explicit proceed or analyze-only choice.
 6. Build structure map: title, author, chapters/parts/ToC, core themes, subject domain, frameworks, principles, techniques, кандидаты для раздела внедрения, anti-patterns.
 7. Generate layered toolkit artifacts: core file, `Лайфхаки, приемы и инструменты к внедрению` сразу после `Быстрая карта`, chapter files/sections, glossary, patterns, cheatsheet, topic index, usage layer, scope & limits, extraction report.
 8. Собрать раздел внедрения из всей книги как карточки: `Что внедрить`, `Когда применять`, `Первый шаг`, `Источник / где искать в книге`; не называть пользовательский раздел `Белки`.
-9. Save the shareable toolkit copy under tracked `books/<topic>/<book-slug>/`; keep the full original only under ignored `runtime/books/<book-slug>/`.
+9. Save the shareable toolkit copy under tracked `books/<topic>/<book-slug>/`; keep the full original only under ignored `runtime/books/<topic>/<book-slug>/`.
 10. Run quality checks against Books Product QA before treating output as usable.
 
 ## Risk Hotspots

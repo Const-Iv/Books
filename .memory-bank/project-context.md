@@ -48,7 +48,7 @@
 - `research/triz/`: canonical TRIZ pack.
 - `templates/agent-workspace/`: локальные безопасные шаблоны для agent profiles и memory.
 - `tests/unit`, `tests/integration`, `tests/e2e`: deterministic coverage самого process-layer.
-- `runtime/books/`: ignored local workspace for originals, per-run extracted text, metadata and generated toolkit artifacts; finish-flow preserves it into the main worktree before delete cleanup.
+- `runtime/books/<topic>/<book-slug>/`: ignored local workspace for originals, per-run extracted text, metadata and generated toolkit artifacts; it mirrors tracked `books/<topic>/<book-slug>/`, and finish-flow preserves the whole `runtime/books/` tree into the main worktree before delete cleanup.
 
 ## Tech Stack
 
@@ -60,7 +60,7 @@
 - Tests: built-in Node test runner.
 - Persistence: git worktrees + JSON/NDJSON state in `.git/codex-task-pipeline/*`.
 - Shareable Books artifacts: tracked `books/<topic>/<book-slug>/` without full originals.
-- Local generated artifacts and full originals: ignored `runtime/books/`.
+- Local generated artifacts and full originals: ignored `runtime/books/<topic>/<book-slug>/`.
 - Release target: local-first `release:local`; no deploy in v1.
 
 ## Source of Truth

@@ -45,7 +45,7 @@ test("finish delete cleanup preserves ignored runtime books in main before remov
       cleanupTargets: []
     });
 
-    const taskBookDir = path.join(worktreePath, "runtime", "books", "sample-book");
+    const taskBookDir = path.join(worktreePath, "runtime", "books", "sample-topic", "sample-book");
     await mkdir(taskBookDir, { recursive: true });
     await writeFile(path.join(taskBookDir, "Sample - Author - original.txt"), "full local original\n", "utf8");
     await writeFile(path.join(taskBookDir, "Sample - Author - toolkit.md"), "# Shareable toolkit\n", "utf8");
@@ -59,13 +59,16 @@ test("finish delete cleanup preserves ignored runtime books in main before remov
     assert.equal(existsSync(path.dirname(worktreePath)), false);
     assert.equal(
       await readFile(
-        path.join(fixture.repoRoot, "runtime", "books", "sample-book", "Sample - Author - original.txt"),
+        path.join(fixture.repoRoot, "runtime", "books", "sample-topic", "sample-book", "Sample - Author - original.txt"),
         "utf8"
       ),
       "full local original\n"
     );
     assert.equal(
-      await readFile(path.join(fixture.repoRoot, "runtime", "books", "sample-book", "Sample - Author - toolkit.md"), "utf8"),
+      await readFile(
+        path.join(fixture.repoRoot, "runtime", "books", "sample-topic", "sample-book", "Sample - Author - toolkit.md"),
+        "utf8"
+      ),
       "# Shareable toolkit\n"
     );
 
@@ -82,8 +85,8 @@ test("finish delete cleanup preserves ignored runtime books in main before remov
     const preserveEvent = [...events].reverse().find((event) => event.type === "BOOKS_ARTIFACTS_PRESERVE");
     assert.ok(preserveEvent);
     assert.deepEqual(preserveEvent.payload.copied, [
-      "sample-book/Sample - Author - original.txt",
-      "sample-book/Sample - Author - toolkit.md"
+      "sample-topic/sample-book/Sample - Author - original.txt",
+      "sample-topic/sample-book/Sample - Author - toolkit.md"
     ]);
     assert.equal(events.some((event) => event.type === "CLEANUP" && event.branch === branch), true);
   } finally {

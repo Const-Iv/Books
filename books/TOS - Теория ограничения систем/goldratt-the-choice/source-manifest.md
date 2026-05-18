@@ -8,10 +8,10 @@
 ## Что не хранится в Git
 
 - Полный оригинал книги не коммитится.
-- Локальная копия EPUB после текущего прогона: `runtime/books/goldratt-the-choice/Goldratt_ashlag_Ye._Biznesroman._Vyibor_Pravila_Goldratta.epub`.
-- Локальный извлеченный текст после текущего прогона: `runtime/books/goldratt-the-choice/The Choice - E.M. Goldratt - original.txt`.
-- Локальный extraction report после текущего прогона: `runtime/books/goldratt-the-choice/extraction-report.json`.
-- Локальная рабочая копия toolkit после текущего прогона: `runtime/books/goldratt-the-choice/The Choice - E.M. Goldratt and E. Goldratt-Ashlag - toolkit.md`.
+- Локальная копия EPUB после текущего прогона: `runtime/books/TOS - Теория ограничения систем/goldratt-the-choice/Goldratt_ashlag_Ye._Biznesroman._Vyibor_Pravila_Goldratta.epub`.
+- Локальный извлеченный текст после текущего прогона: `runtime/books/TOS - Теория ограничения систем/goldratt-the-choice/The Choice - E.M. Goldratt - original.txt`.
+- Локальный extraction report после текущего прогона: `runtime/books/TOS - Теория ограничения систем/goldratt-the-choice/extraction-report.json`.
+- Локальная рабочая копия toolkit после текущего прогона: `runtime/books/TOS - Теория ограничения систем/goldratt-the-choice/The Choice - E.M. Goldratt and E. Goldratt-Ashlag - toolkit.md`.
 
 ## Почему так
 

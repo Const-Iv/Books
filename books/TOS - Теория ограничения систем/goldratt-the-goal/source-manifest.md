@@ -8,8 +8,8 @@
 ## Что не хранится в Git
 
 - Полный оригинал книги не коммитится.
-- Локальный путь к оригиналу после finish-flow: `runtime/books/goldratt-the-goal/The Goal - E.M. Goldratt - original.txt`.
-- Локальная рабочая копия toolkit после finish-flow: `runtime/books/goldratt-the-goal/The Goal - E.M. Goldratt - toolkit.md`.
+- Локальный путь к оригиналу после finish-flow: `runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/The Goal - E.M. Goldratt - original.txt`.
+- Локальная рабочая копия toolkit после finish-flow: `runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/The Goal - E.M. Goldratt - toolkit.md`.
 
 ## Почему так
 

@@ -7,7 +7,7 @@
 ## 1. Отчет извлечения
 
 Источник:
-- Локальный оригинал для уточнения концептов: [runtime/books/goldratt-the-goal/The Goal - E.M. Goldratt - original.txt](../../../runtime/books/goldratt-the-goal/The%20Goal%20-%20E.M.%20Goldratt%20-%20original.txt)
+- Локальный оригинал для уточнения концептов: [runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/The Goal - E.M. Goldratt - original.txt](<../../../runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/The%20Goal%20-%20E.M.%20Goldratt%20-%20original.txt>)
 - Формат: `text/plain`
 - Язык исходника: английский
 - Язык результата: русский
@@ -21,7 +21,7 @@
 Ограничения первого прогона:
 - Это ручной Codex-прогон, а не готовый автоматический `src/books/` runtime.
 - TXT содержит переносы слов, page numbers и технический хвост от старого ebook-конвертера.
-- В этом документе нет больших цитат; line landmarks используются только как навигация к локальному `runtime/books/goldratt-the-goal/The Goal - E.M. Goldratt - original.txt`.
+- В этом документе нет больших цитат; line landmarks используются только как навигация к локальному `runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/The Goal - E.M. Goldratt - original.txt`.
 
 ## 2. Как пользоваться toolkit
 
@@ -38,7 +38,7 @@
 3. Если нужен метод глубже, открой `Techniques`.
 4. Проверь себя по `Anti-patterns`.
 5. Используй `Cheatsheet` как рабочую шпаргалку.
-6. Если нужно уточнить концепт по книге, открой [локальный оригинал](../../../runtime/books/goldratt-the-goal/The%20Goal%20-%20E.M.%20Goldratt%20-%20original.txt); `Topic index` подскажет, где искать нужную тему.
+6. Если нужно уточнить концепт по книге, открой [локальный оригинал](<../../../runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/The%20Goal%20-%20E.M.%20Goldratt%20-%20original.txt>); `Topic index` подскажет, где искать нужную тему.
 
 ## 3. Быстрая карта
 
@@ -774,7 +774,7 @@ Signals:
 
 ## 14. Topic Index
 
-Локальные landmarks по `runtime/books/goldratt-the-goal/The Goal - E.M. Goldratt - original.txt`:
+Локальные landmarks по `runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/The Goal - E.M. Goldratt - original.txt`:
 
 | Тема | Где смотреть в исходнике |
 |---|---|
