@@ -8,9 +8,9 @@
 ## Что не хранится в Git
 
 - Полные оригиналы книг не коммитятся.
-- Локальные копии источников после текущего прогона: `runtime/books/triz-unified-practical-toolkit/sources/`.
-- Локальные извлеченные тексты и OCR после текущего прогона: `runtime/books/triz-unified-practical-toolkit/extracted/`.
-- Локальные OCR-страницы и промежуточные файлы после текущего прогона: `runtime/books/triz-unified-practical-toolkit/ocr/`.
+- Локальные копии источников после текущего прогона: `runtime/books/TRIZ - Теория решения изобретательских задач/triz-unified-practical-toolkit/sources/`.
+- Локальные извлеченные тексты и OCR после текущего прогона: `runtime/books/TRIZ - Теория решения изобретательских задач/triz-unified-practical-toolkit/extracted/`.
+- Локальные OCR-страницы и промежуточные файлы после текущего прогона: `runtime/books/TRIZ - Теория решения изобретательских задач/triz-unified-practical-toolkit/ocr/`.
 
 ## Почему так
 
