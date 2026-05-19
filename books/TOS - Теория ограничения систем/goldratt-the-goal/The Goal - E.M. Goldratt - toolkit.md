@@ -4,6 +4,10 @@
 
 Важно: это не пересказ и не заменитель книги. Документ извлекает применимые модели, принципы, техники, anti-patterns и навигацию по идеям. Большие фрагменты исходного текста намеренно не воспроизводятся.
 
+## Связь с charter проекта
+
+Books должен превращать книгу в применимый toolkit на русском языке, а не в краткое содержание. Для `The Goal` это означает рабочий слой по базовой TOC-логике: цель системы, throughput / inventory / operating expense, bottleneck, five focusing steps, Drum-Buffer-Rope, batch size и смена cost-world мышления на throughput-world мышление.
+
 ## 1. Отчет извлечения
 
 Источник:
@@ -40,6 +44,24 @@
 5. Используй `Cheatsheet` как рабочую шпаргалку.
 6. Если нужно уточнить концепт по книге, открой [structured Markdown source copy](<../../../runtime/books/TOS - Теория ограничения систем/goldratt-the-goal/E.M. Goldratt - The Goal.md>); `Topic index` подскажет, где искать нужную тему.
 
+## Battle route
+
+1. Сформулируй цель системы и проверь, что улучшение связано с throughput, inventory или operating expense.
+2. Найди constraint по очередям, простаивающему downstream и устойчивым конфликтам приоритетов.
+3. Exploit constraint: убери простои, плохой input, нерелевантную работу и дефекты до bottleneck.
+4. Subordinate everything else: выпуск работы, приоритеты и batch rules подчиняются constraint.
+5. Elevate constraint только после exploit/subordinate.
+6. Когда constraint сместился, начни цикл заново и не защищай старое решение.
+
+## Training route
+
+1. Разобрать цель организации и три операционных измерения.
+2. Показать на Herbie model, как dependent events + statistical fluctuations создают очереди.
+3. Найти bottleneck/non-bottleneck distinction.
+4. Применить five focusing steps.
+5. Разобрать Drum-Buffer-Rope и buffer management.
+6. Перейти к batch sizes, market constraint и policy constraints.
+
 ## 3. Быстрая карта
 
 Главная рабочая идея:
@@ -58,6 +80,18 @@
 
 Главный практический риск:
 - Самая опасная ошибка — управлять каждым ресурсом так, будто его локальная загрузка равна пользе для всей системы.
+
+## Tool selector
+
+| Tool | Best for | Do not use when | Primary source layers |
+|---|---|---|---|
+| Goal filter | Проверить смысл улучшения | Цель системы не сформулирована | `GOAL` строки 450-625 |
+| T/I/OE check | Быстро оценить бизнес-эффект | Нужно юридическое или accounting решение | `GOAL` строки 919-970 |
+| Queue-based constraint search | Найти bottleneck в потоке | Проблема разовая и не системная | `GOAL` строки 2321-2456 |
+| Five focusing steps | Управлять constraint cycle | Constraint еще не найден | `GOAL` строки 2486-2685, 5437-5516 |
+| Drum-Buffer-Rope | Синхронизировать release и flow | Нет повторяемого операционного потока | `GOAL` строки 3520-3605 |
+| Batch-size review | Сократить lead time без потери throughput | Bottleneck setup пострадает | `GOAL` строки 3760-3909 |
+| Market-constraint offer | Превратить операционный edge в продажи | Delivery edge не доказан | `GOAL` строки 4013-4222 |
 
 ## 4. Лайфхаки, приемы и инструменты к внедрению
 
@@ -801,6 +835,25 @@ Signals:
 | Three questions of change | около строк 5514-5525 |
 | External TOC examples | около строк 5525-5999 |
 
+## Coverage map
+
+| Раздел toolkit | Source coverage |
+|---|---|
+| Цель и productivity | строки 450-625 |
+| Throughput / inventory / operating expense | строки 919-970 |
+| Dependent events + statistical fluctuations | строки 1441-1851 |
+| Herbie / bottleneck | строки 1858-1905 |
+| Exploit bottleneck | строки 2486-2685 |
+| Drum-Buffer-Rope | строки 3520-3605 |
+| Batch sizes | строки 3760-3909 |
+| Throughput world vs cost world | строки 4820-4935 |
+
+## Excluded / limited source notes
+
+- Романная сюжетная линия не пересказывается полностью.
+- Интервью и кейсы в конце книги используются как переносимость TOC, но не как источник новых универсальных правил без проверки контекста.
+- Line landmarks указывают на локальную structured Markdown source copy.
+
 ## 15. Применение вне завода
 
 ### Software delivery
@@ -861,7 +914,11 @@ TOC application:
 6. QA check: source copied, final exists, no large raw excerpts, раздел внедрения, glossary/patterns/cheatsheet/topic index present.
 7. Optional later adapter decision for model/provider if generation becomes product runtime.
 
-## 17. Мини-резюме для владельца
+## 17. Scope and limits
+
+Этот toolkit покрывает базовую TOC-логику `The Goal`: constraint management, операционные метрики, flow и локальную эффективность. Он не заменяет финансовый учет, отраслевую производственную инженерию, safety/regulatory проверки и детальное проектирование производственного расписания.
+
+## 18. Мини-резюме для владельца
 
 Этот первый прогон показывает, что Books-формат подходит для `The Goal`: книга хорошо превращается не в summary, а в рабочий toolkit вокруг TOC, constraint management, flow, operating measurements and thinking processes.
 
