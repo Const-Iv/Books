@@ -2,7 +2,7 @@
 
 ## Что хранится в Git
 
-- `Единый практический toolkit TRIZ - по нескольким книгам.md` - shareable unified master toolkit на русском языке: полная справочная глубина старого unified плюс навигационный staged layer из нового quality combined.
+- `Единый практический toolkit TRIZ - по нескольким книгам.md` - shareable unified master toolkit на русском языке: полная справочная глубина плюс встроенный staged/quality слой для выбора маршрута, проверки coverage и дедупликации.
 - Этот manifest - навигация по локальным источникам, structured Markdown copies, извлечению и ограничениям.
 - Standalone source toolkit'ы, из которых теперь должен собираться и проверяться combined слой:
   - `../altshuller-algoritm-izobreteniya/`
