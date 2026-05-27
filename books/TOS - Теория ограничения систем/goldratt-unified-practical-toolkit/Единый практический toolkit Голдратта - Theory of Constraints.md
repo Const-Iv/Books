@@ -138,6 +138,9 @@ Standalone coverage-control artifacts:
 Что внедрить:
 - Одностраничную карточку: цель системы, current throughput, suspected constraint, evidence, exploit actions, subordination rules, expected shift.
 
+Пример из книги:
+- В The Goal такая карточка рождается из поиска Herbie: цель, flow, constraint и evidence должны поместиться в один понятный контур. В других книгах Голдратта тот же принцип переносится на conflict cloud, project buffer и technology rules. Карточка нужна, чтобы не начинать изменение с любимого решения.
+
 Когда применять:
 - Перед любой крупной инициативой, операционным улучшением или изменением правил.
 
@@ -151,6 +154,9 @@ Standalone coverage-control artifacts:
 
 Что внедрить:
 - Не запускать работу в систему быстрее, чем constraint способен ее пропустить.
+
+Пример из книги:
+- The Goal показывает, что запуск лишнего материала перегружает завод, даже если каждый ресурс занят. Critical Chain показывает то же в проектах: ранний старт всего подряд создает multitasking и очереди. Stop-starting rule защищает поток от работы, которая не может пройти через constraint.
 
 Когда применять:
 - WIP растет, люди заняты, delivery не ускоряется.
@@ -166,6 +172,9 @@ Standalone coverage-control artifacts:
 Что внедрить:
 - Перед strategy session собирать 5-10 observable UDE и строить причинную логику.
 
+Пример из книги:
+- It's Not Luck начинает change work не с решения, а с UDEs. Когда симптомы собраны в cluster, становится видно, что несколько плохих эффектов могут иметь общий корень. Это снижает риск чинить один симптом ценой усиления другого.
+
 Когда применять:
 - Когда команда спорит о решениях, но не согласовала проблему.
 
@@ -179,6 +188,9 @@ Standalone coverage-control artifacts:
 
 Что внедрить:
 - Каждый конфликт переводить в cloud и искать false assumption.
+
+Пример из книги:
+- В The Choice и It's Not Luck конфликт разбирается через assumptions. Две стороны могут защищать valid needs, но считать невозможным другое поведение из-за непроверенной посылки. Cloud assumption breaker нужен, чтобы заменить компромисс проверкой этой посылки.
 
 Когда применять:
 - Когда выбор выглядит как trade-off: speed vs quality, stockout vs excess, control vs autonomy, price vs margin.
@@ -194,6 +206,9 @@ Standalone coverage-control artifacts:
 Что внедрить:
 - Перед внедрением сильной injection строить short FRT с desirable and negative effects.
 
+Пример из книги:
+- FRT в It's Not Luck проверяет injection до внедрения. Идея считается недостаточной, пока не показано, какие desirable effects она создаст и какие negative branches нужно закрыть. Это особенно важно, когда решение затрагивает клиентов, продажи или правила компании.
+
 Когда применять:
 - Изменяются KPI, supply chain rules, commercial offer, project governance or technology process.
 
@@ -207,6 +222,9 @@ Standalone coverage-control artifacts:
 
 Что внедрить:
 - Убирать индивидуальную safety из задач и переносить защиту в project buffer.
+
+Пример из книги:
+- Critical Chain показывает, что safety внутри каждой задачи не защищает проект: она съедается student syndrome, multitasking и local reporting. Перенос safety в project buffer делает защиту видимой на уровне всего проекта. Тогда управляют не обещаниями по каждой задаче, а состоянием общего буфера.
 
 Когда применять:
 - Проекты хронически опаздывают, несмотря на "реалистичные" оценки.
@@ -222,6 +240,9 @@ Standalone coverage-control artifacts:
 Что внедрить:
 - Приоритеты задач строить по buffer penetration, а не по громкости заказчика.
 
+Пример из книги:
+- В Critical Chain приоритеты меняются с процента готовности на buffer status. Если buffer быстро сгорает, задача получает внимание; если он защищен, команда не создает искусственную срочность. Такой board заменяет постоянный expediting общим индикатором риска.
+
 Когда применять:
 - Всё отмечено красным и PM теряет фокус.
 
@@ -235,6 +256,9 @@ Standalone coverage-control artifacts:
 
 Что внедрить:
 - После внедрения технологии проверять rules, KPI, approvals and batch/release practices.
+
+Пример из книги:
+- Necessary but Not Sufficient показывает, что технология не дает результата, если старые правила продолжают управлять поведением. ERP может ускорить данные, но не изменит push logic, локальные KPI и привычные решения сама по себе. Old-rule audit ищет именно эти невидимые constraints.
 
 Когда применять:
 - Новая система есть, а результат не меняется.
@@ -250,6 +274,9 @@ Standalone coverage-control artifacts:
 Что внедрить:
 - Пилот: хранить буфер ближе к source и пополнять проданное коротким циклом.
 
+Пример из книги:
+- В Necessary but Not Sufficient supply chain выигрывает не от более точного push forecast, а от replenishment по реальному consumption. Pull pilot показывает, где old rules создают одновременно shortages и excess inventory. Малый pilot нужен, чтобы увидеть бизнес-эффект до широкого rollout.
+
 Когда применять:
 - Supply chain имеет и дефицит, и излишки.
 
@@ -263,6 +290,9 @@ Standalone coverage-control artifacts:
 
 Что внедрить:
 - Измерять просроченный throughput and excess inventory через dollar-days.
+
+Пример из книги:
+- Dollar-days в Necessary but Not Sufficient делает visible то, что обычные метрики скрывают: сколько денег и времени застряло из-за shortage или surplus. Это переводит разговор из локальной эффективности в системный ущерб flow. Метрика помогает увидеть, где technology/rule change действительно меняет бизнес.
 
 Когда применять:
 - Локальные KPI делают перепроизводство и задержки рациональными.
@@ -278,6 +308,9 @@ Standalone coverage-control artifacts:
 Что внедрить:
 - Любое объяснение причины должно предсказывать еще один наблюдаемый эффект.
 
+Пример из книги:
+- The Choice тренирует проверку каждого because через ожидаемые эффекты. Если объяснение верно, должны проявиться дополнительные наблюдаемые последствия. Если их нет, because остается тавтологией и не годится как основа решения.
+
 Когда применять:
 - Встречаются ярлыки: "люди сопротивляются", "рынок плохой", "культура не готова".
 
@@ -291,6 +324,9 @@ Standalone coverage-control artifacts:
 
 Что внедрить:
 - После успешного решения проводить review новой реальности: какие новые возможности и constraints появились?
+
+Пример из книги:
+- Never-say-I-know review из The Choice нужен после каждого сильного вывода. Даже когда решение сработало, новая реальность может создать новый constraint или показать неполную assumption. Review защищает от остановки на первом успехе.
 
 Когда применять:
 - Решение сработало и команда хочет остановиться.
@@ -306,6 +342,9 @@ Standalone coverage-control artifacts:
 ### 1. Unified TOC operating model
 
 TOC у Голдратта повторяется в разных доменах:
+
+Пример из книги:
+- Unified TOC model собирается из The Goal, It's Not Luck, Critical Chain, Necessary but Not Sufficient и The Choice: сначала найти constraint, затем понять конфликт/правило, защитить flow и провести изменение. Примером служит переход от заводского bottleneck к project buffer, technology rules и clear thinking.
 
 | Домен | Constraint | Protection | Wrong local behavior | Correct system behavior |
 |---|---|---|---|---|
@@ -325,6 +364,9 @@ The Goal gives the operating skeleton:
 4. Elevate the constraint.
 5. If the constraint moves, go back to step 1.
 
+Пример из книги:
+- Five focusing steps в The Goal начинаются с NCX-10 и heat-treat, но в unified toolkit они становятся master loop для любых constraints. В Critical Chain constraint может быть project chain или shared resource, а в Necessary but Not Sufficient — old rule после technology rollout.
+
 How other books extend it:
 - `LUCK`: if constraint is policy/conflict, use Thinking Processes.
 - `CHAIN`: if constraint is project/resource/time uncertainty, use critical chain and buffers.
@@ -340,6 +382,9 @@ Cost world:
 - feature completion looks like progress;
 - project task completion looks like progress.
 
+Пример из книги:
+- Throughput world лучше всего виден в The Goal: часы bottleneck ценятся как часы всей системы, а idle time non-bottleneck перестает быть проблемой. В Necessary but Not Sufficient та же логика бьет по старым KPI, которые защищают inventory и local efficiency вместо flow.
+
 Throughput world:
 - only the system constraint determines flow;
 - non-constraint overproduction creates inventory/WIP;
@@ -354,6 +399,9 @@ Throughput world:
 | What to change to? | Cloud + injection + FRT | Conflict-breaking solution checked for effects |
 | How to cause the change? | PRT + Transition Tree | Obstacles, intermediate objectives, action sequence |
 
+Пример из книги:
+- Thinking Processes stack раскрывается в It's Not Luck: UDE cluster, CRT, Cloud, FRT и Transition Tree связывают diagnosis, conflict, future checks and implementation. Это пример того, как TOC работает не только с заводом, но и с продажами, переговорами и изменением правил.
+
 Practical rule:
 - Не строить FRT без injection.
 - Не строить Transition Tree без понимания логики другой стороны.
@@ -367,6 +415,9 @@ CCPM переносит TOC из production flow в project flow:
 - вместо local efficiency - remaining duration and buffer penetration;
 - вместо запускать всё - release by constraint.
 
+Пример из книги:
+- CCPM stack раскрывается в Critical Chain: задача не защищается локальной подстраховкой, а проект защищается buffer'ами и single-tasking. Пример с учебным проектом и проектным портфелем показывает, почему локально надежные оценки могут разрушать общий срок.
+
 Ключевая мысль:
 - неопределенность не убирается; она агрегируется и управляется.
 
@@ -379,6 +430,9 @@ CCPM переносит TOC из production flow в project flow:
 4. daily work действительно меняется;
 5. эффект измеряется как business result.
 
+Пример из книги:
+- Technology change stack взят из Necessary but Not Sufficient: ERP/IT становится необходимой, но недостаточной частью результата. Книга показывает, что value возникает только после изменения rules, measurements and market offer around technology.
+
 Если шаги 2-4 пропущены, технология ускоряет старую систему.
 
 ### 7. Clear thinking stack
@@ -389,6 +443,9 @@ CCPM переносит TOC из production flow в project flow:
 - не объяснять людей унижающими ярлыками;
 - не говорить "мы знаем" после первого успеха;
 - проверять каждую причину вторым expected effect.
+
+Пример из книги:
+- Clear thinking stack из The Choice показывает, как TOC переходит в ежедневную дисциплину мышления. Проверка because, отказ от blame, поиск win-win и never-say-I-know превращают логику constraints в личный и управленческий навык.
 
 ## Coverage map
 

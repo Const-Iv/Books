@@ -65,6 +65,9 @@ Source landmarks:
 Что внедрить:
 - Короткий classifier: known solution, specialized engineering solution, inventive contradiction, new principle, new field/system.
 
+Пример из книги:
+- В The Innovation Algorithm уровни творчества показывают, насколько далеко задача выходит за рамки обычной инженерной замены. Если задача первого уровня, достаточно known means; если выше, нужен переход к contradiction and principles. Level check экономит методическое усилие.
+
 Когда применять:
 - Перед решением, чтобы не применять matrix к простой задаче и не вести сложную задачу как обычную оптимизацию.
 
@@ -78,6 +81,9 @@ Source landmarks:
 
 Что внедрить:
 - Contract перед matrix: `improving parameter`, `worsening parameter`, `why these parameters`, `alternative mappings`.
+
+Пример из книги:
+- Matrix contract начинается с честной пары: какой parameter улучшается и какой ухудшается. В книге matrix работает только после такой формулировки technical contradiction. Иначе выбранные principles не связаны с задачей.
 
 Когда применять:
 - Перед любым использованием contradiction matrix.
@@ -93,6 +99,9 @@ Source landmarks:
 Что внедрить:
 - Таблицу: `principle -> question -> concept variants -> resources needed`.
 
+Пример из книги:
+- 40 principles в книге являются directions for transformation. Например principle не говорит готовый answer, а заставляет спросить: можно ли разделить, сделать предварительно, заменить механическое действие, изменить динамику. Так principle становится вопросом.
+
 Когда применять:
 - Когда matrix выдала principles, но команда не знает, как их применить.
 
@@ -106,6 +115,9 @@ Source landmarks:
 
 Что внедрить:
 - Gate: "может ли нужная function выполняться без нового machine/object?"
+
+Пример из книги:
+- Ideal machine в книге проверяет concept before selection: может ли функция выполняться без отдельного носителя или с меньшим вредом. Если идея добавляет сложность, она должна оправдать это ростом ideality. Поэтому ideal machine идет до выбора final concept.
 
 Когда применять:
 - Когда выбираются concepts после matrix.
@@ -121,6 +133,9 @@ Source landmarks:
 Что внедрить:
 - Decision log: `problem framing -> contradiction -> principle -> concept -> verification`.
 
+Пример из книги:
+- Algorithm route фиксирует память рассуждения: задача, уровень, contradiction, matrix, principles, barriers, resources and concept. Это важно, потому что сильное решение после нахождения выглядит очевидным. Записанный путь помогает повторить метод.
+
 Когда применять:
 - Для командных задач, где важно объяснить, почему выбран concept.
 
@@ -134,6 +149,9 @@ Source landmarks:
 
 Что внедрить:
 - После concept selection прогонять check: ideality, dynamization, segmentation, transition to micro-level, system/supersystem shift.
+
+Пример из книги:
+- Evolution tendencies в книге добавляют strategic layer к текущему решению. После устранения дефекта стоит спросить, куда развивается technical system: к большей ideality, dynamism, segmentation or field use. Это превращает fix в next-generation direction.
 
 Когда применять:
 - Roadmap, product generation, patent bypass, design platform decisions.
@@ -149,6 +167,9 @@ Source landmarks:
 Что внедрить:
 - Перед matrix писать "human constraints": привычная форма, термин, authority, old design, fear of loss.
 
+Пример из книги:
+- Psychological barrier в книге разбирается как часть задачи, а не человеческая слабость. Эксперты могут не видеть решения из-за терминов, привычной конструкции или отраслевой нормы. Barrier map помогает переформулировать задачу.
+
 Когда применять:
 - Когда technically possible options не рассматриваются из-за инерции.
 
@@ -162,6 +183,9 @@ Source landmarks:
 
 Что внедрить:
 - Малый drill: condition -> contradiction -> matrix/principle -> concept -> compare with answer.
+
+Пример из книги:
+- Exercise problems в книге нужны как проверка навыка: читатель должен пройти путь, а не узнать ответ. Если решение найдено случайно, упражнение не засчитывает method mastery. Поэтому такие задачи полезны для командного обучения.
 
 Когда применять:
 - При обучении команды и перед применением TRIZ на боевой задаче.
@@ -254,6 +278,16 @@ Practitioner use:
 | Algorithm route | Memory of reasoning | team problem solving | traceable decisions |
 | Psychological barrier map | Human obstacles | expert-heavy teams | reframed problem |
 | Evolution tendencies | Future direction | roadmap / patent / next version | strategic concept options |
+
+Примеры из книги:
+- `Levels of creativity`: Levels of creativity классифицируют задачу перед методом. Это показывает, когда достаточно known solution, а когда нужен алгоритмический поиск.
+- `Ideal machine`: Ideal machine заставляет искать функцию без лишнего носителя. В книге это основной способ двигаться к higher ideality.
+- `Technical contradiction`: Technical contradiction превращает trade-off в solvable object. Пока пара параметров не названа, matrix and principles использовать рано.
+- `Contradiction matrix`: Contradiction matrix дает principle suggestions by parameter pair. Ее сила зависит от качества mapping, а не от механического чтения таблицы.
+- `40 principles`: 40 principles задают направления преобразования. Они становятся рабочими, когда превращены в вопросы к конкретному conflict zone.
+- `Algorithm route`: Algorithm route сохраняет ход мышления. Команда видит, как от уровня задачи и contradiction пришла к concept.
+- `Psychological barrier map`: Psychological barrier map показывает, где опыт и терминология сузили поиск. Это помогает изменить формулировку, а не только искать новый принцип.
+- `Evolution tendencies`: Evolution tendencies добавляют forecast: сильное решение должно учитывать развитие technical system, а не только текущую поломку.
 
 ## 7. Принципы применения
 
