@@ -11,6 +11,7 @@ import {
   findGitRoot,
   findMainWorktree,
   formatIso,
+  getChangedFiles,
   getCurrentBranch,
   getHistoryPath,
   getPipelinePaths,
@@ -25,6 +26,7 @@ import {
 } from "./lib/runtime.mjs";
 
 const TASK_HISTORY_PATH = "Docs/task-history.md";
+const OPERATIONAL_ARCHIVE_PATTERN = /^Docs\/archive\/(?:qa-implementation-log|triz-usage-log)-.*\.md\.gz$/;
 const LOCK_WAIT_MS = 30_000;
 const LOCK_POLL_MS = 500;
 const LOCK_STALE_MS = 30 * 60 * 1000;
@@ -187,14 +189,24 @@ async function normalizeLegacyTaskHistory(mainWorktreePath, repoRoot) {
 /**
  * @param {string} mainWorktreePath
  * @param {import("./lib/runtime.mjs").TaskState} state
+ * @param {string[]} [additionalPaths]
  * @returns {Promise<void>}
  */
-async function maybeAutoCommitTrackedChanges(mainWorktreePath, state) {
+async function maybeAutoCommitTrackedChanges(mainWorktreePath, state, additionalPaths = []) {
   const trackedChanged = await getTrackedChangedFiles(mainWorktreePath);
-  if (trackedChanged.length === 0) {
+  const operationalArchiveChanges = (await getChangedFiles(mainWorktreePath)).filter((filePath) =>
+    OPERATIONAL_ARCHIVE_PATTERN.test(filePath)
+  );
+  const explicitPaths = Array.from(
+    new Set([...additionalPaths, ...operationalArchiveChanges].filter((filePath) => filePath.trim().length > 0))
+  );
+  if (trackedChanged.length === 0 && explicitPaths.length === 0) {
     return;
   }
 
+  if (explicitPaths.length > 0) {
+    runCommand(mainWorktreePath, "git", ["add", "--", ...explicitPaths]);
+  }
   runCommand(mainWorktreePath, "git", ["add", "-u"]);
   const staged = runCommand(mainWorktreePath, "git", ["diff", "--cached", "--quiet"], { allowFailure: true });
   if (staged.status === 0) {
@@ -265,9 +277,9 @@ async function main() {
     runCommand(mainWorktreePath, "node", ["scripts/deterministic-feedback-loop.mjs"]);
 
     const artifactDir = path.join(getPipelinePaths(repoRoot).artifactsDir, state.taskId);
-    await syncOperationalDocs(mainWorktreePath, artifactDir).catch(() => []);
+    const syncedOperationalPaths = await syncOperationalDocs(mainWorktreePath, artifactDir).catch(() => []);
     runCommand(mainWorktreePath, "node", ["scripts/worktree-history.mjs", "sync"]);
-    await maybeAutoCommitTrackedChanges(mainWorktreePath, state);
+    await maybeAutoCommitTrackedChanges(mainWorktreePath, state, syncedOperationalPaths);
 
     if (hasRemote(mainWorktreePath)) {
       runCommand(mainWorktreePath, "git", ["push", "origin", "main"]);
