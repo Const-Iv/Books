@@ -2,12 +2,6 @@
 
 Журнал срабатываний TRIZ-триггеров и применённых решений.
 
-## 2026-04-24T09:22:26.456Z 20260424-091736-6c73
-
-- Branch: `codex/20260424-091736-6c73-submodule-shared-skills`
-- Reasons: cross_module_conflict
-- Status: trigger recorded
-
 ## 2026-04-24T09:22:54.300Z 20260424-091736-6c73 — TRIZ_APPLIED
 
 - Principle: separation in space / mediator
