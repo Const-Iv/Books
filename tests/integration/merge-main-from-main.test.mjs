@@ -1,11 +1,13 @@
 // @ts-check
 
 import assert from "node:assert/strict";
-import { appendFile, readFile } from "node:fs/promises";
+import { appendFile, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
+import { captureOperationalDocs } from "../../scripts/lib/doc-utils.mjs";
 import {
+  getPipelinePaths,
   getHistoryPath,
   getHeadSha,
   loadTaskStateByBranch,
@@ -38,6 +40,25 @@ test("task:merge:main can merge a committed task branch when started from main",
     state.commitSha = getHeadSha(startPayload.worktreePath);
     await saveTaskState(fixture.repoRoot, state);
 
+    const archiveBefore = new Set(
+      runCommand(fixture.repoRoot, "git", ["ls-files", "Docs/archive"]).stdout.split("\n").filter(Boolean)
+    );
+    const sections = Array.from({ length: 35 }, (_, index) => {
+      const entry = String(index + 1).padStart(2, "0");
+      return [`## Merge Archive Entry ${entry}`, "", `- Evidence ${entry}`].join("\n");
+    });
+    await writeFile(
+      path.join(startPayload.worktreePath, "Docs", "triz-usage-log.md"),
+      ["# TRIZ Usage Log", "", ...sections].join("\n\n"),
+      "utf8"
+    );
+    await captureOperationalDocs(
+      startPayload.worktreePath,
+      state.taskId,
+      state.branch,
+      path.join(getPipelinePaths(fixture.repoRoot).artifactsDir, state.taskId)
+    );
+
     const merged = runStarterScript(
       fixture.repoRoot,
       ["scripts/worktree-merge-main.mjs", "--branch", startPayload.branch],
@@ -47,6 +68,12 @@ test("task:merge:main can merge a committed task branch when started from main",
 
     const mainReadme = await readFile(path.join(fixture.repoRoot, "README.md"), "utf8");
     assert.match(mainReadme, /Merged from main test\./);
+    assert.equal(runCommand(fixture.repoRoot, "git", ["status", "--porcelain"]).stdout, "");
+    const archiveAfter = runCommand(fixture.repoRoot, "git", ["ls-files", "Docs/archive"]).stdout
+      .split("\n")
+      .filter(Boolean);
+    const newArchives = archiveAfter.filter((filePath) => !archiveBefore.has(filePath));
+    assert.ok(newArchives.some((filePath) => /^Docs\/archive\/triz-usage-log-.*\.md\.gz$/.test(filePath)));
 
     const refreshed = await loadTaskStateByBranch(fixture.repoRoot, startPayload.branch);
     assert.equal(refreshed?.publishStatus, "local-only");
