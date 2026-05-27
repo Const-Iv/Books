@@ -190,3 +190,9 @@
 - ИКР: Books получает только approved reusable starter rules через managed task conveyor; product identity остаётся в Books, а shared rules фиксируются в canonical/mirror surfaces и registry.
 - Подходы: segmentation между reusable governance и product wording; local quality через Books-specific clean-tree recheck; preliminary action через owner-confirmed project set до apply-plan.
 - Guard: rule-fragment self-check `11/11`, targeted worktree-start tests, `npm run lint`, `npm run qa:agent`, `npm run task:qa:agent` и publish to `origin/main` прошли.
+
+## 2026-05-27T11:58:18.922Z 20260527-081125-a09e
+
+- Branch: `codex/20260527-081125-a09e-book-toolkit-examples`
+- Reasons: historical_recurrence
+- Status: trigger recorded
