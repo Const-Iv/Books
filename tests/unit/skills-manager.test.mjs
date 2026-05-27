@@ -60,6 +60,7 @@ test("repo exposes starter managed project skills", async () => {
   assert.deepEqual(
     discovered.map((skill) => skill.relativeDir),
     [
+      "books-toolkit",
       "codebase-recon",
       "gh-address-comments",
       "gh-fix-ci",
