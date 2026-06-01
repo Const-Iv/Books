@@ -54,6 +54,12 @@ import path from "node:path";
  * @property {string | null} [finishedAt]
  * @property {string[]} [operationalArtifacts]
  * @property {string | null} [mainWorktreePath]
+ * @property {boolean} [openAttempted]
+ * @property {"skipped"|"verified"|"unverified"|"failed"} [openStatus]
+ * @property {boolean} [openedChat]
+ * @property {string | null} [openThreadId]
+ * @property {string | null} [openDiagnostics]
+ * @property {string | null} [openCommand]
  */
 
 /**

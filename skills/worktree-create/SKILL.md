@@ -23,7 +23,8 @@ Use this skill to start a task worktree in a way that is consistent across proje
 4. Execute the canonical start entrypoint from the repo contract.
 5. Verify the result by capturing the created branch, worktree path, and any task id or state artifact.
 6. Confirm the branch/worktree slug reflects the resolved title; for non-ASCII title expect the repo's deterministic readable ASCII slug, such as `ЭХО` -> `echo`, and treat a generic `task` slug for meaningful text as a regression.
-7. Report the result briefly with the exact branch and worktree path.
+7. Verify Codex chat status honestly. Trust `openedChat=true` only after read-back verification for the exact worktree path; otherwise report `openAttempted`, `openStatus`, `openDiagnostics`, and `openCommand`.
+8. Report the result briefly with the exact branch and worktree path.
 
 ## Intent Resolution
 
@@ -56,8 +57,12 @@ In repositories derived from the current starter, the common resolution is:
 npm run task:start -- --title "<title>" --seed-message "<full request>"
 ```
 
-Use that only after confirming it matches the current repo contract.
+Use that only after confirming it matches the current repo contract. `openedChat=true` means read-back verified a Codex thread for the exact worktree `cwd`; a successful `codex app` launch without a matching thread is only `openAttempted` and must be reported as unverified.
 
 ## Shared Starter Baseline Rules — synced 2026-05-18
 
 - `starter.conveyor.goal-seed-handoff`: Goal Seed является стандартным форматом handoff для новых Codex-чатов, созданных task conveyor. Он выводится из исходного запроса владельца и должен быть самодостаточным plain-text prompt: цель задачи, исходные project source files, `Definition of Done`, зона влияния, safety boundaries, команды проверки, UI browser oracle rules когда релевантно, governance/eval requirements когда релевантно и stop conditions. Goal Seed может начинаться с `/goal`, но не должен зависеть от доступности slash command. `task:start` по умолчанию отправляет в новый чат effective Goal Seed; raw seed допустим только как явный opt-out владельца через `--no-goal-seed`.
+
+## Shared Starter Baseline Rules — synced 2026-06-01
+
+- `starter.conveyor.codex-open-readback`: `task:start` и shared `$worktree-create` не должны считать запуск `codex app <worktreePath>` доказательством открытого Codex-чата. `openedChat=true` допустим только после read-back локального Codex thread state с exact `cwd` нового worktree; при отсутствии matching thread нужно сохранять и показывать `openAttempted`, `openStatus=unverified|failed|skipped`, `openDiagnostics`, `openCommand` и не выдавать успешный статус открытия.
