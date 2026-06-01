@@ -159,12 +159,61 @@ async function waitForCodexThread(cwd, codexHome, worktreePath, notBeforeMs) {
 }
 
 /**
+ * @param {string} worktreePath
+ * @param {string} seedMessage
+ * @returns {string}
+ */
+function buildCodexNewThreadUrl(worktreePath, seedMessage) {
+  const params = new URLSearchParams();
+  params.set("path", worktreePath);
+  if (seedMessage.trim()) {
+    params.set("prompt", seedMessage);
+  }
+  return `codex://new?${params.toString()}`;
+}
+
+/**
+ * @param {string} repoRoot
+ * @param {string} worktreePath
+ * @param {string} seedMessage
+ * @returns {{attempted: boolean, ok: boolean, command: string, diagnostic: string}}
+ */
+function openCodexNewThreadComposer(repoRoot, worktreePath, seedMessage) {
+  const url = buildCodexNewThreadUrl(worktreePath, seedMessage);
+  const command = `open ${JSON.stringify(url)}`;
+  if (process.platform !== "darwin") {
+    return {
+      attempted: false,
+      ok: false,
+      command,
+      diagnostic: "Codex new-thread deep link is only supported on macOS."
+    };
+  }
+  const result = runCommand(repoRoot, "open", [url], { allowFailure: true });
+  if (result.status !== 0) {
+    return {
+      attempted: true,
+      ok: false,
+      command,
+      diagnostic: `Codex new-thread deep link failed (${result.status}): ${(result.stderr || result.stdout).trim()}`
+    };
+  }
+  return {
+    attempted: true,
+    ok: true,
+    command,
+    diagnostic: "Codex new-thread deep link opened the target worktree composer."
+  };
+}
+
+/**
  * @param {string} repoRoot
  * @param {string} worktreePath
  * @param {boolean} noOpen
+ * @param {string} seedMessage
  * @returns {Promise<CodexOpenResult>}
  */
-async function openCodexTaskChat(repoRoot, worktreePath, noOpen) {
+async function openCodexTaskChat(repoRoot, worktreePath, noOpen, seedMessage) {
   const openCommand = `codex app ${JSON.stringify(worktreePath)}`;
   if (noOpen) {
     return {
@@ -202,6 +251,12 @@ async function openCodexTaskChat(repoRoot, worktreePath, noOpen) {
     };
   }
 
+  const deepLink = openCodexNewThreadComposer(repoRoot, worktreePath, seedMessage);
+  const effectiveOpenCommand = deepLink.attempted ? `${openCommand}; ${deepLink.command}` : openCommand;
+  if (deepLink.ok) {
+    await sleep(CODEX_OPEN_READBACK_POLL_MS);
+  }
+
   const readBack = await waitForCodexThread(repoRoot, getCodexHome(), worktreePath, notBeforeMs);
   if (readBack.threadId) {
     return {
@@ -210,18 +265,20 @@ async function openCodexTaskChat(repoRoot, worktreePath, noOpen) {
       openedChat: true,
       openThreadId: readBack.threadId,
       openDiagnostics: "Codex thread read-back matched the created worktree cwd.",
-      openCommand
+      openCommand: effectiveOpenCommand
     };
   }
+  const diagnostics = [readBack.diagnostic, deepLink.diagnostic].filter(Boolean).join(" ");
   return {
     openAttempted: true,
     openStatus: "unverified",
     openedChat: false,
     openThreadId: null,
     openDiagnostics:
-      readBack.diagnostic ??
+      diagnostics ||
+      readBack.diagnostic ||
       `No Codex thread was observed for cwd ${worktreePath} after a successful codex app launch attempt.`,
-    openCommand
+    openCommand: effectiveOpenCommand
   };
 }
 
@@ -351,7 +408,7 @@ async function main() {
     mainWorktreePath
   };
 
-  const openResult = await openCodexTaskChat(repoRoot, worktreePath, noOpen);
+  const openResult = await openCodexTaskChat(repoRoot, worktreePath, noOpen, seedMessage);
   Object.assign(taskState, openResult);
 
   await saveTaskState(repoRoot, taskState);

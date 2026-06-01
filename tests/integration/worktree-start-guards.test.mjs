@@ -1,7 +1,7 @@
 // @ts-check
 
 import assert from "node:assert/strict";
-import { appendFile, chmod, mkdir, writeFile } from "node:fs/promises";
+import { appendFile, chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
@@ -92,10 +92,15 @@ test("task:start reports Codex open attempt separately from verified chat creati
     const fakeCodex = path.join(fakeBin, "codex");
     await writeFile(fakeCodex, "#!/bin/sh\nexit 0\n", "utf8");
     await chmod(fakeCodex, 0o755);
+    const openLog = path.join(fixture.codexHome, "open.log");
+    const fakeOpen = path.join(fakeBin, "open");
+    await writeFile(fakeOpen, "#!/bin/sh\nprintf '%s\\n' \"$1\" > \"$OPEN_LOG\"\nexit 0\n", "utf8");
+    await chmod(fakeOpen, 0o755);
 
     const env = {
       CODEX_HOME: fixture.codexHome,
-      PATH: `${fakeBin}:${process.env.PATH ?? ""}`
+      PATH: `${fakeBin}:${process.env.PATH ?? ""}`,
+      OPEN_LOG: openLog
     };
 
     const start = runStarterScript(
@@ -109,6 +114,14 @@ test("task:start reports Codex open attempt separately from verified chat creati
     assert.equal(payload.openStatus, "unverified");
     assert.equal(payload.openedChat, false);
     assert.match(payload.openDiagnostics, /No Codex thread was observed/);
+    if (process.platform === "darwin") {
+      const deepLinkUrl = await readFile(openLog, "utf8");
+      assert.match(deepLinkUrl, /^codex:\/\/new\?path=/);
+      assert.match(deepLinkUrl, /prompt=/);
+      assert.match(deepLinkUrl, /Open\+verification/);
+      assert.match(payload.openCommand, /codex:\/\/new/);
+      assert.match(payload.openDiagnostics, /deep link opened the target worktree composer/);
+    }
 
     const state = await loadTaskStateByBranch(fixture.repoRoot, payload.branch);
     assert.equal(state?.openAttempted, true);
