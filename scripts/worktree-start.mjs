@@ -1,20 +1,20 @@
 // @ts-check
 
+import { readdir, stat } from "node:fs/promises";
 import path from "node:path";
+import { setTimeout as sleep } from "node:timers/promises";
 
 import { ensureDependencies } from "./dependency-preflight.mjs";
 import {
   appendHistoryEvent,
   createTaskId,
   ensurePipelineDirs,
-  fileExists,
   findGitRoot,
   formatIso,
   getCodexHome,
   getCurrentBranch,
   getRepoName,
   getTaskArtifactsDir,
-  hasRemote,
   isGitDirty,
   parseArgs,
   resolveBaseRef,
@@ -46,6 +46,183 @@ function buildDirtyTreeGuardMessage(repoRoot, allowDirtyRequested) {
   }
   lines.push("Безопасные следующие шаги: `git diff`, затем commit текущей работы или `git stash -u`.");
   return lines.join("\n");
+}
+
+/**
+ * @typedef {Object} CodexOpenResult
+ * @property {boolean} openAttempted
+ * @property {"skipped"|"verified"|"unverified"|"failed"} openStatus
+ * @property {boolean} openedChat
+ * @property {string | null} openThreadId
+ * @property {string | null} openDiagnostics
+ * @property {string | null} openCommand
+ */
+
+const CODEX_OPEN_READBACK_TIMEOUT_MS = 5000;
+const CODEX_OPEN_READBACK_POLL_MS = 500;
+
+/**
+ * @param {string} codexHome
+ * @returns {Promise<string | null>}
+ */
+async function findCodexStateDb(codexHome) {
+  let entries;
+  try {
+    entries = await readdir(codexHome);
+  } catch {
+    return null;
+  }
+  const candidates = [];
+  for (const entry of entries) {
+    if (!/^state_\d+\.sqlite$/.test(entry)) {
+      continue;
+    }
+    const candidate = path.join(codexHome, entry);
+    try {
+      candidates.push({ path: candidate, mtimeMs: (await stat(candidate)).mtimeMs });
+    } catch {
+      // Ignore files that disappear while we inspect the Codex home directory.
+    }
+  }
+  candidates.sort((a, b) => b.mtimeMs - a.mtimeMs || b.path.localeCompare(a.path));
+  return candidates[0]?.path ?? null;
+}
+
+/**
+ * @param {string} value
+ * @returns {string}
+ */
+function sqliteQuote(value) {
+  return `'${value.replace(/'/g, "''")}'`;
+}
+
+/**
+ * @param {string} cwd
+ * @param {string} codexHome
+ * @param {string} worktreePath
+ * @param {number} notBeforeMs
+ * @returns {Promise<{threadId: string | null, diagnostic: string | null}>}
+ */
+async function findCodexThreadForWorktree(cwd, codexHome, worktreePath, notBeforeMs) {
+  const dbPath = await findCodexStateDb(codexHome);
+  if (!dbPath) {
+    return {
+      threadId: null,
+      diagnostic: `No Codex thread was observed for cwd ${worktreePath}: Codex state db was not found.`
+    };
+  }
+  const query = [
+    "select id from threads",
+    `where archived = 0 and cwd = ${sqliteQuote(worktreePath)} and coalesce(created_at_ms, created_at * 1000) >= ${Math.floor(
+      notBeforeMs
+    )}`,
+    "order by coalesce(created_at_ms, created_at * 1000) desc limit 1;"
+  ].join(" ");
+  const result = runCommand(cwd, "sqlite3", [dbPath, query], { allowFailure: true });
+  if (result.status !== 0) {
+    return {
+      threadId: null,
+      diagnostic: `No Codex thread was observed for cwd ${worktreePath}: sqlite read-back failed (${result.status}).`
+    };
+  }
+  const threadId = result.stdout.trim().split("\n").find(Boolean) ?? null;
+  return { threadId, diagnostic: null };
+}
+
+/**
+ * @param {string} cwd
+ * @param {string} codexHome
+ * @param {string} worktreePath
+ * @param {number} notBeforeMs
+ * @returns {Promise<{threadId: string | null, diagnostic: string | null}>}
+ */
+async function waitForCodexThread(cwd, codexHome, worktreePath, notBeforeMs) {
+  const deadline = Date.now() + CODEX_OPEN_READBACK_TIMEOUT_MS;
+  let lastDiagnostic = null;
+  do {
+    const result = await findCodexThreadForWorktree(cwd, codexHome, worktreePath, notBeforeMs);
+    if (result.threadId) {
+      return result;
+    }
+    lastDiagnostic = result.diagnostic;
+    if (lastDiagnostic?.includes("state db was not found")) {
+      break;
+    }
+    await sleep(CODEX_OPEN_READBACK_POLL_MS);
+  } while (Date.now() < deadline);
+  return {
+    threadId: null,
+    diagnostic:
+      lastDiagnostic ??
+      `No Codex thread was observed for cwd ${worktreePath} within ${CODEX_OPEN_READBACK_TIMEOUT_MS}ms.`
+  };
+}
+
+/**
+ * @param {string} repoRoot
+ * @param {string} worktreePath
+ * @param {boolean} noOpen
+ * @returns {Promise<CodexOpenResult>}
+ */
+async function openCodexTaskChat(repoRoot, worktreePath, noOpen) {
+  const openCommand = `codex app ${JSON.stringify(worktreePath)}`;
+  if (noOpen) {
+    return {
+      openAttempted: false,
+      openStatus: "skipped",
+      openedChat: false,
+      openThreadId: null,
+      openDiagnostics: "Codex auto-open skipped by --no-open or STARTER_NO_OPEN=1.",
+      openCommand
+    };
+  }
+
+  const codexPath = runCommand(repoRoot, "sh", ["-lc", "command -v codex"], { allowFailure: true });
+  if (codexPath.status !== 0) {
+    return {
+      openAttempted: true,
+      openStatus: "failed",
+      openedChat: false,
+      openThreadId: null,
+      openDiagnostics: "Codex CLI was not found in PATH; task worktree was created but no chat was opened.",
+      openCommand
+    };
+  }
+
+  const notBeforeMs = Date.now() - 1000;
+  const opened = runCommand(repoRoot, "codex", ["app", worktreePath], { allowFailure: true });
+  if (opened.status !== 0) {
+    return {
+      openAttempted: true,
+      openStatus: "failed",
+      openedChat: false,
+      openThreadId: null,
+      openDiagnostics: `codex app failed (${opened.status}): ${(opened.stderr || opened.stdout).trim()}`,
+      openCommand
+    };
+  }
+
+  const readBack = await waitForCodexThread(repoRoot, getCodexHome(), worktreePath, notBeforeMs);
+  if (readBack.threadId) {
+    return {
+      openAttempted: true,
+      openStatus: "verified",
+      openedChat: true,
+      openThreadId: readBack.threadId,
+      openDiagnostics: "Codex thread read-back matched the created worktree cwd.",
+      openCommand
+    };
+  }
+  return {
+    openAttempted: true,
+    openStatus: "unverified",
+    openedChat: false,
+    openThreadId: null,
+    openDiagnostics:
+      readBack.diagnostic ??
+      `No Codex thread was observed for cwd ${worktreePath} after a successful codex app launch attempt.`,
+    openCommand
+  };
 }
 
 /**
@@ -174,6 +351,9 @@ async function main() {
     mainWorktreePath
   };
 
+  const openResult = await openCodexTaskChat(repoRoot, worktreePath, noOpen);
+  Object.assign(taskState, openResult);
+
   await saveTaskState(repoRoot, taskState);
   await appendHistoryEvent(repoRoot, {
     at: formatIso(),
@@ -184,15 +364,10 @@ async function main() {
       title,
       seedMessage,
       worktreePath,
-      allowDirtyRequested
+      allowDirtyRequested,
+      ...openResult
     }
   });
-
-  if (!noOpen && (await fileExists(worktreePath))) {
-    runCommand(repoRoot, "sh", ["-lc", `command -v codex >/dev/null 2>&1 && codex app "${worktreePath}" >/dev/null 2>&1 &`], {
-      allowFailure: true
-    });
-  }
 
   const artifactsDir = getTaskArtifactsDir(repoRoot, taskId);
   await ensurePipelineDirs(repoRoot);
@@ -204,7 +379,7 @@ async function main() {
         taskId,
         branch,
         worktreePath,
-        openedChat: !noOpen
+        ...openResult
       },
       null,
       2

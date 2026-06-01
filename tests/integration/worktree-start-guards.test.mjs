@@ -1,7 +1,7 @@
 // @ts-check
 
 import assert from "node:assert/strict";
-import { appendFile } from "node:fs/promises";
+import { appendFile, chmod, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
@@ -79,6 +79,42 @@ test("task:start can keep raw seed with explicit opt-out", async () => {
 
     const state = await loadTaskStateByBranch(fixture.repoRoot, payload.branch);
     assert.equal(state?.seedMessage, "Raw message");
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test("task:start reports Codex open attempt separately from verified chat creation", async () => {
+  const fixture = await createTempStarterRepo();
+  try {
+    const fakeBin = path.join(fixture.codexHome, "bin");
+    await mkdir(fakeBin, { recursive: true });
+    const fakeCodex = path.join(fakeBin, "codex");
+    await writeFile(fakeCodex, "#!/bin/sh\nexit 0\n", "utf8");
+    await chmod(fakeCodex, 0o755);
+
+    const env = {
+      CODEX_HOME: fixture.codexHome,
+      PATH: `${fakeBin}:${process.env.PATH ?? ""}`
+    };
+
+    const start = runStarterScript(
+      fixture.repoRoot,
+      ["scripts/worktree-start.mjs", "--title", "Open verification", "--seed-message", "Open verification"],
+      { env }
+    );
+    const payload = JSON.parse(start.stdout);
+
+    assert.equal(payload.openAttempted, true);
+    assert.equal(payload.openStatus, "unverified");
+    assert.equal(payload.openedChat, false);
+    assert.match(payload.openDiagnostics, /No Codex thread was observed/);
+
+    const state = await loadTaskStateByBranch(fixture.repoRoot, payload.branch);
+    assert.equal(state?.openAttempted, true);
+    assert.equal(state?.openStatus, "unverified");
+    assert.equal(state?.openedChat, false);
+    assert.match(state?.openDiagnostics ?? "", /No Codex thread was observed/);
   } finally {
     await fixture.cleanup();
   }

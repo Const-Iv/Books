@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-05-18T11:17:40.000Z",
+  "updatedAt": "2026-06-01T09:45:00.000Z",
   "rules": [
     {
       "id": "starter.project-intake.mission-vision-project-level",
@@ -800,6 +800,39 @@
         "approval": "runtime/rule-sync/approvals/2026-05-18-owner-approved-nps-rule-import.json",
         "scan": "runtime/rule-sync/scans/rule-sync-2026-05-18-091748842Z.json",
         "importedAt": "2026-05-18T10:25:00.000Z"
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.conveyor.codex-open-readback",
+      "title": "Codex chat open requires thread read-back",
+      "text": "`task:start` и shared `$worktree-create` не должны считать запуск `codex app <worktreePath>` доказательством открытого Codex-чата. `openedChat=true` допустим только после read-back локального Codex thread state с exact `cwd` нового worktree; при отсутствии matching thread нужно сохранять и показывать `openAttempted`, `openStatus=unverified|failed|skipped`, `openDiagnostics`, `openCommand` и не выдавать успешный статус открытия.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        ".memory-bank/project-context.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        ".cursorrules",
+        "CLAUDE.md",
+        "scripts/README.md",
+        "skills/worktree-create/SKILL.md",
+        "scripts/worktree-start.mjs",
+        "scripts/lib/runtime.mjs",
+        "tests/integration/worktree-start-guards.test.mjs"
+      ],
+      "requiredFragments": [
+        "openedChat=true",
+        "read-back локального Codex thread state",
+        "exact `cwd` нового worktree",
+        "openStatus=unverified|failed|skipped",
+        "openDiagnostics",
+        "openCommand"
+      ],
+      "source": {
+        "type": "starter-rule-share",
+        "starterHead": "24956dce6740b07efe015135f44b39ca7a85769a",
+        "importedAt": "2026-06-01T09:45:00.000Z"
       },
       "sharePolicy": "required"
     }
