@@ -20,13 +20,14 @@ Use this skill to start a task worktree in a way that is consistent across proje
 1. Resolve the task title and the seed message from the user's request.
 2. Check current branch and `git status --short` before any mutation.
 3. If the repo blocks dirty-tree starts, stop and report the blocker instead of forcing a bypass. Include files, status, likely origin, relation to the current task, risk, recovery options checked, and your recommended safe path before asking the owner for a decision.
-4. Execute the canonical start entrypoint from the repo contract. If it supports auto-opening a Codex chat, leave that enabled unless the user explicitly asks not to.
+4. Execute the canonical start entrypoint from the repo contract. If it supports opening a Codex workspace without sending an initial prompt, use that mode by default for this skill.
 5. Verify the result by capturing the created branch, worktree path, and any task id or state artifact.
 6. Confirm the branch/worktree slug reflects the resolved title; for non-ASCII title expect the repo's deterministic readable ASCII slug, such as `ЭХО` -> `echo`, and treat a generic `task` slug for meaningful text as a regression.
-7. Verify Codex chat status honestly. For script-driven starts, trust `openedChat=true` only when the script also reports read-back verification such as `openStatus=verified` for the exact worktree path. If the script reports `openStatus=unverified|failed|skipped`, do not stop at a manual-folder instruction when Codex Desktop thread tools are available:
-   - First open/register the exact worktree with the app-native deep link: `open "codex://new?path=<urlencoded-worktreePath>"`. If a seed should be sent and you are not going to use `create_thread`, include `&prompt=<urlencoded-effectiveSeed>` so the composer opens in the right workspace.
-   - Then use `tool_search` to load `create_thread` if it is not already available. Call `codex_app.create_thread` with `target.type="project"`, `projectId=<exact worktreePath>`, `environment.type="local"`, and `prompt=<effective seed message>`.
-   - Read back the created thread and verify `cwd == <exact worktreePath>` before telling the owner the chat was created. If `create_thread` cannot target the worktree even after the deep link, report the script diagnostics and the manual path honestly.
+7. Verify Codex workspace status honestly. For script-driven starts, trust `openedChat=true` only when the script also reports read-back verification such as `openStatus=verified` for the exact worktree path. If the script reports `openStatus=unverified|failed|skipped`, do not send an initial prompt on the owner's behalf:
+   - Open/register the exact worktree with the app-native deep link: `open "codex://new?path=<urlencoded-worktreePath>"`.
+   - Do not include `prompt=` in this skill's fallback deep link.
+   - Do not call `codex_app.create_thread` for `$worktree-create` unless the owner explicitly asks you to start a task with an initial prompt; `create_thread` sends its prompt immediately.
+   - Read back thread state if available and verify `cwd == <exact worktreePath>` before telling the owner the workspace was verified. If no matching thread appears, report the script diagnostics and the exact worktree path honestly instead of claiming the chat was opened.
    - Do not use `codex_app.create_thread` with the source project plus `environment.type="worktree"` after the repo conveyor already created a managed worktree; that creates a second Codex-managed worktree and breaks task-state alignment.
 8. Report the result briefly with the exact branch, worktree path, and verified thread id when available. If you successfully created or switched the thread onto a branch/worktree, emit the Codex branch directive for the created worktree in the final response.
 
@@ -39,7 +40,7 @@ Use this only when discovery finds no repository-owned start entrypoint such as 
 3. Fetch/prune remotes first when the repo has `origin`, and use `origin/main` as the base when available.
 4. Create the worktree with `git worktree add -b "<branch>" "<worktreePath>" "<baseRef>"`.
 5. If `codex` is available, run `codex app "<worktreePath>"` as an explicit best-effort open attempt.
-6. When Codex Desktop thread tools are available, prefer the app-native deep link plus `codex_app.create_thread` fallback described in the Start Workflow before asking the owner to open the folder manually.
+6. When Codex Desktop thread tools are available, prefer the app-native deep link without `prompt=` before asking the owner to open the folder manually.
 7. Read back Codex thread state when available and only report the chat as opened if a thread with exact `cwd=<worktreePath>` appears. If read-back is unavailable or no matching thread appears, report `openAttempted=true`, `openStatus=unverified`, the attempted command, and the worktree path instead of claiming success.
 8. Verify with `git worktree list`, `git status --short --branch` inside the new path, current branch, and short `HEAD`.
 
@@ -74,17 +75,17 @@ Do not default to repo-local `.worktrees/` or `.claude/worktrees/` for Codex wor
 In repositories derived from the current starter, the common resolution is:
 
 ```bash
-npm run task:start -- --title "<title>" --seed-message "<full request>"
+npm run task:start -- --title "<title>" --seed-message "<full request>" --open-only
 ```
 
-Use that only after confirming it matches the current repo contract. This script creates the worktree under `$CODEX_HOME/worktrees/<taskId>/...`, converts the seed message into the repo's effective Goal Seed by default, and attempts `codex app` unless the user requested `--no-open` or `STARTER_NO_OPEN=1` is set. Raw seed handoff is only for an explicit owner/tooling opt-out through `--no-goal-seed`. `openedChat=true` means read-back verified a Codex thread for the exact worktree `cwd`; a successful `codex app` launch without a matching thread is only `openAttempted` and must be reported as unverified.
+Use that only after confirming it matches the current repo contract. This script creates the worktree under `$CODEX_HOME/worktrees/<taskId>/...` and opens the exact worktree in Codex without sending an initial prompt. Direct `task:start` without `--open-only` still converts the seed message into the repo's effective Goal Seed by default; raw seed handoff is only for an explicit owner/tooling opt-out through `--no-goal-seed`. `openedChat=true` means read-back verified a Codex thread for the exact worktree `cwd`; a successful `codex app` launch without a matching thread is only `openAttempted` and must be reported as unverified.
 
-If `task:start` reports `openStatus=unverified` in Codex Desktop, recover the user experience in the same turn instead of making the owner hunt for the folder. Use the exact managed `worktreePath` from task state/output, open the `codex://new?path=...` deep link to register/select that workspace, then call `codex_app.create_thread` with that exact path as a local project target. This preserves the repository conveyor as the source of branch/task state while using Codex Desktop's thread API only for the chat handoff.
+If `task:start --open-only` reports `openStatus=unverified` in Codex Desktop, recover the user experience in the same turn instead of making the owner hunt for the folder. Use the exact managed `worktreePath` from task state/output and open the `codex://new?path=...` deep link without `prompt=` to register/select that workspace. Do not call `codex_app.create_thread` for this skill unless the owner explicitly asks you to start a task, because it sends its prompt immediately.
 
 ## Shared Starter Baseline Rules — synced 2026-05-18
 
 - `starter.conveyor.goal-seed-handoff`: Goal Seed является стандартным форматом handoff для новых Codex-чатов, созданных task conveyor. Он выводится из исходного запроса владельца и должен быть самодостаточным plain-text prompt: цель задачи, исходные project source files, `Definition of Done`, зона влияния, safety boundaries, команды проверки, UI browser oracle rules когда релевантно, governance/eval requirements когда релевантно и stop conditions. Goal Seed может начинаться с `/goal`, но не должен зависеть от доступности slash command. `task:start` по умолчанию отправляет в новый чат effective Goal Seed; raw seed допустим только как явный opt-out владельца через `--no-goal-seed`.
-
+- `starter.conveyor.worktree-create-open-only`: `$worktree-create` по умолчанию создаёт managed worktree и открывает exact workspace в Codex без `prompt=` и без `codex_app.create_thread`; владелец сам пишет следующую задачу в открытой папке. Direct `task:start` остаётся seeded handoff, если не указан `--open-only`.
 
 ## Shared Starter Baseline Rules — synced 2026-06-01
 
