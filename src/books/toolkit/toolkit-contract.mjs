@@ -31,6 +31,18 @@ export const BOOKS_IDEAL_TOOLKIT_CONTRACT = Object.freeze({
     "Первый шаг",
     "Источник / где искать в книге"
   ]),
+  microPracticeStatusValues: Object.freeze([
+    "card",
+    "folded_into",
+    "excluded_with_reason"
+  ]),
+  microPracticeTriggers: Object.freeze([
+    "named concepts",
+    "author metaphors",
+    "imperative instructions",
+    "checklists, rituals and tools",
+    "nested subheadings inside larger frameworks"
+  ]),
   toolSelectorFields: Object.freeze([
     "Tool",
     "Best for",
@@ -43,6 +55,8 @@ export const BOOKS_IDEAL_TOOLKIT_CONTRACT = Object.freeze({
     "route-based usage before deep reference",
     "tool selector prevents wrong tool use",
     "action cards immediately after quick map",
+    "micro-practice inventory from the full structured source",
+    "card/folded/excluded status for every micro-practice candidate",
     "coverage map and dedupe notes",
     "excluded / limited source notes",
     "verification before celebrating",
@@ -55,6 +69,7 @@ export const BOOKS_IDEAL_TOOLKIT_CONTRACT = Object.freeze({
       "source extraction and structured Markdown copy",
       "book structure map",
       "deep direct-book evidence pass",
+      "micro-practice inventory and status gate",
       "master-format toolkit synthesis",
       "source manifest",
       "quality validation"
@@ -64,6 +79,7 @@ export const BOOKS_IDEAL_TOOLKIT_CONTRACT = Object.freeze({
       "generic advice not tied to author ideas",
       "action cards from only the introduction",
       "missing source path for implementation cards",
+      "silent drop of named or imperative micro-practices",
       "route selector without deep reference body"
     ])
   }),
@@ -119,6 +135,9 @@ export function buildBooksToolkitPromptRules(options = {}) {
     "- Обязательные верхние слои: usage layer, Battle route, Training route, Быстрая карта, Tool selector.",
     "- Tool selector обязан иметь поля: Tool, Best for, Do not use when, Primary source layers.",
     "- Раздел `Лайфхаки, приемы и инструменты к внедрению` идет сразу после `Быстрая карта` and uses action cards.",
+    "- Перед synthesis сделай Micro-practice pass по всей structured source: named concepts, author metaphors, checklists/rituals/tools, imperative phrases and nested subheadings inside larger frameworks.",
+    "- Каждый micro-practice candidate получает status `card | folded_into | excluded_with_reason`; термин или практика из source не может исчезнуть без статуса.",
+    "- Не схлопывай подзаголовки внутри framework в один общий пункт, если подзаголовок содержит отдельное действие, ритуал, проверку или прием.",
     "- Сохраняй deep reference body: справочные таблицы, framework details, author-specific models and technique depth нельзя урезать ради навигации.",
     "- Добавь Coverage map, dedupe notes for multi-source work, Excluded / limited source notes, Anti-patterns, Практические сценарии, Cheatsheet, Glossary, Topic index, Scope and limits.",
     "- Каждый strong concept or recommendation проходит verification before celebrating: что проверять, какой риск, какой первый тест.",
@@ -132,6 +151,8 @@ export function buildBooksToolkitPromptRules(options = {}) {
  *   sections?: string[],
  *   actionCardFields?: string[],
  *   hasDirectSourceCoverage?: boolean,
+ *   hasMicroPracticeCoverage?: boolean,
+ *   unresolvedMicroPracticeCandidates?: string[],
  *   hasStandaloneCoverageControl?: boolean,
  *   mode?: "single-book" | "multi-book"
  * }} candidate
@@ -160,6 +181,14 @@ export function validateBooksToolkitContract(candidate) {
         ? "multi-book missing direct source depth pass"
         : "single-book missing direct source depth pass"
     );
+  }
+
+  if (!candidate.hasMicroPracticeCoverage) {
+    failures.push("missing micro-practice coverage gate");
+  }
+
+  for (const microPractice of candidate.unresolvedMicroPracticeCandidates || []) {
+    failures.push(`unresolved micro-practice candidate: ${microPractice}`);
   }
 
   if (candidate.mode === "multi-book" && !candidate.hasStandaloneCoverageControl) {

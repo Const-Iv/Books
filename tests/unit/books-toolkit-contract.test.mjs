@@ -43,6 +43,14 @@ test("Books ideal toolkit contract preserves master format for every toolkit", (
     "Первый шаг",
     "Источник / где искать в книге"
   ]);
+  assert.deepEqual(contract.microPracticeStatusValues, [
+    "card",
+    "folded_into",
+    "excluded_with_reason"
+  ]);
+  assert.ok(contract.microPracticeTriggers.includes("named concepts"));
+  assert.ok(contract.microPracticeTriggers.includes("imperative instructions"));
+  assert.ok(contract.microPracticeTriggers.includes("nested subheadings inside larger frameworks"));
 });
 
 test("Books multi-book contract keeps direct-book depth and staged sequence", () => {
@@ -66,6 +74,9 @@ test("Books prompt rules describe depth, routes, selector and anti-regression ga
   assert.match(promptRules, /Battle route/);
   assert.match(promptRules, /Training route/);
   assert.match(promptRules, /Tool selector/);
+  assert.match(promptRules, /Micro-practice pass/);
+  assert.match(promptRules, /card \| folded_into \| excluded_with_reason/);
+  assert.match(promptRules, /подзаголовки внутри framework/);
   assert.match(promptRules, /Coverage map/);
   assert.match(promptRules, /Excluded \/ limited source notes/);
   assert.match(promptRules, /verification before celebrating/);
@@ -76,6 +87,7 @@ test("Books contract validation reports missing mandatory layers", () => {
     sections: ["Быстрая карта", "Лайфхаки, приемы и инструменты к внедрению"],
     actionCardFields: ["Что внедрить"],
     hasDirectSourceCoverage: false,
+    hasMicroPracticeCoverage: false,
     hasStandaloneCoverageControl: false,
     mode: "multi-book"
   });
@@ -84,7 +96,22 @@ test("Books contract validation reports missing mandatory layers", () => {
   assert.ok(result.failures.includes("missing section: Tool selector"));
   assert.ok(result.failures.includes("missing action card field: Когда применять"));
   assert.ok(result.failures.includes("multi-book missing direct source depth pass"));
+  assert.ok(result.failures.includes("missing micro-practice coverage gate"));
   assert.ok(result.failures.includes("multi-book missing standalone coverage control"));
+});
+
+test("Books contract validation rejects unresolved micro-practice candidates", () => {
+  const result = validateBooksToolkitContract({
+    sections: [...BOOKS_IDEAL_TOOLKIT_CONTRACT.requiredSections],
+    actionCardFields: [...BOOKS_IDEAL_TOOLKIT_CONTRACT.actionCardFields],
+    hasDirectSourceCoverage: true,
+    hasMicroPracticeCoverage: true,
+    unresolvedMicroPracticeCandidates: ["гемба / иди и смотри"],
+    mode: "single-book"
+  });
+
+  assert.equal(result.ok, false);
+  assert.ok(result.failures.includes("unresolved micro-practice candidate: гемба / иди и смотри"));
 });
 
 test("Books governance and TRIZ prompt reference the ideal master toolkit contract", async () => {
@@ -112,7 +139,9 @@ test("Books governance and TRIZ prompt reference the ideal master toolkit contra
     "deep reference",
     "coverage-control",
     "not depth ceiling",
-    "structured Markdown source copies/originals"
+    "structured Markdown source copies/originals",
+    "micro-practice coverage",
+    "card | folded_into | excluded_with_reason"
   ]) {
     assert.match(joined, new RegExp(escapeRegExp(required)), `missing governance reference ${required}`);
   }

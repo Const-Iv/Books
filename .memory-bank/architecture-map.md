@@ -7,7 +7,7 @@
 - AI/model provider, public UI/API, multi-user storage and deploy are not approved yet.
 - Первый approved contour: local-first prototype. Owner передаёт книгу или фрагмент локально, output первой версии всегда русский.
 - Будущий product pipeline должен сохранять последовательность: supported input -> text extraction -> metadata / pre-flight -> book structure map -> chapter / section extraction -> toolkit artifacts.
-- Toolkit artifacts follow the ideal master-format: главный файл with usage layer, `Battle route`, `Training route`, `Быстрая карта`, `Tool selector`, `Лайфхаки, приемы и инструменты к внедрению`, deep reference body, coverage/source notes, `Excluded / limited source notes`, anti-patterns, scenarios, cheatsheet, glossary, topic index, scope & limits and extraction report.
+- Toolkit artifacts follow the ideal master-format: главный файл with usage layer, `Battle route`, `Training route`, `Быстрая карта`, `Tool selector`, `Лайфхаки, приемы и инструменты к внедрению`, micro-practice coverage, deep reference body, coverage/source notes, `Excluded / limited source notes`, anti-patterns, scenarios, cheatsheet, glossary, topic index, scope & limits and extraction report.
 - Multi-book pipeline всегда staged and depth-preserving: per-book standalone toolkit'ы сначала как source-specific artifacts, затем combined toolkit под owner-selected theme; combined synthesis reads direct structured Markdown source copies/originals for depth and uses standalone toolkit'ы as coverage control, not as depth ceiling.
 - Starter governance modules below remain process baseline for safe task flow and QA; they are not the Books product runtime.
 
@@ -54,8 +54,8 @@
 3. Extract text through the approved extraction adapter boundary.
 4. Write same-basename structured Markdown source copy and metadata under ignored `runtime/books/<topic>/<book-slug>/`; file basenames follow `<Автор> - <Название>`.
 5. Show pre-flight estimate and ask explicit proceed or analyze-only choice.
-6. Build structure map: title, author, chapters/parts/ToC, core themes, subject domain, frameworks, principles, techniques, кандидаты для раздела внедрения, anti-patterns.
-7. Generate master-format toolkit artifacts: usage layer, `Battle route`, `Training route`, `Быстрая карта`, `Tool selector`, `Лайфхаки, приемы и инструменты к внедрению` сразу после `Быстрая карта`, deep reference body, chapter files/sections, coverage/source notes, `Excluded / limited source notes`, anti-patterns, scenarios, cheatsheet, glossary, topic index, scope & limits, extraction report.
+6. Build structure map: title, author, chapters/parts/ToC, core themes, subject domain, frameworks, principles, techniques, micro-practice inventory, кандидаты для раздела внедрения, anti-patterns.
+7. Generate master-format toolkit artifacts: usage layer, `Battle route`, `Training route`, `Быстрая карта`, `Tool selector`, `Лайфхаки, приемы и инструменты к внедрению` сразу после `Быстрая карта`, micro-practice coverage statuses, deep reference body, chapter files/sections, coverage/source notes, `Excluded / limited source notes`, anti-patterns, scenarios, cheatsheet, glossary, topic index, scope & limits, extraction report.
 8. Собрать раздел внедрения из всей книги как карточки: `Что внедрить`, `Когда применять`, `Первый шаг`, `Источник / где искать в книге`; не называть пользовательский раздел `Белки`.
 9. Save the shareable toolkit copy under tracked `books/<topic>/<book-slug>/`; keep the structured Markdown source copy under ignored `runtime/books/<topic>/<book-slug>/`, and keep the original beside it when the original format is `pdf`, `epub`, `fb2` or audio.
 10. Point `source-manifest.md` and toolkit source references to `runtime/books/<topic>/<book-slug>/<Автор> - <Название>.md` plus heading/page/spine marker when available.
@@ -85,6 +85,7 @@
 - duplicate runtime source drift, когда после verified structured `.md` рядом остаются лишние TXT/DOCX/HTML extraction/source files instead of retaining originals only for `pdf`, `epub`, `fb2` and audio;
 - multi-book shortcut drift, когда общий toolkit создаётся без detailed standalone toolkit'ов, только из standalone summaries без direct source depth pass, теряет достойные внимания идеи, повторяется или выстроен как список summary вместо master-последовательности;
 - quality shortcut drift, когда агент экономит время или токены ценой глубины разбора Books toolkit;
+- micro-practice loss drift, когда named concept, авторская метафора, чек-лист, ритуал, инструмент или practical imperative есть в source, но не получает статус `card | folded_into | excluded_with_reason`;
 - task state schema drift (`qaLastPassSha`, `previewPreparedSha`, publish markers, operational artifacts);
 - неправильная работа с git worktree lifecycle и cleanup;
 - silent overwrite shared docs вместо single-writer capture/sync;

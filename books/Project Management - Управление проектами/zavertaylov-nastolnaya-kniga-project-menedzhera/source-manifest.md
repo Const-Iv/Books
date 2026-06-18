@@ -2,7 +2,7 @@
 
 ## Что хранится в Git
 
-- `Настольная книга project-менеджера - Владимир Завертайлов - toolkit.md` - shareable practical toolkit на русском языке по книге Владимира Завертайлова, адаптированный для обучения junior project managers.
+- `Настольная книга project-менеджера - Владимир Завертайлов - toolkit.md` - единственный shareable practical toolkit v2 на русском языке по книге Владимира Завертайлова: routes, action cards, micro-practice coverage, deep reference, scenarios, cheatsheet, glossary and topic index.
 - Этот manifest - навигация по локальному источнику, structured Markdown copy, extraction metadata и ограничениям.
 
 ## Что не хранится в Git
@@ -18,7 +18,7 @@
 
 ## Почему так
 
-Books должен помогать делиться применимым toolkit'ом, но не превращать репозиторий в хранилище полного текста книги. Tracked artifact содержит маршруты применения, action cards, tool selector, чек-листы, anti-patterns, сценарии, cheatsheet, glossary и topic index. Полный источник нужен локально для проверки спорных мест и future agent search.
+Books должен помогать делиться применимым toolkit'ом, но не превращать репозиторий в хранилище полного текста книги. Tracked artifact содержит маршруты применения, action cards, tool selector, micro-practice coverage, чек-листы, anti-patterns, сценарии, cheatsheet, glossary и topic index. Полный источник нужен локально для проверки спорных мест и future agent search.
 
 ## Проверка source bundle
 

@@ -40,6 +40,17 @@ For a single-book toolkit, keep the reader-facing order practical:
 
 Do not put internal automation backlog in the reader-facing toolkit. Move it to this skill, plans, or operator notes.
 
+## Micro-Practice Coverage
+
+Before final synthesis, build a micro-practice inventory from the full structured Markdown source, not only from chapter summaries. Include named concepts, author metaphors, checklists, rituals, tools, imperative instructions, and nested subheadings inside larger frameworks.
+
+Every micro-practice candidate must end with exactly one status:
+- `card` — standalone action card;
+- `folded_into` — explicitly named inside a broader card or deep-reference entry;
+- `excluded_with_reason` — intentionally omitted with a short reason.
+
+Do not silently drop a source term or practice. If a source has a practical named concept like `гемба / иди и смотри`, the toolkit or operator notes must show where it landed. Treat subheadings like `Планируй`, `Делай`, `Проверяй`, `Воздействуй` as separate actionable blocks when they contain distinct practices.
+
 ## Examples From The Book
 
 For retrofit-only runs on already finished toolkits, limit edits to examples in exactly two reader-facing areas:

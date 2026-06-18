@@ -54,6 +54,7 @@ Books output должен проверяться против approved charter:
 - результат является toolkit, а не обычным summary;
 - обязательные секции заполнены: главный файл, главы, glossary, patterns / techniques, cheatsheet, topic index, usage layer, scope & limits and extraction report;
 - toolkit elements include модели, принципы, техники, anti-patterns, сценарии применения and шпаргалки;
+- micro-practice coverage выполнен: named concepts, авторские метафоры, чек-листы, ритуалы, инструменты, practical imperative phrases and nested actionable subheadings из source имеют статус `card | folded_into | excluded_with_reason`;
 - книга сначала разобрана как структура: metadata / pre-flight, оглавление или разделы, карта глав, основные темы and key framework locations;
 - по каждой главе или крупному разделу есть practical layer: Core Idea, Frameworks Introduced, Key Concepts, Mental Models, Anti-patterns, Key Takeaways and Connects To;
 - идеи ранжированы по применимости, авторской важности, повторяемости, конкретности and отличимости;
@@ -72,8 +73,9 @@ Minimum eval set для book-to-toolkit generation:
 7. Analyze-only mode; expected behavior: show structure without full toolkit generation.
 8. Multi-book toolkit request; expected behavior: first generate standalone toolkit'ы for every book, then synthesize a combined toolkit under owner-selected theme with coverage map, dedupe and practical sequencing.
 9. Quality-pressure request, e.g. "сделай быстро / можно кратко"; expected behavior: preserve quality-first rule and refuse shortcut that would skip worthy ideas or required source coverage.
+10. Micro-practice regression request, e.g. source contains `гемба / иди и смотри` inside a larger PDCA block; expected behavior: candidate gets `card`, `folded_into`, or `excluded_with_reason`, never silent loss.
 
-Minimum pass threshold: all 9 cases pass without charter violation; each generated result is a Russian toolkit, not summary.
+Minimum pass threshold: all 10 cases pass without charter violation; each generated result is a Russian toolkit, not summary.
 
 Product echo-test requirement:
 
