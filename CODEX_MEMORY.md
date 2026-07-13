@@ -21,7 +21,7 @@
 - Для non-trivial work явно фиксировать assumptions, показывать plausible variants и делать surgical diffs.
 - Перед mutating action нужно кратко объяснить change intent.
 - Deterministic checks — единственное доказательство корректности.
-- Будущие plan files начинаются с продуктового блока `Миссия -> Видение -> Цель -> Целевая аудитория проекта -> Продуктовая спека`; product spec включает проблему / `JTBD`, целевую аудиторию изменения, сценарии использования, требования, критерии приемки, метрику успеха и ограничения / что нельзя сломать.
+- Новые task plan files используют одну Job Story языком владельца и отдельные блоки контекста, входных данных, ожидаемого результата, критериев приемки, проверки и применимого Eval spec; mission/vision/project-level JTBD не дублируются на уровне задачи.
 - Новый downstream-проект стартует с Project Intake Gate по `plans/_project_intake_template.md`; все обязательные сведения должны быть заполнены и явно согласованы owner'ом до первой feature/refactor/behavior-change реализации.
 - Для AI/agent behavior changes обязателен `Eval spec`; QA evidence должно фиксировать eval cases, expected behavior, actual behavior и pass/fail.
 - В Plan mode уточняющие вопросы, варианты выбора и рекомендации должны проходить через Product Charter; recommended option должен быть charter-safe, а конфликтный с charter вариант нельзя подавать как равнозначно рекомендуемый.
@@ -54,11 +54,11 @@
 - Reusable starter skills должны жить в repo `skills/` и подключаться в `$CODEX_HOME/skills` через symlink-based `skills:link`; после `git pull` existing links обновляются сами, а для новых/renamed skills нужно повторно запустить link.
 - Finish-flow не должен reuse task QA для dirty worktree перед commit: если есть незакоммиченные task changes, сначала фиксируется task commit/checkpoint, затем прогоняется QA уже на этом committed `HEAD`.
 - Для командного multi-project reuse shared skills downstream repo может держать starter как git submodule и линковать skills через `skills-manage.mjs --source vendor/new-project-starter/skills`, чтобы новые участники получали зафиксированную версию baseline.
-- Product proposal нельзя подменять `Summary` / `Key Changes` / technical sketch без product-charter якоря; полный вариант идёт через `Миссия -> Видение -> Цель -> Целевая аудитория -> JTBD`, короткий вариант обязан явно опереться хотя бы на один charter anchor.
+- Product proposal нельзя подменять `Summary` / `Key Changes` / technical sketch без charter-якоря; полный task-level вариант использует одну owner-language Job Story и отдельную verification structure.
 - Generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) считаются profile/tool output; в starter core нельзя bulk-import'ить их содержимое вместо repo-owned source в `skills/` или переносимой policy.
 - Активные `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` должны оставаться читаемыми; при compaction полный pre-compaction snapshot сохраняется в `Docs/archive/*.md.gz`.
 - Если clean task branch уже содержится в `main` и task commit ещё не записан, finish-flow должен ставить `publishStatus=skipped_already_merged`, писать `PUBLISH_SKIP` и всё равно завершать cleanup через `passed|kept`.
-- Product proposal нельзя подменять `Summary` / `Key Changes` / technical sketch без product-charter якоря; полный вариант идёт через `Связь с charter проекта -> Цель изменения/решения -> JTBD -> Job Stories -> User Stories -> Критерии приемки`, короткий вариант обязан явно опереться хотя бы на один charter anchor.
+- Task-level proposal идёт через charter, цель, контекст, одну Job Story, входные данные, ожидаемый результат, критерии приемки и проверку; project-level identity остаётся в Product Charter/Project Intake.
 - Governance/rule-sync ответы пользователю должны сначала объяснять человеческий смысл, решение и следующий шаг; raw ids, snippets and file lists идут только как traceability.
 - QA/TRIZ logs для rule-sync import являются evidence, а не готовым rule text: import должен быть переписан как portable starter invariant без source-project details.
 - Performance/state-safety changes должны сохранять user data и public behavior contracts; read-only/internal automatic updates не считаются user changes без user interaction или real entity changes.

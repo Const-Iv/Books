@@ -2,6 +2,12 @@
 
 ## Agent QA Gate (Mandatory)
 
+Task-plan evidence contract:
+
+- каждый критерий приёмки должен иметь способ проверки, ожидаемое наблюдение и фактический результат;
+- Eval spec остаётся отдельным от acceptance: acceptance проверяет принимаемый результат, Eval — качество agent behavior;
+- canonical template guard должен отклонять отдельные task-level headings `JTBD`, `Job Stories` и `User Stories`, сохраняя project-level identity в Product Charter и Project Intake.
+
 Primary deterministic gate:
 
 1. `npm run qa:agent`
