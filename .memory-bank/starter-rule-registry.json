@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-06-01T09:45:00.000Z",
+  "updatedAt": "2026-07-13T13:43:00.000Z",
   "rules": [
     {
       "id": "starter.project-intake.mission-vision-project-level",
@@ -833,6 +833,34 @@
         "type": "starter-rule-share",
         "starterHead": "24956dce6740b07efe015135f44b39ca7a85769a",
         "importedAt": "2026-06-01T09:45:00.000Z"
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.plans.job-story-only-format",
+      "title": "Task plans use one owner-language Job Story",
+      "text": "Task-планы и task-level product/process/governance proposals используют одну owner-language `Job Story` вместо отдельных `JTBD`, `Job Stories` и `User Stories`. Обязательный owner-facing core: `Связь с charter -> Цель -> Контекст -> Job Story -> Входные данные -> Ожидаемый результат -> Критерии приемки -> Проверка`; Job Story описывает ситуацию, желаемый результат и ценность или предотвращаемый риск без implementation mechanics. Критерии приемки, проверка и применимый Eval spec остаются отдельными разделами. Product Charter и Project Intake сохраняют project-level JTBD/User Stories. Исторические завершённые планы не переписываются; новый формат обязателен для новых и существенно обновляемых активных task-планов.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/index.md",
+        ".memory-bank/code-rules.md",
+        "CODEX_MEMORY.md",
+        "plans/_template.md",
+        "plans/_bugfix_template.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "одну owner-language `Job Story`",
+        "Входные данные",
+        "Ожидаемый результат",
+        "Критерии приемки",
+        "Project Intake сохраняют project-level"
+      ],
+      "source": {
+        "type": "starter-rule-share",
+        "starterHead": "9ca3c3760bd0161de824b83a4148e06241e1ebcf",
+        "importedAt": "2026-07-13T13:43:00.000Z"
       },
       "sharePolicy": "required"
     }

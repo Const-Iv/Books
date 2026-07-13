@@ -1259,8 +1259,9 @@ function candidateReportGroup(candidate) {
       whyUseful:
         "Это делает решения понятными владельцу и снижает риск перенести в starter технический шум вместо полезного правила.",
       starterText:
-        "Любое продуктовое или рабочее решение должно начинаться со связи с project charter, затем показывать цель, JTBD, Job Stories, User Stories и критерии приемки. Технический список изменений не должен заменять объяснение смысла и ожидаемого результата.",
-      rewriteNotes: "Оставить только общий порядок объяснения решения; не переносить название продукта-источника."
+        "Task-планы и task-level product/process/governance proposals используют одну owner-language Job Story вместо отдельных JTBD, Job Stories и User Stories. Обязательный owner-facing core: связь с charter, цель, контекст, Job Story, входные данные, ожидаемый результат, критерии приемки и проверка; технический механизм находится ниже, а Project Intake сохраняет project-level identity.",
+      rewriteNotes:
+        "Оставить только переносимый task-plan contract; не переносить product identity и не применять task-level упрощение к Project Intake."
     };
   }
 

@@ -274,7 +274,7 @@ test("rule-sync report renders required sections", () => {
         commitSha: "abcdef",
         title: "JTBD planning rule",
         paths: ["AGENTS.md", "plans/_template.md"],
-        snippets: ["Plans must include Job Story and User Stories before technical decomposition."],
+        snippets: ["Task plans use one owner-language Job Story before technical decomposition."],
         suggestedTargetFiles: ["AGENTS.md", "plans/_template.md"],
         summary: "Изменены governance paths: AGENTS.md, plans/_template.md.",
         evidence: "task task-1; commit abcdef",
@@ -292,7 +292,7 @@ test("rule-sync report renders required sections", () => {
         commitSha: "123456",
         title: "Product charter report wording",
         paths: ["AGENTS.md"],
-        snippets: ["Every owner-facing decision starts with project charter, JTBD, Job Stories, User Stories and acceptance criteria."],
+        snippets: ["Task-level plans start with project charter, context, one Job Story and acceptance criteria."],
         suggestedTargetFiles: ["AGENTS.md"],
         summary: "Изменены governance paths: AGENTS.md.",
         evidence: "commit 123456",
@@ -310,10 +310,10 @@ test("rule-sync report renders required sections", () => {
   assert.match(text, /### Agent_Const/);
   assert.match(text, /\*\*Что делать:\*\* Перенести как правило для отчётов владельцу/);
   assert.match(text, /\*\*Что нашли:\*\* Найдено 2 похожих записей/);
-  assert.match(text, /\*\*Точный текст для starter:\*\* Любое продуктовое или рабочее решение должно начинаться со связи с project charter/);
+  assert.match(text, /\*\*Точный текст для starter:\*\* Task-планы и task-level product\/process\/governance proposals используют одну owner-language Job Story/);
   assert.match(text, /\*\*Дубли или похожие записи:\*\* Да, это одна тема из нескольких источников: rs-test, rs-test-2/);
   assert.match(text, /\*\*Источники для проверки:\*\*/);
-  assert.match(text, /## Кандидаты на импорт[\s\S]*\*\*Точный текст для starter:\*\* Любое продуктовое или рабочее решение/);
+  assert.match(text, /## Кандидаты на импорт[\s\S]*\*\*Точный текст для starter:\*\* Task-планы и task-level product\/process\/governance proposals/);
   assert.match(text, /\*\*Пункты в группе:\*\* rs-test, rs-test-2/);
   assert.match(text, /\*\*Что ожидается от владельца:\*\* Ответить: перенести, пропустить или переписать/);
   assert.doesNotMatch(text, /Миссия:/);
@@ -409,7 +409,7 @@ test("rule-sync decision proposals group product planning candidates", () => {
         commitSha: "abcdef",
         title: "JTBD planning",
         paths: ["plans/_template.md"],
-        snippets: ["Plans must include Job Story and User Stories before technical decomposition."],
+        snippets: ["Task plans use one owner-language Job Story before technical decomposition."],
         suggestedTargetFiles: ["plans/_template.md"],
         summary: "Изменены governance paths: plans/_template.md.",
         evidence: "task task-1; commit abcdef",

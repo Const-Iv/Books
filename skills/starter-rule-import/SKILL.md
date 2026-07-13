@@ -55,7 +55,7 @@ After explicit owner confirmation of the summary:
    - `npm run rule-sync:apply-plan -- --approval <path> --dry-run`
 3. Explain `--dry-run` to the owner as `предварительная проверка без изменений`.
 4. Use the returned task seed to create a managed `codex/*` worktree.
-5. Create or update a task plan with product spec, Eval spec, implementation steps, and QA evidence.
+5. Create or update a task plan with one owner-language Job Story, the owner-facing core, applicable Eval spec, implementation steps, and QA evidence.
 
 ## Implementation Rules
 

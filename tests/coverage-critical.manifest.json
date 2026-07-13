@@ -37,6 +37,18 @@
       ]
     },
     {
+      "module": "plans/_template.md",
+      "tests": [
+        "tests/unit/plan-template.test.mjs"
+      ]
+    },
+    {
+      "module": "plans/_bugfix_template.md",
+      "tests": [
+        "tests/unit/plan-template.test.mjs"
+      ]
+    },
+    {
       "module": "skills/gh-fix-ci/scripts/inspect_actions_failures.py",
       "tests": [
         "tests/unit/gh-actions-failure-audit.test.mjs"
