@@ -39,6 +39,7 @@ test("Books ideal toolkit contract preserves master format for every toolkit", (
 
   assert.deepEqual(contract.actionCardFields, [
     "Что внедрить",
+    "Контекст",
     "Когда применять",
     "Первый шаг",
     "Источник / где искать в книге"
@@ -80,6 +81,9 @@ test("Books prompt rules describe depth, routes, selector and anti-regression ga
   assert.match(promptRules, /Coverage map/);
   assert.match(promptRules, /Excluded \/ limited source notes/);
   assert.match(promptRules, /verification before celebrating/);
+  assert.match(promptRules, /Контекст/);
+  assert.match(promptRules, /source-backed/);
+  assert.match(promptRules, /не повторяет `Что внедрить`/);
 });
 
 test("Books contract validation reports missing mandatory layers", () => {
@@ -95,6 +99,7 @@ test("Books contract validation reports missing mandatory layers", () => {
   assert.equal(result.ok, false);
   assert.ok(result.failures.includes("missing section: Tool selector"));
   assert.ok(result.failures.includes("missing action card field: Когда применять"));
+  assert.ok(result.failures.includes("missing action card field: Контекст"));
   assert.ok(result.failures.includes("multi-book missing direct source depth pass"));
   assert.ok(result.failures.includes("missing micro-practice coverage gate"));
   assert.ok(result.failures.includes("multi-book missing standalone coverage control"));
