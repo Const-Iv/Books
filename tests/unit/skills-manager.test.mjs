@@ -156,6 +156,31 @@ test("skills manager can link skills from a submodule source path", async () => 
   }
 });
 
+test("skills manager can link one exact skill directory as source", async () => {
+  const fixture = await createSkillFixture();
+  try {
+    const exactSkillSource = path.join(fixture.repoRoot, "skills", "worktree-create");
+    const linked = await linkRepoSkills(fixture.repoRoot, {
+      codexHome: fixture.codexHome,
+      source: exactSkillSource
+    });
+
+    assert.equal(linked.ok, true);
+    assert.equal(linked.managedCount, 1);
+    assert.deepEqual(
+      linked.results.map((result) => [result.relativeDir, result.status]),
+      [["worktree-create", "linked"]]
+    );
+    assert.equal(
+      await realpath(path.join(fixture.codexHome, "skills", "worktree-create")),
+      await realpath(exactSkillSource)
+    );
+    assert.equal(await pathExists(path.join(fixture.codexHome, "skills", "shared")), false);
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
 test("skills manager refuses to overwrite conflicting targets without adopt", async () => {
   const fixture = await createSkillFixture();
   try {

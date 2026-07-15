@@ -27,6 +27,7 @@ export const BOOKS_IDEAL_TOOLKIT_CONTRACT = Object.freeze({
   ]),
   actionCardFields: Object.freeze([
     "Что внедрить",
+    "Контекст",
     "Когда применять",
     "Первый шаг",
     "Источник / где искать в книге"
@@ -130,11 +131,13 @@ export function buildBooksToolkitPromptRules(options = {}) {
     "Books toolkit output contract:",
     "- Output на русском.",
     "- Это не краткий пересказ и не замена книги; это reusable practical toolkit.",
-    "- Используй practitioner voice: что делать, когда применять, какой первый шаг, где источник.",
+    "- Используй practitioner voice: что делать, какой книжный контекст это объясняет, когда применять, какой первый шаг, где источник.",
     `- Эталон формата: ${contract.modelArtifactPath}.`,
     "- Обязательные верхние слои: usage layer, Battle route, Training route, Быстрая карта, Tool selector.",
     "- Tool selector обязан иметь поля: Tool, Best for, Do not use when, Primary source layers.",
     "- Раздел `Лайфхаки, приемы и инструменты к внедрению` идет сразу после `Быстрая карта` and uses action cards.",
+    "- Каждая action card содержит `Контекст`: source-backed summary конкретной сцены, кейса, мысленного эксперимента или причинной демонстрации из книги — кто/в какой ситуации действовал, что сделал или решил и какой эффект получил.",
+    "- `Контекст` не повторяет `Что внедрить`, не подменяется generic advice, не выдумывает отсутствующую компанию или персонажа и не воспроизводит большой фрагмент source.",
     "- Перед synthesis сделай Micro-practice pass по всей structured source: named concepts, author metaphors, checklists/rituals/tools, imperative phrases and nested subheadings inside larger frameworks.",
     "- Каждый micro-practice candidate получает status `card | folded_into | excluded_with_reason`; термин или практика из source не может исчезнуть без статуса.",
     "- Не схлопывай подзаголовки внутри framework в один общий пункт, если подзаголовок содержит отдельное действие, ритуал, проверку или прием.",

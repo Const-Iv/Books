@@ -16,7 +16,8 @@ function usage() {
       "  node scripts/skills-manage.mjs status",
       "  node scripts/skills-manage.mjs link --adopt",
       "  node scripts/skills-manage.mjs unlink --codex-home /tmp/codex-home",
-      "  node scripts/skills-manage.mjs link --source vendor/new-project-starter/skills"
+      "  node scripts/skills-manage.mjs link --source vendor/new-project-starter/skills",
+      "  node scripts/skills-manage.mjs link --source skills/worktree-finish --adopt"
     ].join("\n")
   );
 }

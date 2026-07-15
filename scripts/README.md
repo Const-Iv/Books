@@ -95,6 +95,12 @@ git submodule update --init --recursive
 node vendor/new-project-starter/scripts/skills-manage.mjs link --source vendor/new-project-starter/skills
 ```
 
+Чтобы безопасно подключить или заменить только один skill, передайте его каталог как `--source`; остальные глобальные skills останутся без изменений:
+
+```bash
+node scripts/skills-manage.mjs link --source skills/worktree-finish --adopt
+```
+
 В `package.json` downstream проекта можно добавить wrapper:
 
 ```json

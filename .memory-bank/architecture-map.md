@@ -56,7 +56,7 @@
 5. Show pre-flight estimate and ask explicit proceed or analyze-only choice.
 6. Build structure map: title, author, chapters/parts/ToC, core themes, subject domain, frameworks, principles, techniques, micro-practice inventory, кандидаты для раздела внедрения, anti-patterns.
 7. Generate master-format toolkit artifacts: usage layer, `Battle route`, `Training route`, `Быстрая карта`, `Tool selector`, `Лайфхаки, приемы и инструменты к внедрению` сразу после `Быстрая карта`, micro-practice coverage statuses, deep reference body, chapter files/sections, coverage/source notes, `Excluded / limited source notes`, anti-patterns, scenarios, cheatsheet, glossary, topic index, scope & limits, extraction report.
-8. Собрать раздел внедрения из всей книги как карточки: `Что внедрить`, `Когда применять`, `Первый шаг`, `Источник / где искать в книге`; не называть пользовательский раздел `Белки`.
+8. Собрать раздел внедрения из всей книги как карточки: `Что внедрить`, `Контекст`, `Когда применять`, `Первый шаг`, `Источник / где искать в книге`; `Контекст` должен кратко передавать concrete source-backed ситуацию, действие/решение и эффект, не повторять идею и не выдумывать детали; не называть пользовательский раздел `Белки`.
 9. Save the shareable toolkit copy under tracked `books/<topic>/<book-slug>/`; keep the structured Markdown source copy under ignored `runtime/books/<topic>/<book-slug>/`, and keep the original beside it when the original format is `pdf`, `epub`, `fb2` or audio.
 10. Point `source-manifest.md` and toolkit source references to `runtime/books/<topic>/<book-slug>/<Автор> - <Название>.md` plus heading/page/spine marker when available.
 11. Run quality checks against Books Product QA before treating output as usable.

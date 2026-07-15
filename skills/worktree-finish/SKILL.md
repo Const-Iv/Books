@@ -1,13 +1,31 @@
 ---
 name: worktree-finish
-description: Finish, merge, publish, and clean up task worktrees by discovering and following the current repository's canonical finish contract. Use when a user asks to finish a task, merge to main, close or remove a worktree, publish a task branch, run the repository finish conveyor, or answer a cleanup choice. Prefer this skill when the repository documents finish flows in AGENTS.md, CODEX_MEMORY.md, .memory-bank/*, package.json scripts, or scripts/README.md.
+description: Finish, merge, publish, and clean up one exact task worktree by discovering and following its repository's canonical finish contract. Scope each invocation to the repository and managed task containing the invocation cwd; never inspect or finish another repository or worktree unless the user explicitly names it as an additional finish target. Use when a user asks to finish a task, merge to main, close or remove a worktree, publish a task branch, run the repository finish conveyor, or answer a cleanup choice. Prefer this skill when the repository documents finish flows in AGENTS.md, CODEX_MEMORY.md, .memory-bank/*, package.json scripts, or scripts/README.md.
 ---
 
 # Worktree Finish
 
 Use this skill to close a task worktree consistently across projects while still obeying repo-local conveyor rules. The skill standardizes discovery, QA discipline, merge behavior, and cleanup handling; the repository still defines the exact commands.
 
+## Invocation Scope Lock
+
+Lock the target before reading repository state or running discovery commands:
+
+1. Record `invocationCwd = realpath(cwd)` and resolve `targetWorktree = realpath(git -C "$invocationCwd" rev-parse --show-toplevel)`. Treat its Git repository as the only target repository for this invocation.
+2. If `targetWorktree` is a managed task worktree, select only the task state whose recorded `worktreePath`, after `realpath`, exactly equals `targetWorktree`. Record the exact task id, branch, and canonical main path from that repository's contract.
+3. If invoked from canonical `main`, or if no exact task state matches, require an explicit task id or branch before choosing among multiple candidates. Do not select a task by similar names, recent activity, prior conversation, or a related project.
+4. Keep the invocation single-target by default. Cross-repository dependencies, related implementation work, validation performed elsewhere, source paths, discovered worktrees, and prior context do not expand the finish scope.
+5. Limit discovery, status checks, artifact inventory, QA, finish, merge, and cleanup to the target worktree, its canonical main, and task-state paths owned by the same repository contract. Do not run repository or task inspection in another project merely to prepare a status report.
+6. Treat all other worktrees, including worktrees from the same project, as out of scope. A repository command may list them while verifying the exact target, but do not inspect or mutate them individually.
+7. Before the first mutation, report the locked `repository`, `targetWorktree`, `taskId`, and `branch`. Stop if a planned command resolves outside that lock.
+
+An additional repository or worktree requires a separate explicit user request. Treat it as a separate finish invocation with its own preflight and cleanup choice; do not silently bundle it into the current invocation.
+
+Example: when invoked from a Books task worktree, finish only that exact Books task. A related Agent_Const worktree remains out of scope even if it contains downstream runtime changes for the same feature.
+
 ## Discovery Order
+
+Run this discovery only inside the locked target repository.
 
 1. Read `AGENTS.md`.
 2. Read `CODEX_MEMORY.md` if it exists.
@@ -18,7 +36,7 @@ Use this skill to close a task worktree consistently across projects while still
 ## Finish Workflow
 
 1. Resolve whether the user wants full finish, merge only, cleanup only, or release.
-2. Inspect current branch, task state artifacts, and `git status --short` before any mutation.
+2. Inspect the locked worktree's current branch, exact task state artifact, canonical main state, and `git status --short` before any mutation.
 3. If the canonical flow is blocked by a dirty `main` or source tree, do read-only blocker triage before asking the user to choose: list exact paths, change types, tracked/untracked state, likely source from history/diff/name-status, relationship to the current task branch, risk, and the recommended next action.
 4. Execute the canonical repo finish flow.
 5. Run the repo's required deterministic QA gates before merge or push when the contract requires them.
@@ -45,11 +63,13 @@ Before telling the user a worktree was removed, verify the exact task from its r
 3. Task-scoped leftovers reported by `cleanupTargets`, cleanup hooks, or the managed task root check are gone.
 4. The task state/history records `cleanupStatus = "passed"` for deletion or `cleanupStatus = "kept"` for an intentional keep.
 
-Do not infer cleanup from a similar project name, branch name, or another worktree under `$CODEX_HOME/worktrees`. If a different stale worktree remains, report it as a separate pending cleanup and ask its own fixed choice (`1. Удалить`, `2. Оставить`) before touching it.
+Do not infer cleanup from a similar project name, branch name, or another worktree under `$CODEX_HOME/worktrees`. Do not proactively inspect or add a different stale worktree to the current report. If the locked task's canonical cleanup output happens to mention an unrelated worktree, mark it `out of scope` without inspecting or touching it; handle it only after a separate explicit user request.
 
 ## Guardrails
 
 - Do not delete a local worktree or branch without an explicit user choice.
+- Do not inspect, finish, merge, publish, or clean another repository or task outside the Invocation Scope Lock.
+- Do not turn one finish invocation into a cross-project audit, even when the completed feature spans multiple repositories.
 - Do not skip repo QA gates when the finish contract requires them.
 - Do not bypass script-driven finish flows with ad-hoc merge commands if the repo already defines a canonical conveyor.
 - Do not hand dirty `main` / dirty source blockers back to the user without first summarizing what changed, where it appears to come from, whether it is related to the task, and what safe action you recommend.

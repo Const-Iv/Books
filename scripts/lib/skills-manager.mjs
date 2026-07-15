@@ -139,10 +139,8 @@ export async function discoverSkills(skillsRoot) {
   async function walk(currentDir) {
     const entries = await readdir(currentDir, { withFileTypes: true });
     if (entries.some((entry) => entry.isFile() && entry.name === "SKILL.md")) {
-      const relativeDir = toRelativeSkillDir(skillsRoot, currentDir);
-      if (!relativeDir) {
-        throw new Error("skills/SKILL.md is not supported; each repo-managed skill must live in its own directory.");
-      }
+      const discoveredRelativeDir = toRelativeSkillDir(skillsRoot, currentDir);
+      const relativeDir = discoveredRelativeDir || path.basename(path.resolve(skillsRoot));
       skills.push({
         skillId: relativeDir,
         relativeDir,
