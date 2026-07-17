@@ -2,24 +2,6 @@
 
 Журнал срабатываний TRIZ-триггеров и применённых решений.
 
-## 2026-04-29T08:41:36.205Z 20260429-083348-74bc
-
-- Branch: `codex/20260429-083348-74bc-agent-const`
-- Reasons: cross_module_conflict, historical_recurrence
-- Status: trigger recorded
-
-## 2026-04-29T08:42:00.000Z 20260429-083348-74bc — TRIZ_APPLIED
-
-- Principle: separation in space / mediator
-- Changes: Agent_Const product-charter approach is moved into starter as a reusable charter pattern and gate, while starter keeps its own baseline mission and explicitly requires downstream projects to replace or extend the charter with product-specific content through adapters/profiles instead of hardcoding it into core governance.
-- Guard: `rg` parity checks verify that old `Summary -> JTBD` rules are gone from canonical docs and that `product-charter` / `Миссия -> Видение -> Цель -> JTBD` are present across `AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, mirrors, plan template, blueprint, and README; `npm run qa:agent` and `npm run task:qa:agent` passed.
-
-## 2026-04-29T09:21:19.197Z 20260429-083348-74bc
-
-- Branch: `codex/20260429-083348-74bc-agent-const`
-- Reasons: cross_module_conflict, historical_recurrence
-- Status: trigger recorded
-
 ## 2026-04-29T09:22:00.000Z 20260429-083348-74bc — TRIZ_APPLIED
 
 - Principle: preliminary action / mediator
@@ -189,4 +171,26 @@
 
 - Branch: `codex/20260713-134308-e071-job-story-plan-format`
 - Reasons: historical_recurrence
+- Status: trigger recorded
+
+## 2026-07-17T10:20:08.531Z 20260717-094329-2fc3
+
+- Branch: `codex/20260717-094329-2fc3-share-starter-rules-with-books`
+- Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
+
+## 2026-07-17T10:20:15.580Z 20260717-094329-2fc3 — TRIZ_APPLIED
+
+- **Триггеры:** `cross_module_conflict`, `historical_recurrence`.
+- **Противоречие:** reusable baseline должен одинаково действовать во всех canonical/mirror surfaces, но downstream product identity, adapters, profiles и local/private state должны остаться уникальными и неизменными.
+- **Принципы:** разделение по объекту, посредник, копирование и предварительное ограничение.
+- **Решение:** exact missing-list отделён от present/partial rules; stable registry id служит посредником; переносимые формулировки копируются только в заявленные существующие surfaces; product charter получает только отдельный identity guard, когда он есть в target contract.
+- **Что устранено:** исключены bulk-copy чужой product identity, повторный импорт present rules и скрытое смешивание operational/local state с governance.
+- **Guard/evidence:** registry/required-fragment check, downstream full QA, canonical task finish и повторный outbound scan.
+- **Fallback/долг:** отсутствующие downstream skill/template surfaces не создаются автоматически; code seam обновлён только там, где exact missing rule не был реализован поведением.
+
+## 2026-07-17T10:20:31.723Z 20260717-094329-2fc3
+
+- Branch: `codex/20260717-094329-2fc3-share-starter-rules-with-books`
+- Reasons: cross_module_conflict, historical_recurrence
 - Status: trigger recorded
