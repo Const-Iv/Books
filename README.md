@@ -201,3 +201,7 @@ npm run qa:perf:critical
 ## Shared Starter Baseline Rules — synced 2026-06-01
 
 - `starter.conveyor.codex-open-readback`: `task:start` и shared `$worktree-create` не должны считать запуск `codex app <worktreePath>` доказательством открытого Codex-чата. `openedChat=true` допустим только после read-back локального Codex thread state с exact `cwd` нового worktree; при отсутствии matching thread нужно сохранять и показывать `openAttempted`, `openStatus=unverified|failed|skipped`, `openDiagnostics`, `openCommand` и не выдавать успешный статус открытия.
+
+## Shared Starter Baseline Rules — synced 2026-07-17
+
+- `starter.evidence.person-evaluation-preservation`: Если задача включает оценку кандидата, подрядчика, исполнителя или другого человека по внешним материалам, агент должен сохранить использованные источники в локальный ignored evidence bundle или явно зафиксировать, что источник не удалось сохранить. Итоговая оценка должна ссылаться на два вида evidence: внешний/source link и локальный saved artifact либо явный статус `не удалось сохранить` с причиной, риском и следующим безопасным шагом. Временные папки, browser downloads, attachment temp folders и web-only страницы не считаются долговременным evidence. PII, контакты, резюме, transcripts, видео и raw candidate materials остаются только в ignored/local storage; tracked governance docs могут содержать только обезличенное правило, методику и краткий вывод без контактных данных.
