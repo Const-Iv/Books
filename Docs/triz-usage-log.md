@@ -2,12 +2,6 @@
 
 Журнал срабатываний TRIZ-триггеров и применённых решений.
 
-## 2026-04-29T09:22:00.000Z 20260429-083348-74bc — TRIZ_APPLIED
-
-- Principle: preliminary action / mediator
-- Changes: cross-project rule discovery is separated from rule application through `rule-sync:scan`, `rule-sync:report`, and `rule-sync:apply-plan --dry-run`; scan/report can run on a schedule, while actual source edits still require owner approval, managed worktree, plan file, and QA.
-- Guard: `tests/unit/rule-sync.test.mjs` covers discovery, reusable/product-specific classification, report rendering, and safe apply-plan seed generation; `tests/coverage-critical.manifest.json` tracks `scripts/rule-sync.mjs` as critical coverage.
-
 ## 2026-04-29T10:14:24.619Z 20260429-083348-74bc
 
 - Branch: `codex/20260429-083348-74bc-agent-const`
@@ -193,4 +187,10 @@
 
 - Branch: `codex/20260717-094329-2fc3-share-starter-rules-with-books`
 - Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
+
+## 2026-07-17T10:21:01.492Z 20260717-094329-2fc3
+
+- Branch: `codex/20260717-094329-2fc3-share-starter-rules-with-books`
+- Reasons: historical_recurrence
 - Status: trigger recorded
