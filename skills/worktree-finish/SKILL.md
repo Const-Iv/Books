@@ -102,3 +102,7 @@ Then confirm the recorded cleanup result:
 - `cleanupStatus = "failed"` means finish is not complete yet; resume from `main` with `--task-id` when available.
 
 If the repo exposes separate publish or merge stages, continue with the documented commands rather than inventing a new flow. If the repo defines `task:finish:cleanup`, let that hook handle repo-specific leftovers instead of hand-written shell cleanup.
+
+## Shared Starter Baseline Rules — synced 2026-07-17
+
+- `starter.conveyor.local-cleanup-no-remote-branch-deletion`: Cleanup в starter является local-only: можно удалять только локальные worktrees, локальные branches, локальные stashes и task-state после явного owner choice; remote branches и remote refs (`origin/*`, GitHub branches) cleanup никогда не удаляет и не чистит.
