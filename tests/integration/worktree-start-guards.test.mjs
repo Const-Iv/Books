@@ -1,6 +1,7 @@
 // @ts-check
 
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { appendFile, chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
@@ -113,6 +114,12 @@ test("task:start reports Codex open attempt separately from verified chat creati
     assert.equal(payload.openAttempted, true);
     assert.equal(payload.openStatus, "unverified");
     assert.equal(payload.openedChat, false);
+    assert.equal(payload.handoffStatus, "composer_prefilled");
+    assert.equal(payload.workspaceOpened, true);
+    assert.equal(payload.composerPrefilled, true);
+    assert.equal(payload.threadCreated, false);
+    assert.equal(payload.turnStarted, false);
+    assert.equal(payload.manualSendRequired, true);
     assert.match(payload.openDiagnostics, /No Codex thread was observed/);
     if (process.platform === "darwin") {
       const deepLinkUrl = await readFile(openLog, "utf8");
@@ -127,7 +134,103 @@ test("task:start reports Codex open attempt separately from verified chat creati
     assert.equal(state?.openAttempted, true);
     assert.equal(state?.openStatus, "unverified");
     assert.equal(state?.openedChat, false);
+    assert.equal(state?.handoffStatus, "composer_prefilled");
+    assert.equal(state?.turnStarted, false);
+    assert.equal(state?.manualSendRequired, true);
     assert.match(state?.openDiagnostics ?? "", /No Codex thread was observed/);
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test("task:start keeps open-only and native handoff non-sending", async () => {
+  for (const mode of ["--open-only", "--native-handoff"]) {
+    const fixture = await createTempStarterRepo();
+    try {
+      const fakeBin = path.join(fixture.codexHome, "bin");
+      await mkdir(fakeBin, { recursive: true });
+      const fakeCodex = path.join(fakeBin, "codex");
+      await writeFile(fakeCodex, "#!/bin/sh\nexit 0\n", "utf8");
+      await chmod(fakeCodex, 0o755);
+      const openLog = path.join(fixture.codexHome, "handoff.log");
+      const fakeOpen = path.join(fakeBin, "open");
+      await writeFile(fakeOpen, "#!/bin/sh\nprintf '%s\\n' \"$1\" > \"$OPEN_LOG\"\nexit 0\n", "utf8");
+      await chmod(fakeOpen, 0o755);
+      const start = runStarterScript(
+        fixture.repoRoot,
+        ["scripts/worktree-start.mjs", "--title", "Handoff", "--seed-message", "Owner seed", mode],
+        {
+          env: {
+            CODEX_HOME: fixture.codexHome,
+            PATH: `${fakeBin}:${process.env.PATH ?? ""}`,
+            OPEN_LOG: openLog
+          }
+        }
+      );
+      const payload = JSON.parse(start.stdout);
+      assert.equal(payload.turnStarted, false);
+      assert.equal(payload.composerPrefilled, false);
+      assert.equal(payload.nativeHandoffRequired, mode === "--native-handoff");
+      if (process.platform === "darwin") {
+        assert.doesNotMatch(await readFile(openLog, "utf8"), /prompt=/);
+      }
+    } finally {
+      await fixture.cleanup();
+    }
+  }
+});
+
+test("task:start rejects conflicting handoff modes before task state", async () => {
+  const fixture = await createTempStarterRepo();
+  try {
+    const start = runStarterScript(
+      fixture.repoRoot,
+      ["scripts/worktree-start.mjs", "--title", "Conflict", "--open-only", "--native-handoff"],
+      { env: { CODEX_HOME: fixture.codexHome }, allowFailure: true }
+    );
+    assert.notEqual(start.status, 0);
+    assert.match(start.stderr, /does not allow --open-only together with --native-handoff/);
+    assert.deepEqual(await loadAllTaskStates(fixture.repoRoot), []);
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test("task:start verifies a turn only by exact cwd and first message", async () => {
+  const fixture = await createTempStarterRepo();
+  try {
+    await mkdir(fixture.codexHome, { recursive: true });
+    const stateDb = path.join(fixture.codexHome, "state_1.sqlite");
+    const schema = "create table threads (id text primary key, archived integer not null, cwd text not null, created_at integer not null, created_at_ms integer, first_user_message text not null);";
+    assert.equal(spawnSync("sqlite3", [stateDb, schema], { encoding: "utf8" }).status, 0);
+    const fakeBin = path.join(fixture.codexHome, "bin");
+    await mkdir(fakeBin, { recursive: true });
+    const fakeCodex = path.join(fakeBin, "codex");
+    await writeFile(
+      fakeCodex,
+      "#!/bin/sh\nif [ \"$1\" = \"app\" ]; then sqlite3 \"$STATE_DB\" \"insert into threads values ('verified',0,'$2',strftime('%s','now'),strftime('%s','now')*1000,'$EXPECTED_SEED');\"; fi\nexit 0\n",
+      "utf8"
+    );
+    await chmod(fakeCodex, 0o755);
+    const fakeOpen = path.join(fakeBin, "open");
+    await writeFile(fakeOpen, "#!/bin/sh\nexit 0\n", "utf8");
+    await chmod(fakeOpen, 0o755);
+    const start = runStarterScript(
+      fixture.repoRoot,
+      ["scripts/worktree-start.mjs", "--title", "Verified", "--seed-message", "Verified seed", "--no-goal-seed"],
+      {
+        env: {
+          CODEX_HOME: fixture.codexHome,
+          PATH: `${fakeBin}:${process.env.PATH ?? ""}`,
+          STATE_DB: stateDb,
+          EXPECTED_SEED: "Verified seed"
+        }
+      }
+    );
+    const payload = JSON.parse(start.stdout);
+    assert.equal(payload.handoffStatus, "turn_started_verified");
+    assert.equal(payload.turnStarted, true);
+    assert.equal(payload.openThreadId, "verified");
   } finally {
     await fixture.cleanup();
   }
