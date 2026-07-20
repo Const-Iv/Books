@@ -56,6 +56,16 @@ function buildDirtyTreeGuardMessage(repoRoot, allowDirtyRequested) {
  * @property {string | null} openThreadId
  * @property {string | null} openDiagnostics
  * @property {string | null} openCommand
+ * @property {"skipped"|"failed"|"workspace_opened"|"composer_prefilled"|"native_handoff_required"|"turn_started_verified"} handoffStatus
+ * @property {boolean} workspaceOpened
+ * @property {boolean} composerOpened
+ * @property {boolean} composerPrefilled
+ * @property {boolean} threadCreated
+ * @property {boolean} turnStarted
+ * @property {boolean} manualSendRequired
+ * @property {boolean} nativeHandoffRequested
+ * @property {boolean} nativeHandoffRequired
+ * @property {string | null} nativeHandoffProjectPath
  */
 
 const CODEX_OPEN_READBACK_TIMEOUT_MS = 5000;
@@ -101,9 +111,10 @@ function sqliteQuote(value) {
  * @param {string} codexHome
  * @param {string} worktreePath
  * @param {number} notBeforeMs
+ * @param {string | null} expectedFirstUserMessage
  * @returns {Promise<{threadId: string | null, diagnostic: string | null}>}
  */
-async function findCodexThreadForWorktree(cwd, codexHome, worktreePath, notBeforeMs) {
+async function findCodexThreadForWorktree(cwd, codexHome, worktreePath, notBeforeMs, expectedFirstUserMessage) {
   const dbPath = await findCodexStateDb(codexHome);
   if (!dbPath) {
     return {
@@ -111,11 +122,15 @@ async function findCodexThreadForWorktree(cwd, codexHome, worktreePath, notBefor
       diagnostic: `No Codex thread was observed for cwd ${worktreePath}: Codex state db was not found.`
     };
   }
+  const firstMessageFilter =
+    expectedFirstUserMessage === null
+      ? ""
+      : ` and first_user_message = ${sqliteQuote(expectedFirstUserMessage)}`;
   const query = [
     "select id from threads",
     `where archived = 0 and cwd = ${sqliteQuote(worktreePath)} and coalesce(created_at_ms, created_at * 1000) >= ${Math.floor(
       notBeforeMs
-    )}`,
+    )}${firstMessageFilter}`,
     "order by coalesce(created_at_ms, created_at * 1000) desc limit 1;"
   ].join(" ");
   const result = runCommand(cwd, "sqlite3", [dbPath, query], { allowFailure: true });
@@ -134,13 +149,20 @@ async function findCodexThreadForWorktree(cwd, codexHome, worktreePath, notBefor
  * @param {string} codexHome
  * @param {string} worktreePath
  * @param {number} notBeforeMs
+ * @param {string | null} expectedFirstUserMessage
  * @returns {Promise<{threadId: string | null, diagnostic: string | null}>}
  */
-async function waitForCodexThread(cwd, codexHome, worktreePath, notBeforeMs) {
+async function waitForCodexThread(cwd, codexHome, worktreePath, notBeforeMs, expectedFirstUserMessage) {
   const deadline = Date.now() + CODEX_OPEN_READBACK_TIMEOUT_MS;
   let lastDiagnostic = null;
   do {
-    const result = await findCodexThreadForWorktree(cwd, codexHome, worktreePath, notBeforeMs);
+    const result = await findCodexThreadForWorktree(
+      cwd,
+      codexHome,
+      worktreePath,
+      notBeforeMs,
+      expectedFirstUserMessage
+    );
     if (result.threadId) {
       return result;
     }
@@ -202,7 +224,9 @@ function openCodexNewThreadComposer(repoRoot, worktreePath, seedMessage) {
     attempted: true,
     ok: true,
     command,
-    diagnostic: "Codex new-thread deep link opened the target worktree composer."
+    diagnostic: seedMessage.trim()
+      ? "Codex new-thread deep link opened the target worktree composer."
+      : "Codex new-thread deep link opened the target worktree without an initial prompt."
   };
 }
 
@@ -211,10 +235,16 @@ function openCodexNewThreadComposer(repoRoot, worktreePath, seedMessage) {
  * @param {string} worktreePath
  * @param {boolean} noOpen
  * @param {string} seedMessage
+ * @param {boolean} nativeHandoff
  * @returns {Promise<CodexOpenResult>}
  */
-async function openCodexTaskChat(repoRoot, worktreePath, noOpen, seedMessage) {
+async function openCodexTaskChat(repoRoot, worktreePath, noOpen, seedMessage, nativeHandoff) {
   const openCommand = `codex app ${JSON.stringify(worktreePath)}`;
+  const nativeFields = {
+    nativeHandoffRequested: nativeHandoff,
+    nativeHandoffRequired: nativeHandoff,
+    nativeHandoffProjectPath: nativeHandoff ? worktreePath : null
+  };
   if (noOpen) {
     return {
       openAttempted: false,
@@ -222,7 +252,15 @@ async function openCodexTaskChat(repoRoot, worktreePath, noOpen, seedMessage) {
       openedChat: false,
       openThreadId: null,
       openDiagnostics: "Codex auto-open skipped by --no-open or STARTER_NO_OPEN=1.",
-      openCommand
+      openCommand,
+      handoffStatus: "skipped",
+      workspaceOpened: false,
+      composerOpened: false,
+      composerPrefilled: false,
+      threadCreated: false,
+      turnStarted: false,
+      manualSendRequired: false,
+      ...nativeFields
     };
   }
 
@@ -234,7 +272,15 @@ async function openCodexTaskChat(repoRoot, worktreePath, noOpen, seedMessage) {
       openedChat: false,
       openThreadId: null,
       openDiagnostics: "Codex CLI was not found in PATH; task worktree was created but no chat was opened.",
-      openCommand
+      openCommand,
+      handoffStatus: "failed",
+      workspaceOpened: false,
+      composerOpened: false,
+      composerPrefilled: false,
+      threadCreated: false,
+      turnStarted: false,
+      manualSendRequired: false,
+      ...nativeFields
     };
   }
 
@@ -247,28 +293,56 @@ async function openCodexTaskChat(repoRoot, worktreePath, noOpen, seedMessage) {
       openedChat: false,
       openThreadId: null,
       openDiagnostics: `codex app failed (${opened.status}): ${(opened.stderr || opened.stdout).trim()}`,
-      openCommand
+      openCommand,
+      handoffStatus: "failed",
+      workspaceOpened: false,
+      composerOpened: false,
+      composerPrefilled: false,
+      threadCreated: false,
+      turnStarted: false,
+      manualSendRequired: false,
+      ...nativeFields
     };
   }
 
-  const deepLink = openCodexNewThreadComposer(repoRoot, worktreePath, seedMessage);
+  const composerSeedMessage = nativeHandoff ? "" : seedMessage;
+  const deepLink = openCodexNewThreadComposer(repoRoot, worktreePath, composerSeedMessage);
   const effectiveOpenCommand = deepLink.attempted ? `${openCommand}; ${deepLink.command}` : openCommand;
   if (deepLink.ok) {
     await sleep(CODEX_OPEN_READBACK_POLL_MS);
   }
 
-  const readBack = await waitForCodexThread(repoRoot, getCodexHome(), worktreePath, notBeforeMs);
+  const expectedFirstUserMessage = seedMessage.trim() ? seedMessage : null;
+  const readBack = await waitForCodexThread(
+    repoRoot,
+    getCodexHome(),
+    worktreePath,
+    notBeforeMs,
+    expectedFirstUserMessage
+  );
   if (readBack.threadId) {
     return {
       openAttempted: true,
       openStatus: "verified",
       openedChat: true,
       openThreadId: readBack.threadId,
-      openDiagnostics: "Codex thread read-back matched the created worktree cwd.",
-      openCommand: effectiveOpenCommand
+      openDiagnostics: expectedFirstUserMessage
+        ? "Codex thread read-back matched the created worktree cwd and exact first user message."
+        : "Codex thread read-back matched the created worktree cwd.",
+      openCommand: effectiveOpenCommand,
+      handoffStatus: "turn_started_verified",
+      workspaceOpened: true,
+      composerOpened: deepLink.ok,
+      composerPrefilled: deepLink.ok && Boolean(composerSeedMessage.trim()),
+      threadCreated: true,
+      turnStarted: true,
+      manualSendRequired: false,
+      ...nativeFields,
+      nativeHandoffRequired: false
     };
   }
   const diagnostics = [readBack.diagnostic, deepLink.diagnostic].filter(Boolean).join(" ");
+  const composerPrefilled = deepLink.ok && Boolean(composerSeedMessage.trim());
   return {
     openAttempted: true,
     openStatus: "unverified",
@@ -278,7 +352,19 @@ async function openCodexTaskChat(repoRoot, worktreePath, noOpen, seedMessage) {
       diagnostics ||
       readBack.diagnostic ||
       `No Codex thread was observed for cwd ${worktreePath} after a successful codex app launch attempt.`,
-    openCommand: effectiveOpenCommand
+    openCommand: effectiveOpenCommand,
+    handoffStatus: nativeHandoff
+      ? "native_handoff_required"
+      : composerPrefilled
+        ? "composer_prefilled"
+        : "workspace_opened",
+    workspaceOpened: true,
+    composerOpened: deepLink.ok,
+    composerPrefilled,
+    threadCreated: false,
+    turnStarted: false,
+    manualSendRequired: composerPrefilled && !nativeHandoff,
+    ...nativeFields
   };
 }
 
@@ -310,7 +396,7 @@ export function buildGoalSeed(title, rawSeedMessage) {
     "Definition of Done:",
     "- Реализован только подтверждённый scope задачи.",
     "- Product-specific детали не попали в reusable baseline rules.",
-    "- Canonical governance surfaces обновлены, если меняется reusable rule.",
+    "- Canonical governance surfaces и registry обновлены, если меняется reusable rule.",
     "- Deterministic QA пройдена и evidence записано в task/plan/final answer.",
     "",
     "Зона влияния:",
@@ -356,7 +442,13 @@ async function main() {
   const { flags } = parseArgs(process.argv.slice(2));
   const title = typeof flags.title === "string" ? flags.title : "";
   const rawSeedMessage = typeof flags["seed-message"] === "string" ? flags["seed-message"] : title;
-  const seedMessage = flags["no-goal-seed"] === true ? rawSeedMessage : buildGoalSeed(title, rawSeedMessage);
+  const openOnly = flags["open-only"] === true;
+  const nativeHandoff = flags["native-handoff"] === true;
+  if (openOnly && nativeHandoff) {
+    throw new Error("task:start does not allow --open-only together with --native-handoff.");
+  }
+  const seedMessage =
+    flags["no-goal-seed"] === true || openOnly ? rawSeedMessage : buildGoalSeed(title, rawSeedMessage);
   const allowDirtyRequested = flags["allow-dirty"] === true;
   const noOpen = flags["no-open"] === true || process.env.STARTER_NO_OPEN === "1";
 
@@ -378,6 +470,7 @@ async function main() {
   const worktreePath = path.join(managedRoot, `${repoName}-${slug}`);
   const sourceBranch = getCurrentBranch(repoRoot) || "main";
   const baseRef = resolveBaseRef(repoRoot);
+  const baseSha = runCommand(repoRoot, "git", ["rev-parse", baseRef]).stdout.trim();
 
   runCommand(repoRoot, "git", ["worktree", "add", "-b", branch, worktreePath, baseRef]);
   await ensureDependencies(worktreePath);
@@ -390,6 +483,7 @@ async function main() {
     slug,
     branch,
     sourceBranch,
+    baseSha,
     repoRoot,
     worktreePath,
     createdAt: formatIso(),
@@ -404,11 +498,23 @@ async function main() {
     cleanupDecision: null,
     cleanupStatus: null,
     cleanupTargets: [],
+    mainVerificationStatus: null,
+    mainVerificationSha: null,
+    mainVerificationAt: null,
+    postCleanupVerificationStatus: null,
+    postCleanupVerificationAt: null,
     operationalArtifacts: [],
-    mainWorktreePath
+    mainWorktreePath,
+    openOnly
   };
 
-  const openResult = await openCodexTaskChat(repoRoot, worktreePath, noOpen, seedMessage);
+  const openResult = await openCodexTaskChat(
+    repoRoot,
+    worktreePath,
+    noOpen,
+    openOnly ? "" : seedMessage,
+    nativeHandoff
+  );
   Object.assign(taskState, openResult);
 
   await saveTaskState(repoRoot, taskState);
@@ -421,7 +527,9 @@ async function main() {
       title,
       seedMessage,
       worktreePath,
+      baseSha,
       allowDirtyRequested,
+      openOnly,
       ...openResult
     }
   });
@@ -436,6 +544,7 @@ async function main() {
         taskId,
         branch,
         worktreePath,
+        openOnly,
         ...openResult
       },
       null,

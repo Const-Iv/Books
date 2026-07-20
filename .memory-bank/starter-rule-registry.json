@@ -771,8 +771,8 @@
     },
     {
       "id": "starter.conveyor.goal-seed-handoff",
-      "title": "Task conveyor sends a self-contained Goal Seed by default",
-      "text": "Goal Seed является стандартным форматом handoff для новых Codex-чатов, созданных task conveyor. Он выводится из исходного запроса владельца и должен быть самодостаточным plain-text prompt: цель задачи, исходные project source files, `Definition of Done`, зона влияния, safety boundaries, команды проверки, UI browser oracle rules когда релевантно, governance/eval requirements когда релевантно и stop conditions. Goal Seed может начинаться с `/goal`, но не должен зависеть от доступности slash command. `task:start` по умолчанию отправляет в новый чат effective Goal Seed; raw seed допустим только как явный opt-out владельца через `--no-goal-seed`.",
+      "title": "Task conveyor prepares a self-contained Goal Seed and proves submission",
+      "text": "Goal Seed является стандартным self-contained prompt для task conveyor: цель, исходные project sources, `Definition of Done`, зона влияния, safety boundaries, проверки, UI oracle, governance/eval и stop conditions. `task:start` по умолчанию формирует и сохраняет effective Goal Seed; deep-link `prompt=<effectiveSeed>` означает только заполненный composer draft. Отправленный turn подтверждается persisted exact `cwd + first_user_message` read-back; raw seed допустим только через `--no-goal-seed`.",
       "targetFiles": [
         "AGENTS.md",
         ".memory-bank/code-rules.md",
@@ -790,7 +790,8 @@
       "requiredFragments": [
         "Goal Seed",
         "--no-goal-seed",
-        "buildGoalSeed"
+        "buildGoalSeed",
+        "composer draft"
       ],
       "source": {
         "type": "starter-rule-import",
@@ -804,9 +805,39 @@
       "sharePolicy": "required"
     },
     {
+      "id": "starter.conveyor.worktree-create-open-only",
+      "title": "$worktree-create opens the exact worktree without starting a task",
+      "text": "$worktree-create по умолчанию создаёт managed worktree и открывает exact workspace в Codex без `prompt=` и без `codex_app.create_thread`; владелец сам пишет следующую задачу в открытой папке. Только явный owner request стартовать отдельную задачу разрешает `--native-handoff` и app-native local thread в уже созданном managed worktree.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        ".memory-bank/project-context.md",
+        "CODEX_MEMORY.md",
+        "README.md",
+        ".cursorrules",
+        "CLAUDE.md",
+        "scripts/README.md",
+        "skills/worktree-create/SKILL.md",
+        "scripts/worktree-start.mjs",
+        "tests/integration/worktree-start-guards.test.mjs"
+      ],
+      "requiredFragments": [
+        "$worktree-create",
+        "--open-only",
+        "без `prompt=`",
+        "без `codex_app.create_thread`"
+      ],
+      "source": {
+        "type": "starter-rule-share",
+        "starterHead": "7e2ce50367694cec3f29fdc2fb247fea1eb95fce",
+        "importedAt": "2026-07-20T15:30:00.000Z"
+      },
+      "sharePolicy": "required"
+    },
+    {
       "id": "starter.conveyor.codex-open-readback",
-      "title": "Codex chat open requires thread read-back",
-      "text": "`task:start` и shared `$worktree-create` не должны считать запуск `codex app <worktreePath>` доказательством открытого Codex-чата. `openedChat=true` допустим только после read-back локального Codex thread state с exact `cwd` нового worktree; при отсутствии matching thread нужно сохранять и показывать `openAttempted`, `openStatus=unverified|failed|skipped`, `openDiagnostics`, `openCommand` и не выдавать успешный статус открытия.",
+      "title": "Codex handoff stages require exact thread and turn read-back",
+      "text": "`task:start` различает `workspaceOpened`, `composerPrefilled`, `threadCreated` и `turnStarted`; deep-link `prompt=` доказывает только draft. `turnStarted=true`/`openedChat=true` требуют persisted exact `cwd` и seeded first-message read-back. `--native-handoff` регистрирует existing managed worktree без `prompt=` и возвращает `nativeHandoffRequired=true`; вызывающий Codex-агент может создать app-native local thread только при явном owner request. GUI automation, transient app-server acknowledgement и второй worktree запрещены как fallback.",
       "targetFiles": [
         "AGENTS.md",
         ".memory-bank/code-rules.md",
@@ -822,17 +853,19 @@
         "tests/integration/worktree-start-guards.test.mjs"
       ],
       "requiredFragments": [
+        "workspaceOpened",
+        "composerPrefilled",
+        "threadCreated",
+        "turnStarted",
+        "--native-handoff",
+        "nativeHandoffRequired=true",
         "openedChat=true",
-        "read-back локального Codex thread state",
-        "exact `cwd` нового worktree",
-        "openStatus=unverified|failed|skipped",
-        "openDiagnostics",
-        "openCommand"
+        "first user message"
       ],
       "source": {
         "type": "starter-rule-share",
-        "starterHead": "24956dce6740b07efe015135f44b39ca7a85769a",
-        "importedAt": "2026-06-01T09:45:00.000Z"
+        "starterHead": "7e2ce50367694cec3f29fdc2fb247fea1eb95fce",
+        "importedAt": "2026-07-20T15:30:00.000Z"
       },
       "sharePolicy": "required"
     },

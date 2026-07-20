@@ -36,6 +36,7 @@ import path from "node:path";
  * @property {string} slug
  * @property {string} branch
  * @property {string} sourceBranch
+ * @property {string | null} [baseSha]
  * @property {string} repoRoot
  * @property {string} worktreePath
  * @property {string} createdAt
@@ -51,15 +52,31 @@ import path from "node:path";
  * @property {string | null} [cleanupDecision]
  * @property {"kept"|"passed"|"failed"|null} [cleanupStatus]
  * @property {string[]} [cleanupTargets]
+ * @property {"passed"|"failed"|null} [mainVerificationStatus]
+ * @property {string | null} [mainVerificationSha]
+ * @property {string | null} [mainVerificationAt]
+ * @property {"passed"|"failed"|null} [postCleanupVerificationStatus]
+ * @property {string | null} [postCleanupVerificationAt]
  * @property {string | null} [finishedAt]
  * @property {string[]} [operationalArtifacts]
  * @property {string | null} [mainWorktreePath]
+ * @property {boolean} [openOnly]
  * @property {boolean} [openAttempted]
  * @property {"skipped"|"verified"|"unverified"|"failed"} [openStatus]
  * @property {boolean} [openedChat]
  * @property {string | null} [openThreadId]
  * @property {string | null} [openDiagnostics]
  * @property {string | null} [openCommand]
+ * @property {"skipped"|"failed"|"workspace_opened"|"composer_prefilled"|"native_handoff_required"|"turn_started_verified"} [handoffStatus]
+ * @property {boolean} [workspaceOpened]
+ * @property {boolean} [composerOpened]
+ * @property {boolean} [composerPrefilled]
+ * @property {boolean} [threadCreated]
+ * @property {boolean} [turnStarted]
+ * @property {boolean} [manualSendRequired]
+ * @property {boolean} [nativeHandoffRequested]
+ * @property {boolean} [nativeHandoffRequired]
+ * @property {string | null} [nativeHandoffProjectPath]
  */
 
 /**

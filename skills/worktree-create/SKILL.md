@@ -29,6 +29,7 @@ Use this skill to start a task worktree in a way that is consistent across proje
    - Do not call `codex_app.create_thread` for `$worktree-create` unless the owner explicitly asks you to start a task with an initial prompt; `create_thread` sends its prompt immediately.
    - Read back thread state if available and verify `cwd == <exact worktreePath>` before telling the owner the workspace was verified. If no matching thread appears, report the script diagnostics and the exact worktree path honestly instead of claiming the chat was opened.
    - Do not use `codex_app.create_thread` with the source project plus `environment.type="worktree"` after the repo conveyor already created a managed worktree; that creates a second Codex-managed worktree and breaks task-state alignment.
+   - If the owner explicitly asked to start a separate task, use `task:start --native-handoff`, then create an app-native local thread in the returned existing `nativeHandoffProjectPath` with the stored effective Goal Seed and verify exact `cwd + first_user_message` read-back. Do not use GUI key events or transient app-server acknowledgement as proof.
 8. Report the result briefly with the exact branch, worktree path, and verified thread id when available. If you successfully created or switched the thread onto a branch/worktree, emit the Codex branch directive for the created worktree in the final response.
 
 ## Codex-Managed Fallback
@@ -84,9 +85,9 @@ If `task:start --open-only` reports `openStatus=unverified` in Codex Desktop, re
 
 ## Shared Starter Baseline Rules — synced 2026-05-18
 
-- `starter.conveyor.goal-seed-handoff`: Goal Seed является стандартным форматом handoff для новых Codex-чатов, созданных task conveyor. Он выводится из исходного запроса владельца и должен быть самодостаточным plain-text prompt: цель задачи, исходные project source files, `Definition of Done`, зона влияния, safety boundaries, команды проверки, UI browser oracle rules когда релевантно, governance/eval requirements когда релевантно и stop conditions. Goal Seed может начинаться с `/goal`, но не должен зависеть от доступности slash command. `task:start` по умолчанию отправляет в новый чат effective Goal Seed; raw seed допустим только как явный opt-out владельца через `--no-goal-seed`.
-- `starter.conveyor.worktree-create-open-only`: `$worktree-create` по умолчанию создаёт managed worktree и открывает exact workspace в Codex без `prompt=` и без `codex_app.create_thread`; владелец сам пишет следующую задачу в открытой папке. Direct `task:start` остаётся seeded handoff, если не указан `--open-only`.
+- `starter.conveyor.goal-seed-handoff`: Goal Seed является стандартным self-contained prompt для task conveyor. `task:start` формирует и сохраняет seed; `prompt=` означает только composer draft, а отправленный turn подтверждается exact `cwd + first_user_message` read-back.
+- `starter.conveyor.worktree-create-open-only`: `$worktree-create` открывает exact workspace без prompt/thread; только явный owner request стартовать отдельную задачу разрешает `--native-handoff` и app-native local thread в existing managed worktree.
 
 ## Shared Starter Baseline Rules — synced 2026-06-01
 
-- `starter.conveyor.codex-open-readback`: `task:start` и shared `$worktree-create` не должны считать запуск `codex app <worktreePath>` доказательством открытого Codex-чата. `openedChat=true` допустим только после read-back локального Codex thread state с exact `cwd` нового worktree; при отсутствии matching thread нужно сохранять и показывать `openAttempted`, `openStatus=unverified|failed|skipped`, `openDiagnostics`, `openCommand` и не выдавать успешный статус открытия.
+- `starter.conveyor.codex-open-readback`: `task:start` различает workspace/composer/thread/turn; `turnStarted=true` требует exact persisted read-back. `--native-handoff` использует existing managed worktree; GUI automation, transient acknowledgement и второй worktree запрещены как fallback.
