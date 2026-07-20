@@ -2,18 +2,6 @@
 
 Журнал срабатываний TRIZ-триггеров и применённых решений.
 
-## 2026-04-29T16:27:50.253Z 20260429-162316-4a71
-
-- Branch: `codex/20260429-162316-4a71-teach-starter-rule-share-downstream-import-evidence`
-- Reasons: cross_module_conflict, historical_recurrence
-- Status: trigger recorded
-
-## 2026-04-30T07:51:12.145Z 20260429-162316-4a71
-
-- Branch: `codex/20260429-162316-4a71-teach-starter-rule-share-downstream-import-evidence`
-- Reasons: historical_recurrence
-- Status: trigger recorded
-
 ## 2026-04-30T08:18:00.993Z 20260429-162316-4a71
 
 - Branch: `codex/20260429-162316-4a71-teach-starter-rule-share-downstream-import-evidence`
@@ -201,4 +189,10 @@
 
 - Branch: `codex/20260720-093348-f5f0-ekvivalentnost-main-pered-cleanup`
 - Reasons: historical_recurrence
+- Status: trigger recorded
+
+## 2026-07-20T15:37:33.617Z 20260720-151622-00e9
+
+- Branch: `codex/20260720-151622-00e9-goal-seed-staged-handoff-rules`
+- Reasons: cross_module_conflict, historical_recurrence
 - Status: trigger recorded
