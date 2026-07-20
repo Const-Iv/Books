@@ -184,3 +184,14 @@
 - Skipped product-specific areas: downstream product charter identity, adapters, profiles, secrets, runtime state, private notes and user data.
 - Changed canonical files are limited to governance/docs/task-conveyor rule surfaces for the approved missing rules.
 - Deterministic QA result: PASS — rule-fragment self-check, targeted task-start tests where code changed, `npm run lint`, and full `npm run qa:agent`.
+
+## 2026-07-20 — Main equivalence before cleanup
+
+- Starter source: `Const-Iv/new-project-starter` at `fa6053753b6533ef49fc2391eb72174b92bc7a7d`.
+- Approved project: `Books`.
+- Imported rule: `starter.conveyor.main-equivalence-before-cleanup`.
+- Project adaptation: runtime profile preserves ignored `runtime/books`; pre/post hook repeats toolkit and artifact-preservation contracts from canonical `main`.
+- Preserved/skipped: Books product charter, toolkit rules, source artifacts and product wording were not overwritten.
+- Changed canonical surfaces: `AGENTS.md`, `.memory-bank/*`, `.cursorrules`, `CLAUDE.md`, `package.json`, runtime verification hook.
+- QA: targeted Books contracts 8/8 PASS; `npm run task:qa:agent` PASS.
+- TRIZ: applied; reusable invariant separated from Books-specific local artifact preservation.
