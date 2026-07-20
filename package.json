@@ -21,6 +21,8 @@
     "test": "node --test tests/unit/*.test.mjs tests/integration/*.test.mjs",
     "build": "node scripts/build-starter.mjs",
     "qa:agent": "node scripts/deterministic-feedback-loop.mjs",
+    "task:finish:verify:pre": "node scripts/finish-runtime-verify.mjs",
+    "task:finish:verify:post": "node scripts/finish-runtime-verify.mjs",
     "qa:smoke:pr": "node --test tests/e2e/pr-smoke.test.mjs",
     "qa:e2e:nightly": "node --test tests/e2e/*.test.mjs",
     "qa:security": "node scripts/security-gate.mjs",
