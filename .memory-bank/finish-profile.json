@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "mode": "runtime",
+  "environment": "test",
+  "preCleanupScript": "task:finish:verify:pre",
+  "postCleanupScript": "task:finish:verify:post",
+  "localOnlyPaths": [
+    {
+      "path": "runtime/books",
+      "required": false,
+      "exact": false
+    }
+  ]
+}
