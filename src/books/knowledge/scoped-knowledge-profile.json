@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "projectId": "Books",
+  "sourceRoot": "runtime/books",
+  "scopeManifest": "runtime/books/.knowledge/trusted-scope.json",
+  "responseRoot": "runtime/books/.response-manifests"
+}

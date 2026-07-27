@@ -28,7 +28,8 @@
     {
       "module": "scripts/lib/finish-verification.mjs",
       "tests": [
-        "tests/unit/duplicate-equivalence.test.mjs"
+        "tests/unit/duplicate-equivalence.test.mjs",
+        "tests/integration/books-artifacts-finish.test.mjs"
       ]
     },
     {
@@ -53,6 +54,18 @@
       "module": "src/books/toolkit/toolkit-contract.mjs",
       "tests": [
         "tests/unit/books-toolkit-contract.test.mjs"
+      ]
+    },
+    {
+      "module": "src/books/knowledge/scoped-knowledge-resolver.mjs",
+      "tests": [
+        "tests/unit/books-scoped-knowledge.test.mjs"
+      ]
+    },
+    {
+      "module": "src/books/cli/scoped-knowledge.mjs",
+      "tests": [
+        "tests/integration/books-scoped-knowledge-cli.test.mjs"
       ]
     },
     {
@@ -101,7 +114,8 @@
     {
       "module": "scripts/worktree-finish-core.mjs",
       "tests": [
-        "tests/e2e/nightly-finish.test.mjs"
+        "tests/e2e/nightly-finish.test.mjs",
+        "tests/integration/books-artifacts-finish.test.mjs"
       ]
     }
   ]

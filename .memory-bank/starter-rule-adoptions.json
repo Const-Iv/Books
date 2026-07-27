@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-27T16:43:25.000Z",
+  "updatedAt": "2026-07-27T17:19:20.000Z",
   "signals": {
     "activeRules": "project_local",
     "reusableSkills": "source_present",
@@ -103,9 +103,14 @@
     },
     {
       "id": "starter.agent.scoped-knowledge-truth-contract",
-      "status": "implementation_required",
-      "evidence": [],
-      "note": "Нужна отдельная feature task с Eval: trusted Books/source scope, opaque same-scope evidence references, complete-coverage truth states и защищённый ignored response manifest."
+      "status": "applied_adapted",
+      "evidence": [
+        "src/books/knowledge/scoped-knowledge-resolver.mjs#Model-controlled input is deliberately limited to a literal query",
+        "src/books/cli/scoped-knowledge.mjs#Neither path can be selected by a model-facing command",
+        "tests/integration/books-scoped-knowledge-cli.test.mjs#connected JSONL session executes search, read and exact response finalization",
+        "skills/books-toolkit/SKILL.md#Missing protected scope is `TRUSTED_SCOPE_NOT_CONFIGURED`"
+      ],
+      "note": "Books применяет правило через fixed tracked profile, protected ignored scope manifest и long-lived local JSONL contour `catalog/search -> request-bound read -> exact-answer finalize`; provider, browser и deploy не добавлены."
     },
     {
       "id": "starter.integrations.mutating-capability-adapter-gate",

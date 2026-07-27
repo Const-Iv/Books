@@ -5,7 +5,7 @@
 ## Сначала определить контур
 
 - При доступе к внешнему сервису агент сначала определяет service, resource, operation, freshness и authoritative read-back.
-- Для Books достаточный канонический local source начинается с structured Markdown copy и `source-manifest.md` в разрешённом project-local scope. Tracked toolkit помогает навигации, но не заменяет проверку локального источника, когда вопрос требует source-backed ответа.
+- Для Books достаточный канонический local source начинается с structured Markdown copy в заранее подтверждённом project-local scope. `source-manifest.md` и tracked toolkit помогают навигации, но не являются полномочием на чтение; source-backed доступ идёт через fixed-profile `npm run books:knowledge` и protected ignored scope declaration.
 - Если локального источника достаточно, внешний сервис или UI не открывается без отдельной причины.
 
 ## Порядок доступа
@@ -17,6 +17,7 @@
 - Computer Use — только для native/OS UI.
 - Product runtime использует project-native adapter над отдельно одобренным официальным API/OAuth; browser/Computer Use не могут быть скрытым production fallback.
 - Books v1 остаётся local-first CLI без provider, публичного UI и deploy. Новая внешняя интеграция требует отдельного owner-approved adapter decision и deterministic QA.
+- Model-facing knowledge command не принимает project/root/scope/source/config. Full-source pass идёт `catalog -> request-bound read`, literal search — `search -> request-bound read`, а точный ответ обязательно проходит `finalize` с hash-only manifest. Current/mutable claim без approved live provider остаётся `not_verified`.
 
 ## Внешняя запись
 

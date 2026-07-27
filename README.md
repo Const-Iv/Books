@@ -41,6 +41,17 @@ Books — local-first проект для превращения официал�
 
 Процессная основа нужна только для безопасной разработки Books. Она не является product runtime и не должна подменять product charter Books.
 
+## Безопасный локальный поиск по источникам
+
+`npm run books:knowledge` запускает один long-lived JSONL-сеанс с фиксированным Books profile. Команда сама использует canonical `runtime/books`, не принимает project/root/scope/config arguments и останавливается с `TRUSTED_SCOPE_NOT_CONFIGURED`, пока owner-selected scope не записан в protected ignored `runtime/books/.knowledge/trusted-scope.json` (`0700` для папки, `0600` для файла).
+
+- `catalog` выдаёт opaque refs для полного source pass;
+- `search` ищет literal query и различает `found | not_found | partial | not_verified`;
+- `read` открывает материал только по ref exact request и повторно проверяет content hash;
+- `finalize` связывает exact query/answer hashes и реально прочитанные refs в hash-only manifest без raw source/query/answer.
+
+Прямые пути в `source-manifest.md` остаются locator'ами. Точный operator/agent protocol хранится в `skills/books-toolkit/SKILL.md`.
+
 ## Что внутри
 
 - `AGENTS.md` — канонический договор для Codex.
@@ -52,6 +63,7 @@ Books — local-first проект для превращения официал�
 - `.memory-bank/starter-rule-adoptions.json` — подтверждённые Books-specific соответствия, отложенные реализации и неприменимые capability rules.
 - `CODEX_MEMORY.md` — оперативная память Codex.
 - `scripts/` — реальные process entrypoints, а не только README-контракты.
+- `src/books/knowledge/` и `src/books/cli/scoped-knowledge.mjs` — безопасный local-only knowledge contour: fixed trusted scope, opaque refs, честные truth states и hash-only response manifest.
 - `skills/` — versioned reusable Codex skills, которые можно подключить глобально через symlink.
 - `skills/starter-project-bootstrap/` — основной conversational skill для фразы `стартуем новый проект`: ведёт owner'а по Project Intake, canonical docs, dependencies, shared skills и baseline QA.
 - `skills/starter-rule-report/` — основной project-local skill для ночного и ручного read-only поиска reusable правил в downstream проектах и сохранения readable owner report.
@@ -138,6 +150,7 @@ npm run qa:perf:critical
 - `npm run skills:link`
 - `npm run skills:status`
 - `npm run skills:unlink`
+- `npm run books:knowledge`
 - `npm run rule-sync:scan -- --since <date> --until <date>`
 - `npm run rule-sync:report -- --latest`
 - `npm run rule-sync:apply-plan -- --approval <path> --dry-run`

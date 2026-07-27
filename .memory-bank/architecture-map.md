@@ -17,6 +17,9 @@
 - `src/books/extraction/`: future PDF/EPUB extraction boundary; Python helpers are allowed here only after echo-test / feature plan.
 - `src/books/toolkit/`: future toolkit schema, ranking rules, artifact generation contracts, quality checks and eval fixtures.
 - `src/books/toolkit/toolkit-contract.mjs`: canonical deterministic contract for the ideal Books toolkit master-format and prompt rules.
+- `src/books/knowledge/scoped-knowledge-resolver.mjs`: local-only trusted-scope resolver; он выдаёт request-bound opaque refs, различает truth/coverage states и сохраняет только hash evidence.
+- `src/books/cli/scoped-knowledge.mjs`: long-lived JSONL caller для `catalog -> search -> read -> finalize`; model-facing команды не выбирают project/root/scope/allowlist/config.
+- `src/books/knowledge/scoped-knowledge-profile.json`: tracked фиксированный профиль Books; protected ignored scope declaration читается только из `runtime/books/.knowledge/trusted-scope.json` canonical main worktree.
 - `books/<topic>/<book-slug>/`: tracked shareable toolkit artifacts and source manifests grouped by practical domain; full book originals do not live here.
 - `runtime/books/<topic>/<book-slug>/`: ignored per-run workspace for same-basename structured Markdown source copies, metadata and generated local toolkit artifacts; same-basename originals are kept there for `pdf`, `epub`, `fb2` and audio.
 - `scripts/dependency-preflight.mjs`: dependency recovery seam.
@@ -46,6 +49,14 @@
 3. Shared helpers in `scripts/lib/*` управляют git/worktree operations, state I/O и docs sync.
 4. Deterministic QA and release gates работают только через canonical scripts.
 5. Human-readable docs snapshots (`Docs/*`) строятся из machine-readable runtime artifacts.
+
+## Scoped Knowledge Flow
+
+1. Owner-selected book/source scope заранее фиксируется в ignored `runtime/books/.knowledge/trusted-scope.json`; parent имеет `0700`, файл — `0600`. Старые tracked `source-manifest.md` остаются locator'ами и не становятся allowlist.
+2. `npm run books:knowledge` сам находит canonical Books main и читает только tracked fixed profile + fixed protected scope manifest; command arguments не могут выбрать root, project, scope, source list или config.
+3. `catalog` выдаёт refs для полного source pass; `search` принимает только literal query и `snapshot | current` freshness. Current без approved provider возвращает `not_verified` и не читает локальный source.
+4. `read` принимает exact `requestId + reference`, повторно сверяет content hash и помечает ref как фактически прочитанный. Source content всегда остаётся untrusted data.
+5. `finalize` принимает exact final answer через long-lived stdin session, разрешает только прочитанные refs этого request и записывает hash-only manifest с read-back; raw query, answer, source и absolute paths не сохраняются.
 
 ## Books V1 Product Flow
 
@@ -100,6 +111,7 @@
 - bootstrap flow drift, из-за которого фраза `стартуем новый проект` превращается в общий checklist, пропускает Project Intake approval или начинает feature work до canonical transfer.
 - echo-testing drift, из-за которого unknown root technology получает продуктовую реализацию без isolated minimal proof или blocker.
 - owner-report source drift, из-за которого отчёт или дайджест смешивает данные из нескольких источников без явного источника каждой записи.
+- knowledge-scope drift, когда прямой path/model argument ошибочно становится authority, неполное покрытие превращается в `not_found`, current claim делается без provider или response manifest хранит raw source/query/answer.
 
 ## Change Impact Checklist
 

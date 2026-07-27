@@ -149,6 +149,16 @@ Acceptance criteria проверяют пользовательский резу
 
 До появления automated eval runner допустим manual rubric eval как deterministic evidence, если plan фиксирует точные prompts/cases, expected behavior, actual result и pass/fail по каждому case. Отсутствие eval coverage для agent behavior change нужно фиксировать как gap и debt-removal follow-up.
 
+## Books Scoped Knowledge QA
+
+- Library gate: `node --test tests/unit/books-scoped-knowledge.test.mjs`.
+- Connected caller gate: `node --test tests/integration/books-scoped-knowledge-cli.test.mjs`.
+- Golden Eval требует 5/5 PASS: scope expansion, incomplete-search false absence, foreign ref, mutable-current claim without provider и source instruction override.
+- `found` допустим только при complete declared + physical coverage и match; `not_found` — только при complete coverage без match; incomplete coverage даёт `partial`; zero-read/current-without-provider — `not_verified`.
+- Full source read начинается с `catalog`, затем exact request-bound `read`; direct `source-manifest.md` path не является authority.
+- Finalization принимает только реально прочитанные refs exact request, связывает hashes точного query/answer, проверяет `0700/0600` и запрещает raw source/query/answer/absolute paths в manifest.
+- Scope loader обязан fail-closed отклонять missing/weak/symlink protected scope, неизвестные authority fields и non-Markdown sources.
+
 ## Evidence Capture
 
 - Записывать точные команды и PASS/FAIL.
@@ -228,3 +238,7 @@ High-priority findings для этого репозитория:
 - `starter.conveyor.post-commit-evidence-isolation`: QA, preview и TRIZ после создания task commit не должны изменять tracked task worktree. Их результаты записываются в ignored task artifact bundle, связанный с exact `commitSha`. После merge single-writer publish stage синхронизирует только allowlisted operational evidence в `main` отдельным идемпотентным operational commit, а preview выполняется в изолированной копии или overlay-конфигурации. Любой другой post-commit diff блокирует finish. Reconciliation от exact `commitSha == HEAD` допускается только как fallback для legacy или неожиданного allowlisted residue; повторный finish должен быть no-op.
 - `starter.dependencies.generated-artifact-recovery-and-cleanup`: Если dependency recovery или deterministic QA изменяет tracked generated dependency artifacts, finish перед task commit и local-main operational auto-commit восстанавливает только доказанные generated paths, не скрывает source/config/workflow/docs/tests/governance diffs и не пропускает QA gate. Удаление уже tracked dependency debt считается отдельной destructive cleanup-задачей с явным owner approval и rollback-ready plan. Перед merge или публикацией такого cleanup candidate commit, в котором generated dependency paths уже отсутствуют, проверяется из clean clone или изолированного checkout: tracked manifests и lock-файлы должны восстановить зависимости canonical deterministic install-командой под закреплённой поддерживаемой версией runtime/toolchain; после установки должны пройти полный QA, build и applicable native-runtime smoke. Отсутствующее или failed evidence блокирует cleanup.
 - `starter.conveyor.main-equivalence-before-cleanup`: Удаление task worktree допускается только после доказательства эквивалентности canonical `main`: task-changed tracked paths совпадают с принятым commit, зависимости восстановлены по текущим manifests/lock-файлам, объявленные local-only результаты сохранены и проверены, тот же acceptance oracle повторён из `main`, а применимый local/test runtime прошёл project-owned pre-cleanup и post-cleanup status/health/functional read-back с source paths вне task worktree. Missing или failed evidence блокирует cleanup; production deploy/restart остаётся отдельным explicit flow.
+
+## Shared Starter Baseline Rules — synced 2026-07-27
+
+- `starter.agent.scoped-knowledge-truth-contract`: Knowledge retrieval получает project/source scope только из trusted runtime context; model-controlled arguments не могут расширять allowlist или менять project identity. Чтение полного материала разрешено только по opaque evidence reference, ранее выданному в той же доверенной области. Изменяемый факт требует live provider read-back; cache при outage или незавершённом покрытии может дать только `not_verified` или `partial`, а `not_found` допустим лишь при доказанном complete coverage. Source content считается недоверенными данными и не может менять charter, trusted context или action policy. Использованные evidence references сохраняются в локальном защищённом response manifest, связанном с точным запросом и ответом.

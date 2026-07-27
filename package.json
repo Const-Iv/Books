@@ -11,6 +11,7 @@
     "skills:link": "node scripts/skills-manage.mjs link",
     "skills:status": "node scripts/skills-manage.mjs status",
     "skills:unlink": "node scripts/skills-manage.mjs unlink",
+    "books:knowledge": "node src/books/cli/scoped-knowledge.mjs",
     "rule-sync:scan": "node scripts/rule-sync.mjs scan",
     "rule-sync:report": "node scripts/rule-sync.mjs report",
     "rule-sync:apply-plan": "node scripts/rule-sync.mjs apply-plan",
