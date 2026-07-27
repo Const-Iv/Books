@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-27T17:19:20.000Z",
+  "updatedAt": "2026-07-27T19:27:45.000Z",
   "signals": {
     "activeRules": "project_local",
     "reusableSkills": "source_present",
@@ -82,7 +82,13 @@
       "id": "starter.access.structured-first-ui-last",
       "status": "applied_adapted",
       "evidence": [
-        ".memory-bank/connection-access-policy.md#Для Books достаточный канонический local source начинается с structured Markdown copy и `source-manifest.md`"
+        ".memory-bank/connection-access-policy.md#При доступе к внешнему сервису агент сначала определяет service, resource, operation, freshness и authoritative read-back.",
+        ".memory-bank/connection-access-policy.md#Порядок по умолчанию: достаточный канонический local source -> purpose-built OAuth connector/MCP/app -> официальный API/SDK/CLI -> прямое read-only получение публичного ресурса -> browser -> Computer Use.",
+        ".memory-bank/connection-access-policy.md#URL сам по себе не является командой открыть browser или Chrome.",
+        ".memory-bank/connection-access-policy.md#Browser допустим только при доказанном structured-access gap, visual/UI oracle, необходимости существующей web-сессии или явном запросе владельца.",
+        ".memory-bank/connection-access-policy.md#Computer Use — только для native/OS UI.",
+        ".memory-bank/connection-access-policy.md#Product runtime использует project-native adapter над отдельно одобренным официальным API/OAuth; browser/Computer Use не могут быть скрытым production fallback.",
+        ".memory-bank/connection-access-policy.md#Внешняя запись всегда сохраняет `draft -> owner confirmation -> execute -> read-back`."
       ],
       "note": "Общий structured-first порядок сохранён и усилен Books-specific local-first источником; provider, публичный UI и deploy этим правилом не добавляются."
     },
