@@ -30,6 +30,7 @@
 - Нельзя импортировать в starter core как mandatory defaults: конкретный frontend stack, конкретный identity provider, конкретные payment providers, fixed locales, Python-only decorators, database queue или single-worker model. Такие решения допустимы только как downstream adapter/profile choice с owner approval.
 - Если конкретному проекту нужны действия после публикации, например перезапуск локальных агентов или сервисов, способ выполнения нужно согласовать в Project Intake этого проекта. Starter не зашивает продуктовые агенты, локальные команды и настройки конкретной среды в общую основу.
 - Для external libraries, integrations and provider setup нужно проверять актуальную official documentation или доступный docs connector перед installation/configuration/update/debugging; конкретный docs tool не становится обязательным starter dependency.
+- Доступ к локальным источникам, внешним сервисам и UI идёт по `.memory-bank/connection-access-policy.md`: Books начинает с достаточного structured Markdown source и `source-manifest.md`, а browser/Computer Use не используются как скрытый runtime fallback.
 - `starter-rule-report` является основным project-local skill для ночного и ручного read-only rule discovery/report workflow; автоматизации должны вызывать этот skill, а не дублировать scan/report логику.
 - `starter-rule-import` является основным project-local skill для утреннего owner approval и переноса approved reusable правил в starter; он задаёт вопросы по сгруппированным пунктам последнего readable report, готовит approval JSON и preliminary check без изменений, а импорт требует managed worktree и QA. Каждый новый approved reusable rule должен добавлять или обновлять запись в `.memory-bank/starter-rule-registry.json`.
 - `starter-rule-sync` остаётся временным compatibility router для старых prompt'ов и должен направлять к `starter-rule-report` или `starter-rule-import`; `rule-sync:*` scripts остаются deterministic execution layer.
@@ -48,6 +49,7 @@
 - Rule-share manual review для проектов с неполными starter baseline signals должен объяснять, каких сигналов не хватает, и предлагать только safe bootstrap path: downstream-specific product charter / Project Intake или versioned `vendor/new-project-starter`, managed task worktree и deterministic QA.
 - Rule-share one-run mode допустим только по явному запросу owner'а или ignored standing approval в `runtime/rule-share/config.json`; он может автоматически пройти scan/report/apply-plan и выполнить перенос в downstream managed task worktrees с deterministic QA, но не имеет права редактировать downstream main worktree, трогать manual-review/blocked проекты или finish/merge/publish без отдельного явного разрешения.
 - Rule-share `prepare_rule_import` task seed для copied-baseline проектов должен быть implementation contract: перенести только `missingRules`, не дублировать `presentRules` / `presentUnregisteredRules`, сохранить downstream product wording, синхронизировать canonical/mirror surfaces (`AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, README, `.cursorrules`, `CLAUDE.md`), записать QA/TRIZ evidence и остановиться перед finish/merge/publish без отдельного owner gate.
+- Books-specific adoption decisions фиксируются в `.memory-bank/starter-rule-adoptions.json`; active rules, reusable skill source и starter reference проверяются независимо, а status `implementation_required` меняется только после executable implementation и deterministic evidence.
 - Не использовать TypeScript `any` в новом или изменённом typed code / JSDoc contracts.
 - Не глушить ошибки пустыми `catch {}`.
 - Для bugfixes избегать unrelated refactors.
@@ -78,6 +80,9 @@
 - В owner-facing core писать про ситуацию, ценность и ожидаемый результат без технического шума; знакомые владельцу названия продукта или инструмента допустимы.
 - Технические детали добавлять только там, где они помогают понять или реализовать решение. Их можно встроить в текст; если агенту нужен точный implementation context, добавлять отдельный блок `План для агента`.
 - В user-facing ответах не использовать необъяснённый Git/process-жаргон; если термин нужен, сразу объяснять его простыми словами рядом.
+- Длинные owner-facing документы оформлять читаемым Markdown; короткие ответы не перегружать форматированием.
+- Skills, connectors, browser tools и extended reasoning использовать on demand, сохраняя browser/Playwright для применимого UI verification и browser oracle.
+- Если сложный workflow повторился 2-3 раза, предложить repo-owned skill через charter, цель, одну Job Story и критерии приемки; skill не создавать и не менять без owner approval.
 - Если high-impact ambiguity нельзя снять из репо, задавать один короткий choice question; в Plan mode вопрос и recommended option должны быть совместимы с `.memory-bank/product-charter.md`.
 - Диалог с пользователем держать на русском, а code/comments/identifiers — на английском.
 
@@ -114,9 +119,12 @@
 - `task:finish:core` не имеет права завершать commit/merge/release path при failed task QA.
 - Если clean task branch уже содержится в `main` и task commit ещё не записан, finish-flow должен пропустить publish stage, поставить `publishStatus=skipped_already_merged` и всё равно записать итоговый cleanup status.
 - Перед delete/keep cleanup `task:finish:core` должен переносить ignored `runtime/books` из task-worktree в main-worktree, чтобы локальные оригиналы и рабочие toolkit artifacts не терялись при удалении task-worktree; conflicting destination files сохраняются рядом с task-id suffix без silent overwrite.
+- До cleanup Books finish доказывает exact tracked result, текущий dependency fingerprint, сохранение local-only artifacts, full current-main QA и `MAIN_VERIFY`; после delete обязателен `POST_CLEANUP_VERIFY` до `cleanupStatus=passed`.
+- Parallel comparison возвращает только `exact_duplicate | different_results | not_proven`. Exact duplicate требует одного parent, одинаковых non-empty `name-status`, совпадающих Git tree entries (`mode + type + object id`) и replacement ancestry в current `main`; второй merge запрещён. Different results требуют owner comparison/recommendation, а not proven ничего не меняет.
 - Cleanup gate должен задаваться в виде фиксированного numbered choice: `1. Удалить`, `2. Оставить`; пользовательские ответы `1`/`2` маппятся на delete/keep без необходимости писать слова.
 - Delete cleanup может получить `cleanupStatus=passed` только после проверки exact `state.worktreePath`, отсутствия этого пути в `git worktree list`, удаления managed task root `$CODEX_HOME/worktrees/<taskId>/` и отсутствия task-scoped leftovers. Похожие worktrees других `taskId` или проектов не считаются cleanup текущей задачи и требуют отдельного fixed choice.
 - Shared operational docs и generated `Docs/task-history.md` — single-writer; task branch обновления проходят только через capture, а sync/rebuild происходят на publish/release stage.
+- Versioned governance inputs и single-writer operational docs перечисляются раздельно в `scripts/lib/governance-input-boundary.mjs`. Deterministic snapshot не читает operational mirrors как rule truth: uncommitted canonical change получает `source=working_tree`, а committed truth связывается с exact commit SHA.
 - `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` остаются активными читаемыми логами: при compaction полный pre-compaction snapshot сохраняется в `Docs/archive/*.md.gz`, а активный файл хранит компактный текущий хвост.
 
 ## Echo-testing Gate
@@ -137,6 +145,7 @@
 - `qa:coverage:critical` должен ссылаться на явный manifest критичных модулей.
 - `qa:perf:critical` обязан использовать baseline-файл из `Docs/qa-perf-baseline.json`.
 - `qa:security` должен содержать минимум secret scan + dependency audit.
+- Books dependency audit запускается для полного корневого dependency graph, включая dev tooling, с fail-closed порогом `high`; production-only audit допустим только как дополнительное evidence.
 - Dependency preflight — общий seam для `task:start`, `task:test` и `qa:agent`.
 - Для bugfix без formal plan QA evidence всё равно фиксируется в ответе по задаче и в `Docs/qa-implementation-log.md`.
 - Performance и state-safety changes должны сохранять user data и public behavior contracts; read-only/internal automatic updates нельзя учитывать как user changes без user interaction или real entity changes.

@@ -1,7 +1,11 @@
 // @ts-check
 
+import { existsSync } from "node:fs";
+import path from "node:path";
+
 import { buildCommitMessage } from "./lib/conveyor-utils.mjs";
-import { preserveBooksRuntimeArtifacts } from "./lib/books-artifacts.mjs";
+import { proveParallelDuplicateCommit } from "./lib/duplicate-equivalence.mjs";
+import { runFinishVerification } from "./lib/finish-verification.mjs";
 import { executeTaskCleanup, normalizeCleanupChoice } from "./lib/worktree-cleanup.mjs";
 import {
   OPERATIONAL_DOCS,
@@ -11,6 +15,8 @@ import {
   formatIso,
   getCurrentBranch,
   getHeadSha,
+  getTaskArtifactsDir,
+  getWorktreeList,
   hasRemote,
   getTrackedChangedFiles,
   isGitDirty,
@@ -151,6 +157,12 @@ async function ensureTaskQa(repoRoot, state) {
       "resume command: npm run task:finish:core -- --decision retry"
     );
   }
+
+  // task:qa:agent records its TRIZ/QA evidence in tracked operational logs.
+  // Those snapshots are deliberately excluded from the task commit above, so
+  // restore only the same allowlisted paths after QA before fail-closed
+  // equivalence verification inspects the worktree.
+  await normalizeOperationalSnapshots(repoRoot);
 }
 
 /**
@@ -259,6 +271,71 @@ async function maybeSkipAlreadyMergedPublish(repoRoot, state) {
 /**
  * @param {string} repoRoot
  * @param {import("./lib/runtime.mjs").TaskState} state
+ * @param {string | null} replacementCommitish
+ * @returns {Promise<boolean>}
+ */
+async function maybeSkipDuplicatePublish(repoRoot, state, replacementCommitish) {
+  if (!replacementCommitish) {
+    return false;
+  }
+  if (!state.baseSha || !state.commitSha) {
+    throw new Error("Duplicate cleanup requires recorded baseSha and commitSha evidence.");
+  }
+
+  const stateRepoRoot = state.repoRoot || state.mainWorktreePath || repoRoot;
+  const mainWorktreePath = state.mainWorktreePath ?? (await findMainWorktree(stateRepoRoot)) ?? stateRepoRoot;
+  if (getCurrentBranch(mainWorktreePath) !== "main") {
+    throw new Error(`Duplicate cleanup requires canonical main: ${mainWorktreePath}`);
+  }
+  if (isGitDirty(mainWorktreePath)) {
+    throw new Error("Duplicate cleanup requires a clean canonical main worktree.");
+  }
+  if (!existsSync(state.worktreePath)) {
+    throw new Error(`Duplicate cleanup requires the exact task worktree: ${state.worktreePath}`);
+  }
+  if (isGitDirty(state.worktreePath) || getHeadSha(state.worktreePath) !== state.commitSha) {
+    throw new Error("Duplicate cleanup requires a clean task worktree at the recorded commitSha.");
+  }
+
+  const proof = proveParallelDuplicateCommit(mainWorktreePath, state.commitSha, replacementCommitish, "HEAD");
+  if (proof.baseSha !== state.baseSha) {
+    throw new Error(`Recorded baseSha does not match duplicate proof: ${state.baseSha}`);
+  }
+
+  const verifiedAt = formatIso();
+  state.equivalenceMode = "parallel_duplicate_commit";
+  state.replacementCommitSha = proof.replacementCommitSha;
+  state.equivalenceVerifiedAt = verifiedAt;
+  state.equivalenceMainSha = getHeadSha(mainWorktreePath);
+  state.duplicateAcceptanceStatus = null;
+  state.duplicateAcceptanceMainSha = null;
+  state.duplicateAcceptanceAt = null;
+  state.duplicateAcceptanceCommand = null;
+  state.publishStatus = "skipped_duplicate_cleanup_only";
+  state.status = "merged";
+  await saveTaskState(stateRepoRoot, state);
+  await appendHistoryEvent(stateRepoRoot, {
+    at: verifiedAt,
+    type: "PUBLISH_SKIP",
+    taskId: state.taskId,
+    branch: state.branch,
+    payload: {
+      reason: "parallel task commit exactly matches an explicit replacement commit already contained in main",
+      resultStatus: "exact_duplicate",
+      commitSha: proof.taskCommitSha,
+      replacementCommitSha: proof.replacementCommitSha,
+      baseSha: proof.baseSha,
+      changedFiles: proof.changedFiles,
+      fullCurrentMainQaRequired: true,
+      publishStatus: state.publishStatus
+    }
+  });
+  return true;
+}
+
+/**
+ * @param {string} repoRoot
+ * @param {import("./lib/runtime.mjs").TaskState} state
  * @returns {Promise<void>}
  */
 async function runPublishStage(repoRoot, state) {
@@ -272,6 +349,59 @@ async function runPublishStage(repoRoot, state) {
  * @returns {Promise<void>}
  */
 async function finalizeTask(repoRoot, state, cleanup) {
+  const stateRepoRoot = state.repoRoot || state.mainWorktreePath || repoRoot;
+  const mainWorktreePath = state.mainWorktreePath ?? (await findMainWorktree(stateRepoRoot)) ?? stateRepoRoot;
+  const taskStillRegistered = (await getWorktreeList(mainWorktreePath)).some(
+    (entry) => path.resolve(entry.path) === path.resolve(state.worktreePath)
+  );
+  const resumePostCleanup =
+    cleanup === "yes" &&
+    !taskStillRegistered &&
+    state.mainVerificationStatus === "passed" &&
+    state.mainVerificationSha === getHeadSha(mainWorktreePath);
+  if (!resumePostCleanup) {
+    const preVerification = await runFinishVerification(stateRepoRoot, state, "pre_cleanup");
+    if (preVerification.artifactPreservation) {
+      await appendHistoryEvent(stateRepoRoot, {
+        at: formatIso(),
+        type: "BOOKS_ARTIFACTS_PRESERVE",
+        taskId: state.taskId,
+        branch: state.branch,
+        payload: preVerification.artifactPreservation
+      });
+    }
+    state.mainVerificationStatus = preVerification.status;
+    state.mainVerificationSha = preVerification.mainSha;
+    state.mainVerificationAt = formatIso();
+    if (state.equivalenceMode === "parallel_duplicate_commit") {
+      state.duplicateAcceptanceStatus = preVerification.status;
+      state.duplicateAcceptanceMainSha = preVerification.mainSha;
+      state.duplicateAcceptanceAt = state.mainVerificationAt;
+      state.duplicateAcceptanceCommand = preVerification.checks.some((check) => check.id === "full_current_main_qa")
+        ? "npm run qa:agent"
+        : null;
+      state.equivalenceMainSha = preVerification.mainSha;
+      state.equivalenceVerifiedAt = state.mainVerificationAt;
+    }
+    await saveTaskState(stateRepoRoot, state);
+    await appendHistoryEvent(stateRepoRoot, {
+      at: state.mainVerificationAt,
+      type: "MAIN_VERIFY",
+      taskId: state.taskId,
+      branch: state.branch,
+      payload: preVerification
+    });
+    if (preVerification.status !== "passed") {
+      throw new Error(
+        [
+          "task:finish:core main equivalence verification failed; cleanup is blocked.",
+          ...preVerification.blocked,
+          `evidence: ${getTaskArtifactsDir(stateRepoRoot, state.taskId)}`
+        ].join("\n")
+      );
+    }
+  }
+
   if (!cleanup) {
     console.log(
       ["Finish complete. Choose cleanup:", "1. Удалить", "2. Оставить", "CLI aliases: --cleanup 1|2 (legacy: yes|no)."].join(
@@ -281,21 +411,27 @@ async function finalizeTask(repoRoot, state, cleanup) {
     return;
   }
 
-  const stateRepoRoot = state.repoRoot || state.mainWorktreePath || repoRoot;
-  const mainWorktreePath = state.mainWorktreePath ?? (await findMainWorktree(stateRepoRoot)) ?? stateRepoRoot;
   state.cleanupDecision = cleanup;
   state.finishedAt = formatIso();
   state.status = "finished";
-  const booksArtifacts = await preserveBooksRuntimeArtifacts(state.worktreePath, mainWorktreePath, state.taskId);
-  await appendHistoryEvent(stateRepoRoot, {
-    at: formatIso(),
-    type: "BOOKS_ARTIFACTS_PRESERVE",
-    taskId: state.taskId,
-    branch: state.branch,
-    payload: booksArtifacts
-  });
 
   const cleanupResult = await executeTaskCleanup(repoRoot, state, mainWorktreePath);
+  if (cleanupResult.status === "passed" && cleanupResult.decision === "yes") {
+    const postVerification = await runFinishVerification(stateRepoRoot, state, "post_cleanup");
+    state.postCleanupVerificationStatus = postVerification.status;
+    state.postCleanupVerificationAt = formatIso();
+    await appendHistoryEvent(stateRepoRoot, {
+      at: state.postCleanupVerificationAt,
+      type: "POST_CLEANUP_VERIFY",
+      taskId: state.taskId,
+      branch: state.branch,
+      payload: postVerification
+    });
+    if (postVerification.status !== "passed") {
+      cleanupResult.status = "failed";
+      cleanupResult.errors.push(...postVerification.blocked);
+    }
+  }
   state.cleanupDecision = cleanupResult.decision;
   state.cleanupStatus = cleanupResult.status;
   state.cleanupTargets = cleanupResult.cleanupTargets;
@@ -326,8 +462,10 @@ async function finalizeTask(repoRoot, state, cleanup) {
     branch: state.branch,
     payload: {
       publishStatus: state.publishStatus ?? null,
+      mainVerificationStatus: state.mainVerificationStatus ?? null,
       cleanupDecision: state.cleanupDecision,
-      cleanupStatus: state.cleanupStatus ?? null
+      cleanupStatus: state.cleanupStatus ?? null,
+      postCleanupVerificationStatus: state.postCleanupVerificationStatus ?? null
     }
   });
 
@@ -355,6 +493,7 @@ async function main() {
   const publishMain = typeof flags["publish-main"] === "string" ? flags["publish-main"] : null;
   const requestedBranch = typeof flags.branch === "string" ? flags.branch : null;
   const requestedTaskId = typeof flags["task-id"] === "string" ? flags["task-id"] : null;
+  const duplicateOf = typeof flags["duplicate-of"] === "string" ? flags["duplicate-of"] : null;
   const decision = typeof flags.decision === "string" ? flags.decision : null;
 
   if (decision && decision !== "retry") {
@@ -366,6 +505,15 @@ async function main() {
   if (cleanup && cleanup !== "yes" && cleanup !== "no") {
     throw new Error(`Unsupported --cleanup value: ${rawCleanup}. Expected 1, 2, yes, or no.`);
   }
+  if (flags["duplicate-of"] !== undefined && !duplicateOf) {
+    throw new Error("--duplicate-of requires one replacement commit SHA.");
+  }
+  if (duplicateOf && cleanup !== "yes") {
+    throw new Error("--duplicate-of is cleanup-only and requires --cleanup 1 (or yes).");
+  }
+  if (duplicateOf && publishMain) {
+    throw new Error("--duplicate-of cannot be combined with --publish-main; duplicate cleanup never performs a second merge.");
+  }
 
   const state = await resolveTaskState(repoRoot, currentBranch, {
     branch: requestedBranch,
@@ -373,11 +521,22 @@ async function main() {
     publishMain,
     taskId: requestedTaskId
   });
-  const skippedAlreadyMerged = await maybeSkipAlreadyMergedPublish(repoRoot, state);
+  if (duplicateOf) {
+    await ensureTaskCommit(state.worktreePath, state);
+    await ensureTaskQa(state.worktreePath, state);
+    const qaRefreshed = await loadTaskStateByBranch(repoRoot, state.branch);
+    if (!qaRefreshed || qaRefreshed.qaLastPassSha !== state.commitSha) {
+      throw new Error("Duplicate cleanup requires persisted task QA evidence at the recorded commitSha.");
+    }
+    Object.assign(state, qaRefreshed);
+  }
+  const skippedDuplicate = await maybeSkipDuplicatePublish(repoRoot, state, duplicateOf);
+  const skippedAlreadyMerged = skippedDuplicate ? false : await maybeSkipAlreadyMergedPublish(repoRoot, state);
 
   const publishAlreadyCompleted =
+    skippedDuplicate ||
     skippedAlreadyMerged ||
-    (["pushed", "local-only", "skipped_already_merged"].includes(state.publishStatus ?? "") &&
+    (["pushed", "local-only", "skipped_already_merged", "skipped_duplicate_cleanup_only"].includes(state.publishStatus ?? "") &&
       ["merged", "finished"].includes(state.status ?? ""));
 
   if (!publishAlreadyCompleted) {

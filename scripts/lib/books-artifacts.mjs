@@ -99,6 +99,30 @@ function allocateConflictPath(targetPath, taskId) {
 }
 
 /**
+ * Reuse a task-scoped conflict copy when a previous finish attempt already
+ * preserved the exact same bytes. This keeps retries idempotent without ever
+ * replacing the canonical main artifact.
+ *
+ * @param {string} sourcePath
+ * @param {string} targetPath
+ * @param {string} taskId
+ * @returns {Promise<string | null>}
+ */
+async function findIdenticalConflictPath(sourcePath, targetPath, taskId) {
+  let index = 1;
+  while (true) {
+    const candidate = buildConflictPath(targetPath, taskId, index);
+    if (!existsSync(candidate)) {
+      return null;
+    }
+    if (await filesHaveSameContent(sourcePath, candidate)) {
+      return candidate;
+    }
+    index += 1;
+  }
+}
+
+/**
  * Preserve local Books working artifacts before deleting a task worktree.
  *
  * Full book originals remain ignored under runtime/books/<topic>/<book-slug>/.
@@ -153,8 +177,11 @@ export async function preserveBooksRuntimeArtifacts(sourceWorktreePath, mainWork
       continue;
     }
 
-    const conflictPath = allocateConflictPath(targetPath, taskId);
-    await copyFile(sourcePath, conflictPath);
+    const existingConflictPath = await findIdenticalConflictPath(sourcePath, targetPath, taskId);
+    const conflictPath = existingConflictPath ?? allocateConflictPath(targetPath, taskId);
+    if (!existingConflictPath) {
+      await copyFile(sourcePath, conflictPath);
+    }
     result.conflictCopies.push({
       source: relativePath,
       target: path.relative(targetRoot, conflictPath)

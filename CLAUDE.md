@@ -20,6 +20,7 @@ These rules apply to the whole repository.
 - `.memory-bank/*`
 - `CODEX_MEMORY.md`
 - `.memory-bank/product-charter.md`
+- `.memory-bank/connection-access-policy.md`
 
 `.cursorrules` — compatibility mirror, но не обязательный source.
 
@@ -47,7 +48,11 @@ These rules apply to the whole repository.
 - В owner-facing core писать про ситуацию, ценность и ожидаемый результат; implementation mechanics выносить ниже, а критерии приемки, проверку и применимый Eval spec держать отдельно.
 - В Plan mode уточняющие вопросы и recommended option должны проходить через Product Charter; charter-конфликтный вариант нельзя подавать как равнозначно рекомендуемый.
 - В user-facing ответах не использовать необъяснённый Git/process-жаргон; если термин нужен, сразу объяснять его простыми словами рядом.
+- Длинные owner-facing документы оформлять читаемым Markdown; tools/connectors использовать on demand, не отключая browser/Playwright для применимого UI oracle.
+- Повторившийся 2-3 раза сложный workflow сначала превращать в owner-approved предложение repo-owned skill, а не раздувать mirrors.
+- Для Books сначала использовать разрешённые structured Markdown source и `source-manifest.md`; порядок внешнего доступа и write/read-back contract брать из `.memory-bank/connection-access-policy.md`.
 - Для code-changing work использовать deterministic checks как evidence.
+- `qa:security` проверяет полный root dependency graph вместе с dev tooling и блокирует `high`/`critical` findings.
 - Test quality evidence должно быть behavior-focused; skipped/focused tests, arbitrary sleeps и tests that pass regardless of implementation не считаются trustworthy QA.
 - `npm run qa:agent` обязателен перед finish / merge / release.
 - Использовать канонические scripts: `task:start`, `task:qa:agent`, `task:finish:core`, `task:merge:main`, `release:local`.
@@ -55,12 +60,15 @@ These rules apply to the whole repository.
 - Если отчёт или дайджест собирает данные из разных источников, каждая запись должна явно показывать свой источник. Конкретные каналы проекта, например Telegram или Gmail, остаются в проекте-источнике.
 - Если конкретному проекту нужны действия после публикации, например перезапуск локальных агентов или сервисов, способ выполнения нужно согласовать в Project Intake этого проекта. Starter не зашивает продуктовые агенты, локальные команды и настройки конкретной среды в общую основу.
 - Для outbound sharing обновлённого starter baseline использовать project-local skill `starter-rule-share`. Rule-level source of truth — `.memory-bank/starter-rule-registry.json`; `rule-share:scan`, `rule-share:report`, `rule-share:apply-plan --dry-run` остаются execution layer; список проектов берётся из ignored `runtime/rule-share/config.json`; report показывает `presentRules`, `missingRules`, `presentUnregisteredRules`, `blockedRules`; partial/blocked rules в ready-проектах сначала проходят Codex read-only self-check с готовой рекомендацией владельцу; copied-baseline apply-plan переносит только missing rules; bulk-copy во все локальные проекты и direct edits запрещены.
+- Books-specific manual-review решения и независимые integration signals читать из `.memory-bank/starter-rule-adoptions.json`; implementation-required нельзя считать применённым до кода и QA.
 - `task:start` разрешён только из clean tree; `--allow-dirty` не считается допустимым bypass.
 - `task:start` branch/worktree slug должен строиться из фактического title; non-ASCII title получает readable ASCII slug (`ЭХО` -> `echo`), а fallback `task` допустим только для title без осмысленных букв/цифр.
 - Unknown root technology для нового продукта или capability требует isolated echo-test evidence до feature/refactor/behavior-change work; echo-test не заменяет QA/security/owner approval.
 - `task:finish:core` пропускает publish для clean task branch, чей `HEAD` уже есть в `main` и где task commit ещё не записан; записывает `publishStatus=skipped_already_merged`, `PUBLISH_SKIP` и доводит cleanup до `passed|kept`.
 - `cleanupStatus=passed` после удаления допустим только после проверки exact `state.worktreePath`, отсутствия этого пути в `git worktree list`, удаления `$CODEX_HOME/worktrees/<taskId>/` и отсутствия task-scoped leftovers; похожие worktrees других задач требуют отдельного выбора `1. Удалить` / `2. Оставить`.
+- Cleanup требует dependency/local-artifact/main/pre-post evidence; parallel results используют `exact_duplicate | different_results | not_proven` с полным tree-entry сравнением, а не semantic similarity.
 - `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` остаются активными читаемыми логами; большие pre-compaction snapshots сохраняются в `Docs/archive/*.md.gz`.
+- Governance truth строится только из explicit versioned inputs; single-writer operational mirrors не меняют digest или exact committed SHA.
 - Generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) не bulk-import'ятся в starter core; reusable source lives in `skills/`.
 - Если используется BMAD: `_bmad/` — canonical install, `_bmad-output/` — uncommitted scratch, BMAD не отменяет conveyor gates.
 - Для bugfixes: reproduction -> root cause -> class-level analysis -> test-first -> systemic fix -> QA matrix.

@@ -98,6 +98,40 @@ async function installCleanupHook(repoRoot, scriptBody) {
   runCommand(repoRoot, "git", ["commit", "-m", "Add test cleanup hook"]);
 }
 
+/**
+ * @param {string} repoRoot
+ * @returns {Promise<void>}
+ */
+async function installRuntimeVerificationHook(repoRoot) {
+  const packageJsonPath = path.join(repoRoot, "package.json");
+  const packageJson = /** @type {{scripts: Record<string, string>}} */ (await readJson(packageJsonPath));
+  packageJson.scripts["task:finish:verify:pre"] = "node scripts/test-finish-runtime-hook.mjs";
+  packageJson.scripts["task:finish:verify:post"] = "node scripts/test-finish-runtime-hook.mjs";
+  await writeJson(packageJsonPath, packageJson);
+  await writeFile(
+    path.join(repoRoot, "scripts/test-finish-runtime-hook.mjs"),
+    [
+      "// @ts-check",
+      "const args = process.argv.slice(2);",
+      "const phaseIndex = args.indexOf('--phase');",
+      "const phase = phaseIndex >= 0 ? args[phaseIndex + 1] ?? '' : '';",
+      "const failed = phase === 'post_cleanup' && process.env.BOOKS_TEST_FAIL_POST_VERIFY === '1';",
+      "console.log(JSON.stringify({",
+      "  version: 1,",
+      "  phase,",
+      "  status: failed ? 'failed' : 'passed',",
+      "  checks: [{ id: `test_${phase}`, status: failed ? 'failed' : 'passed', details: phase }],",
+      "  runtimeSourcePaths: [process.cwd()],",
+      "  blocked: failed ? ['forced post-cleanup verification failure'] : [],",
+      "  notes: []",
+      "}));"
+    ].join("\n") + "\n",
+    "utf8"
+  );
+  runCommand(repoRoot, "git", ["add", "package.json", "scripts/test-finish-runtime-hook.mjs"]);
+  runCommand(repoRoot, "git", ["commit", "-m", "Add test runtime verification hook"]);
+}
+
 test("Nightly: finish blocks on failed QA and then merges cleanly into main", async () => {
   const fixture = await createTempStarterRepo({ installDependencies: true });
   try {
@@ -440,6 +474,136 @@ test("Nightly: finish cleanup hook can block cleanup and keep the task resumable
     assert.deepEqual(cleanupEvent.payload.blocked, ["telegram service still points to task worktree"]);
     const finishEvent = getLatestEvent(events, "FINISH", started.branch);
     assert.equal(finishEvent.payload.cleanupStatus, "failed");
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test("Nightly: explicit parallel duplicate cleanup skips a second merge and records exact main acceptance", async () => {
+  const fixture = await createTempStarterRepo({ installDependencies: true });
+  try {
+    const env = buildEnv(fixture);
+    const started = startTask(fixture.repoRoot, env, "Finish exact parallel duplicate");
+    await appendReadmeLine(started.worktreePath, "Validated exact parallel duplicate.");
+    runCommand(started.worktreePath, "git", ["add", "README.md"]);
+    runCommand(started.worktreePath, "git", ["commit", "-m", "Add task duplicate result"]);
+    const taskCommitSha = runCommand(started.worktreePath, "git", ["rev-parse", "HEAD"]).stdout.trim();
+
+    await appendReadmeLine(fixture.repoRoot, "Validated exact parallel duplicate.");
+    runCommand(fixture.repoRoot, "git", ["add", "README.md"]);
+    runCommand(fixture.repoRoot, "git", ["commit", "-m", "Add accepted parallel result"]);
+    const replacementCommitSha = runCommand(fixture.repoRoot, "git", ["rev-parse", "HEAD"]).stdout.trim();
+
+    const finished = runStarterScript(
+      started.worktreePath,
+      ["scripts/worktree-finish-core.mjs", "--duplicate-of", replacementCommitSha, "--cleanup", "1"],
+      { env }
+    );
+    assert.equal(finished.status, 0);
+    assert.equal(existsSync(started.worktreePath), false);
+    assert.equal(runCommand(fixture.repoRoot, "git", ["rev-parse", "HEAD"]).stdout.trim(), replacementCommitSha);
+
+    const state = await loadTaskStateByBranch(fixture.repoRoot, started.branch);
+    assert.equal(state?.commitSha, taskCommitSha);
+    assert.equal(state?.qaLastPassSha, taskCommitSha);
+    assert.equal(state?.publishStatus, "skipped_duplicate_cleanup_only");
+    assert.equal(state?.equivalenceMode, "parallel_duplicate_commit");
+    assert.equal(state?.replacementCommitSha, replacementCommitSha);
+    assert.equal(state?.duplicateAcceptanceStatus, "passed");
+    assert.equal(state?.duplicateAcceptanceMainSha, replacementCommitSha);
+    assert.equal(state?.duplicateAcceptanceCommand, "npm run qa:agent");
+    assert.equal(state?.cleanupStatus, "passed");
+    assert.equal(state?.postCleanupVerificationStatus, "passed");
+
+    const events = await readNdjson(getHistoryPath(fixture.repoRoot));
+    const skipEvent = getLatestEvent(events, "PUBLISH_SKIP", started.branch);
+    assert.equal(skipEvent.payload.resultStatus, "exact_duplicate");
+    assert.equal(skipEvent.payload.replacementCommitSha, replacementCommitSha);
+    assert.equal(events.some((event) => event.type === "MERGE_MAIN" && event.branch === started.branch), false);
+    const mainVerify = getLatestEvent(events, "MAIN_VERIFY", started.branch);
+    const checks = Array.isArray(mainVerify.payload.checks)
+      ? /** @type {Array<{id?: string, status?: string}>} */ (mainVerify.payload.checks)
+      : [];
+    assert.equal(checks.some((check) => check.id === "full_current_main_qa" && check.status === "passed"), true);
+    assert.equal(getLatestEvent(events, "POST_CLEANUP_VERIFY", started.branch).payload.status, "passed");
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test("Nightly: missing pre-cleanup runtime hook blocks delete and preserves the task worktree", async () => {
+  const fixture = await createTempStarterRepo({ installDependencies: true });
+  try {
+    const env = buildEnv(fixture);
+    const started = startTask(fixture.repoRoot, env, "Finish missing pre hook blocker");
+    const packageJsonPath = path.join(fixture.repoRoot, "package.json");
+    const packageJson = /** @type {{scripts: Record<string, string>}} */ (await readJson(packageJsonPath));
+    delete packageJson.scripts["task:finish:verify:pre"];
+    await writeJson(packageJsonPath, packageJson);
+    runCommand(fixture.repoRoot, "git", ["add", "package.json"]);
+    runCommand(fixture.repoRoot, "git", ["commit", "-m", "Remove pre-cleanup hook for test"]);
+
+    const failed = runStarterScript(started.worktreePath, ["scripts/worktree-finish-core.mjs", "--cleanup", "1"], {
+      env,
+      allowFailure: true
+    });
+    assert.notEqual(failed.status, 0);
+    assert.match(`${failed.stderr}\n${failed.stdout}`, /Missing required runtime verification script/);
+    assert.equal(existsSync(started.worktreePath), true);
+    assert.equal(
+      runCommand(fixture.repoRoot, "git", ["show-ref", "--verify", `refs/heads/${started.branch}`], { allowFailure: true }).status,
+      0
+    );
+
+    const state = await loadTaskStateByBranch(fixture.repoRoot, started.branch);
+    assert.equal(state?.mainVerificationStatus, "failed");
+    assert.notEqual(state?.cleanupStatus, "passed");
+    const events = await readNdjson(getHistoryPath(fixture.repoRoot));
+    assert.equal(getLatestEvent(events, "MAIN_VERIFY", started.branch).payload.status, "failed");
+    assert.equal(events.some((event) => event.type === "CLEANUP" && event.branch === started.branch), false);
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test("Nightly: failed post-cleanup hook records failed cleanup and resumes safely at the same main SHA", async () => {
+  const fixture = await createTempStarterRepo({ installDependencies: true });
+  try {
+    await installRuntimeVerificationHook(fixture.repoRoot);
+    const env = buildEnv(fixture);
+    const started = startTask(fixture.repoRoot, env, "Finish post hook resume");
+    await appendReadmeLine(started.worktreePath, "Validated post-hook resume.");
+    runQaCheckpoint(started.worktreePath, env);
+
+    const failed = runStarterScript(started.worktreePath, ["scripts/worktree-finish-core.mjs", "--cleanup", "1"], {
+      env: { ...env, BOOKS_TEST_FAIL_POST_VERIFY: "1" },
+      allowFailure: true
+    });
+    assert.notEqual(failed.status, 0);
+    const remainingStatus = existsSync(started.worktreePath)
+      ? runCommand(started.worktreePath, "git", ["status", "--short"]).stdout
+      : "";
+    assert.equal(existsSync(started.worktreePath), false, `${failed.stderr}\n${failed.stdout}\n${remainingStatus}`);
+    const failedState = await loadTaskStateByBranch(fixture.repoRoot, started.branch);
+    assert.equal(failedState?.mainVerificationStatus, "passed");
+    assert.equal(failedState?.postCleanupVerificationStatus, "failed");
+    assert.equal(failedState?.cleanupStatus, "failed");
+
+    const resumed = runStarterScript(
+      fixture.repoRoot,
+      ["scripts/worktree-finish-core.mjs", "--task-id", started.taskId, "--cleanup", "1"],
+      { env }
+    );
+    assert.equal(resumed.status, 0);
+    const resumedState = await loadTaskStateByBranch(fixture.repoRoot, started.branch);
+    assert.equal(resumedState?.cleanupStatus, "passed");
+    assert.equal(resumedState?.postCleanupVerificationStatus, "passed");
+
+    const events = await readNdjson(getHistoryPath(fixture.repoRoot));
+    const postEvents = events.filter((event) => event.type === "POST_CLEANUP_VERIFY" && event.branch === started.branch);
+    assert.equal(postEvents.length, 2);
+    assert.equal(postEvents[0].payload.status, "failed");
+    assert.equal(postEvents[1].payload.status, "passed");
   } finally {
     await fixture.cleanup();
   }

@@ -34,6 +34,7 @@ Books — local-first проект для превращения официал�
 - BMAD-ready governance;
 - TRIZ escalation by trigger;
 - single-writer operational docs;
+- committed governance snapshot, изолированный от operational mirrors;
 - shared memory-bank governance;
 - product charter for mission/vision/goal/target-audience/JTBD;
 - local-first `release:local`.
@@ -46,7 +47,9 @@ Books — local-first проект для превращения официал�
 - `CLAUDE.md` и `.cursorrules` — cross-agent mirrors.
 - `.memory-bank/` — shared long-lived knowledge.
 - `.memory-bank/product-charter.md` — миссия, видение, цель, целевая аудитория и JTBD проекта.
+- `.memory-bank/connection-access-policy.md` — local-first порядок доступа к source, внешним сервисам и UI, включая внешний write/read-back contract.
 - `.memory-bank/starter-rule-registry.json` — machine-readable реестр reusable правил для раздачи starter baseline в выбранные downstream проекты.
+- `.memory-bank/starter-rule-adoptions.json` — подтверждённые Books-specific соответствия, отложенные реализации и неприменимые capability rules.
 - `CODEX_MEMORY.md` — оперативная память Codex.
 - `scripts/` — реальные process entrypoints, а не только README-контракты.
 - `skills/` — versioned reusable Codex skills, которые можно подключить глобально через symlink.
@@ -164,6 +167,9 @@ npm run qa:perf:critical
 ## Что важно понимать
 
 - Core starter не содержит продуктовый UI/API runtime. Smoke/nightly здесь проверяют process-level сценарии на временных git repos.
+- Для Books сначала используются разрешённые structured Markdown source и `source-manifest.md`; tools/connectors подключаются on demand, а browser/Computer Use не являются скрытым product-runtime fallback.
+- Длинные owner-facing документы оформляются читаемым Markdown; после 2-3 похожих повторений сложного workflow предлагается owner-approved repo-owned skill вместо разрастания governance mirrors.
+- `qa:security` проверяет полный dependency graph Books, включая dev tooling, и блокирует уязвимости уровня `high`/`critical`.
 - Capability decisions в Project Intake не являются core defaults: starter не мандатит конкретный frontend stack, identity provider, payment provider, fixed locales, Python-only decorators, database queue или worker model. Такие решения downstream выбирает через adapters/profiles и owner approval.
 - Repo-managed shared skills обновляются на устройстве обычным `git pull`, если symlink уже был создан. Для новых или переименованных skills повторно запускайте `npm run skills:link`.
 - `starter-project-bootstrap` — основной вход для conversational bootstrap: если пользователь пишет `стартуем новый проект`, `запусти новый проект`, `проведи bootstrap нового проекта` или сообщает, что скопировал starter в новый репозиторий, агент создаёт отдельную рабочую папку из чистого `main`, подключает skills из starter, получает owner-authored миссию, затем предлагает следующие intake-формулировки на подтверждение owner'у и не начинает разработку функций до согласования intake.
@@ -176,6 +182,7 @@ npm run qa:perf:critical
 - Для multi-project командного использования предпочтителен git submodule: downstream repo хранит starter под `vendor/new-project-starter`, а `skills-manage.mjs --source vendor/new-project-starter/skills` создаёт symlink'и в локальный `$CODEX_HOME/skills`.
 - В starter core стоит хранить только reusable shared skills. `.system`, plugin-managed, product-specific skills и generated skill trees (`.agents/skills`, `.claude/skills`, `.cursor/skills`) должны жить вне этой baseline-папки и не переноситься bulk-copy.
 - `task:qa:agent` всё равно создаёт `previewPreparedSha`, но по умолчанию preview status = `not_supported`. Когда реальный проект добавит preview adapter, contract уже будет готов.
+- Перед удалением task worktree Books проверяет exact tracked result, dependency fingerprint, local artifacts, full current-main QA и pre/post read-back. Параллельные результаты различаются как точный дубль, содержательно разные или недоказанные; разные и недоказанные автоматически не сливаются и не удаляются.
 - `release:local` — обязательный core publish path. Deploy-to-server и `db:prod:*` контуры должны добавляться как optional profile поверх этой базы.
 - Если вы подключаете BMAD поверх starter, не делайте `_bmad-output/` источником истины для conveyor state, shared docs или committed plans.
 

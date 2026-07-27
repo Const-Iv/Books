@@ -13,6 +13,37 @@
       ]
     },
     {
+      "module": "scripts/lib/books-artifacts.mjs",
+      "tests": [
+        "tests/unit/books-artifacts.test.mjs",
+        "tests/integration/books-artifacts-finish.test.mjs"
+      ]
+    },
+    {
+      "module": "scripts/lib/duplicate-equivalence.mjs",
+      "tests": [
+        "tests/unit/duplicate-equivalence.test.mjs"
+      ]
+    },
+    {
+      "module": "scripts/lib/finish-verification.mjs",
+      "tests": [
+        "tests/unit/duplicate-equivalence.test.mjs"
+      ]
+    },
+    {
+      "module": "scripts/lib/governance-input-boundary.mjs",
+      "tests": [
+        "tests/unit/governance-input-boundary.test.mjs"
+      ]
+    },
+    {
+      "module": "scripts/build-starter.mjs",
+      "tests": [
+        "tests/unit/governance-input-boundary.test.mjs"
+      ]
+    },
+    {
       "module": "scripts/triz-trigger.mjs",
       "tests": [
         "tests/unit/triz-trigger.test.mjs"
@@ -34,6 +65,12 @@
       "module": "scripts/rule-share.mjs",
       "tests": [
         "tests/unit/rule-share.test.mjs"
+      ]
+    },
+    {
+      "module": "scripts/security-gate.mjs",
+      "tests": [
+        "tests/unit/security-gate.test.mjs"
       ]
     },
     {

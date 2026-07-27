@@ -6,6 +6,8 @@ These rules apply to the whole repository.
 
 Канонический product source of truth: `.memory-bank/product-charter.md`.
 
+Правила доступа к локальным источникам, внешним сервисам и UI: `.memory-bank/connection-access-policy.md`; для Books первым достаточным источником является разрешённая structured Markdown copy вместе с `source-manifest.md`.
+
 Правило формулировки миссии и видения:
 - Миссия отвечает на вопросы “зачем существуем”, “для кого работаем”, “какую проблему решаем”, “какую пользу создаём”; это про настоящее и смысл деятельности. Формула: `Мы помогаем [кому] получать [какой результат] через [что / как]`.
 - Видение отвечает на вопросы “куда идём”, “какими хотим стать”, “какой рынок, привычку или способ работы хотим изменить”, “как выглядит успех через 3–10 лет”; это про будущее и амбицию. Формула: `Мы видим будущее, в котором [желаемое состояние мира / рынка], а наш проект — [роль в этом будущем]`.
@@ -60,6 +62,7 @@ Product Charter Gate:
 - Owner-facing reports должны сначала давать человеческий смысл, решение и следующий шаг; candidate ids, commits, task ids и source snippets используются только как проверяемая traceability и не заменяют summary.
 - Если отчёт или дайджест собирает данные из разных источников, каждая запись должна явно показывать свой источник. Конкретные каналы проекта, например Telegram или Gmail, остаются в проекте-источнике.
 - `skills/starter-rule-share/` — основной project-local skill для outbound sharing текущего подтверждённого starter baseline в выбранные активные downstream проекты. Rule-level source of truth: `.memory-bank/starter-rule-registry.json` со стабильными `id`, точным `text`, `targetFiles`, `requiredFragments`, `source` и `sharePolicy`. `rule-share:*` commands остаются approval-safe execution layer: scan/report read-only, apply-plan только dry-run task seeds, список проектов берётся из ignored `runtime/rule-share/config.json`, а direct bulk-copy во все локальные проекты запрещён. Report должен группировать результат по проектам и показывать `presentRules`, `missingRules`, `presentUnregisteredRules`, `blockedRules` с конкретным текстом правил; для rule-level partial match в ready-проекте Codex сначала делает read-only self-check и превращает пункт в конкретную рекомендацию: уже покрыто, добавить как написано, добавить с адаптацией или не добавлять. Apply-plan для copied-baseline проектов переносит только `missingRules` и не дублирует уже найденный текст. Guarded one-run mode допустим только по явному owner request или ignored standing approval: перенос идёт через downstream managed task worktrees и deterministic QA, manual-review/blocked проекты пропускаются, finish/merge/publish не выполняются без отдельного явного разрешения. Для copied-baseline `prepare_rule_import` task seed должен включать exact missing rule list, canonical/mirror parity (`AGENTS.md`, `.memory-bank/*`, `CODEX_MEMORY.md`, README, `.cursorrules`, `CLAUDE.md`), QA/TRIZ evidence и явную остановку перед publish gate.
+- Подтверждённые Books-specific соответствия starter rules живут в `.memory-bank/starter-rule-adoptions.json`; `activeRules`, `reusableSkills` и `starterReference` считаются независимыми сигналами, а implementation-required и not-applicable решения не подменяются текстом документации.
 - Rule-share report не должен перекладывать read-only проверку partial/blocked rules на владельца. Для `blockedRules` в ready-проекте Codex сначала проверяет target files сам и пишет конкретную рекомендацию: уже покрыто, добавить как написано, добавить с адаптацией или не добавлять; владелец только согласует рекомендацию или снимает настоящий blocker.
 - `skills/starter-project-bootstrap/` — основной project-local skill для conversational bootstrap нового downstream-проекта после копирования или подключения starter baseline. Если пользователь пишет `стартуем новый проект`, `запусти новый проект`, `проведи bootstrap нового проекта` или сообщает, что скопировал starter в новый репозиторий, ассистент запускает `starter-project-bootstrap`: создаёт отдельную рабочую папку из чистого `main`, подключает skills из starter, проводит Project Intake и не начинает разработку функций до согласования intake. Если для `skills:link` нужно заменить конфликтующие локальные skills, ассистент отдельно запрашивает явное согласие владельца. Feature/refactor/behavior-change work запрещён до approved intake.
 
@@ -90,6 +93,9 @@ Eval Gate для AI/agent behavior:
 - Все ответы ассистента пользователю по умолчанию на русском, если пользователь явно не попросил другой язык.
 - Все файлы в `plans/` и operator-facing docs должны быть на русском.
 - Код, идентификаторы, API fields и inline code comments должны быть на английском.
+- Длинные owner-facing планы, отчёты, статусы и QA-сводки оформлять читаемым Markdown; короткие ответы не утяжелять лишним форматированием.
+- Skills, connectors и browser-инструменты использовать on demand; browser/Playwright сохранять для применимого UI verification и browser oracle.
+- После 2-3 похожих повторений сложного workflow предлагать repo-owned skill через charter-safe task proposal; не создавать и не менять skill без owner approval.
 
 ## Vibe UX & Safety Standing Orders (Mandatory)
 
@@ -227,6 +233,9 @@ Eval Gate для AI/agent behavior:
 - если finish стартует из dirty task tree, `task:finish:core` должен сначала зафиксировать task commit/checkpoint, затем прогнать task QA уже на committed `HEAD`, и только после этого переходить к publish stage;
 - если task branch не получила собственного task commit, её `HEAD` уже содержится в `main`, а worktree clean, `task:finish:core` должен пропустить publish stage, записать `publishStatus=skipped_already_merged` и всё равно довести cleanup до `passed|kept`;
 - перед cleanup `task:finish:core` должен переносить ignored `runtime/books` из task-worktree в main-worktree, чтобы локальные оригиналы и рабочие toolkit artifacts сохранялись после удаления task-worktree;
+- cleanup допускается только после exact tracked-result проверки, актуального dependency fingerprint, сохранения local-only Books artifacts, full current-main QA и project-owned `MAIN_VERIFY`; после удаления обязателен `POST_CLEANUP_VERIFY`.
+- Параллельные результаты классифицируются как `exact_duplicate | different_results | not_proven`. `exact_duplicate` требует общий parent, идентичные non-empty `name-status` и полные Git tree entries (`mode + type + object id`), принятый replacement в current `main` и полный QA; второй merge не выполняется, а cleanup всё равно требует отдельного выбора владельца.
+- `different_results` блокирует автоматические merge/cleanup и требует показать различия и recommended единый результат; `not_proven` ничего не меняет. Semantic similarity или один patch-id доказательством не являются.
 - shared operational docs сначала capture'ить из task branch, а sync'ить обратно только на publish/release stage как single-writer artifacts;
 - `task:finish:core` не должен спрашивать legacy `--preview ok|skip`;
 - для cleanup/publish resume из `main` использовать `--task-id <id>` как канонический селектор, `--branch codex/<task-branch>` оставить совместимым fallback;
@@ -267,6 +276,7 @@ Eval Gate для AI/agent behavior:
 - `qa:coverage:critical` — manifest-driven critical regression guard: каждый critical module обязан иметь связанный test set.
 - `qa:perf:critical` использует `Docs/qa-perf-baseline.json`; если baseline меняется, обновлять файл в той же задаче.
 - `qa:security` обязательно включает secret scan и dependency audit.
+- Обязательный Books dependency audit проверяет полный корневой graph, включая dev tooling, и блокирует findings уровня `high`/`critical`; production-only audit не заменяет этот gate.
 - Перед/внутри `qa:agent` обязателен dependency preflight; в fresh task worktrees тот же seam должны использовать `task:start` и `task:test`.
 - Если QA создаёт временные worktrees / task state / fixtures, cleanup обязателен, а failure cleanup считается QA fail.
 - Перед finish / merge / release обязателен полный PASS `npm run qa:agent`.
@@ -285,6 +295,7 @@ Eval Gate для AI/agent behavior:
 - `qaLastPassSha` и `previewPreparedSha` — обязательные reuse checkpoints.
 - `cleanupStatus` и `cleanupTargets` — обязательные finish-cleanup markers; отсутствие `cleanupStatus` означает, что cleanup ещё может требовать resume, а `cleanupStatus=passed` допустим только после exact worktree, git worktree registration, managed task root и task-scoped leftovers verification.
 - Shared operational snapshots (`Docs/qa-implementation-log.md`, `Docs/triz-usage-log.md`, append-only sections `CODEX_MEMORY.md`) — single-writer artifacts.
+- Deterministic governance snapshot читает только explicit versioned canonical inputs из `scripts/lib/governance-input-boundary.mjs`; operational capture/sync не может переопределить rule truth. Working-tree snapshot явно помечается как uncommitted, а committed snapshot связывается с exact SHA.
 - `Docs/qa-implementation-log.md` и `Docs/triz-usage-log.md` должны оставаться активными читаемыми логами; при разрастании sync сохраняет полный pre-compaction snapshot в `Docs/archive/*.md.gz`, а в активном файле оставляет компактный текущий хвост.
 - Task branches должны использовать `task:operational-docs:capture`, а publish/release stage — `task:operational-docs:sync`.
 
