@@ -3,6 +3,11 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import {
+  SINGLE_WRITER_OPERATIONAL_DOCS,
+  VERSIONED_GOVERNANCE_INPUTS,
+  readCurrentGovernanceSnapshot
+} from "./lib/governance-input-boundary.mjs";
 import { REQUIRED_COMMANDS, REQUIRED_FILES, fileExists, listRepoFilesWithSize, readJson } from "./lib/runtime.mjs";
 
 /**
@@ -31,12 +36,18 @@ async function main() {
     throw new Error(`Missing required starter files: ${missingFiles.join(", ")}`);
   }
 
+  const governanceSnapshot = readCurrentGovernanceSnapshot(repoRoot);
   const fileInventory = await listRepoFilesWithSize(repoRoot);
   const outputDir = path.join(repoRoot, "runtime");
   await mkdir(outputDir, { recursive: true });
   const manifestPath = path.join(outputDir, "starter-manifest.json");
   const manifest = {
     generatedAt: new Date().toISOString(),
+    governanceBoundary: {
+      versionedInputs: VERSIONED_GOVERNANCE_INPUTS,
+      operationalDocuments: SINGLE_WRITER_OPERATIONAL_DOCS
+    },
+    governanceSnapshot,
     requiredCommands: REQUIRED_COMMANDS,
     requiredFiles: REQUIRED_FILES,
     totalFiles: fileInventory.length,

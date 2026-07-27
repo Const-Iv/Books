@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-07-27T16:43:25.000Z",
+  "signals": {
+    "activeRules": "project_local",
+    "reusableSkills": "source_present",
+    "starterReference": "absent"
+  },
+  "rules": [
+    {
+      "id": "starter.agent.blocker-analysis-before-owner-question",
+      "status": "applied_adapted",
+      "evidence": [
+        "scripts/worktree-start.mjs#blocker analysis и recommended safe path"
+      ],
+      "note": "Books передаёт этот обязательный анализ в каждый Goal Seed и задаёт вопрос владельцу только для реального выбора или permission."
+    },
+    {
+      "id": "starter.project-intake.full-gate-before-feature-work",
+      "status": "applied_adapted",
+      "evidence": [
+        "AGENTS.md#Обязательные сведения: миссия, видение, цель, целевая аудитория",
+        "AGENTS.md#Integration / review path в Project Intake фиксирует"
+      ],
+      "note": "Books сохраняет полный intake как project-local блок и отдельно фиксирует integration/review path без изменения собственного product charter."
+    },
+    {
+      "id": "starter.context.english-progress-russian-final",
+      "status": "applied_adapted",
+      "evidence": [
+        "AGENTS.md#Все ответы ассистента пользователю по умолчанию на русском",
+        "AGENTS.md#Все файлы в `plans/` и operator-facing docs должны быть на русском"
+      ],
+      "note": "Books применяет более строгий вариант: не только финал и документы, но все ответы пользователю остаются на русском по умолчанию."
+    },
+    {
+      "id": "starter.skills.repeated-workflow-skill-proposal",
+      "status": "applied_exact",
+      "evidence": [
+        ".memory-bank/context-hygiene.md#Если сложный workflow повторился 2-3 похожих повторения"
+      ]
+    },
+    {
+      "id": "starter.context.on-demand-tools",
+      "status": "applied_exact",
+      "evidence": [
+        ".memory-bank/context-hygiene.md#Skills, MCP servers, connectors, browser tools и extended reasoning используются on demand"
+      ]
+    },
+    {
+      "id": "starter.docs.owner-facing-readable-markdown",
+      "status": "applied_exact",
+      "evidence": [
+        ".memory-bank/context-hygiene.md#Owner-facing документы, которые должны читаться или переиспользоваться позже"
+      ]
+    },
+    {
+      "id": "starter.conveyor.main-equivalence-before-cleanup",
+      "status": "applied_adapted",
+      "evidence": [
+        "scripts/lib/duplicate-equivalence.mjs#@typedef {\"exact_duplicate\"|\"different_results\"|\"not_proven\"} ParallelResultStatus",
+        "scripts/lib/duplicate-equivalence.mjs#left.mode === right.mode && left.type === right.type && left.objectId === right.objectId",
+        "scripts/dependency-preflight.mjs#getDependencyFingerprint",
+        "scripts/worktree-finish-core.mjs#type: \"MAIN_VERIFY\"",
+        "scripts/worktree-finish-core.mjs#type: \"POST_CLEANUP_VERIFY\""
+      ],
+      "note": "Books-native finish доказывает tracked tree entries, dependency fingerprint, сохранение local-only Books artifacts и pre/post read-back. Parallel result классифицируется как exact_duplicate, different_results или not_proven; второй merge и cleanup без доказательств запрещены."
+    },
+    {
+      "id": "starter.conveyor.successor-lineage-cleanup",
+      "status": "not_applicable",
+      "evidence": [],
+      "note": "Books v1 не имеет successor-lineage cleanup flow или соответствующих manifest/state contracts; правило нужно пересмотреть только при появлении этой возможности."
+    },
+    {
+      "id": "starter.conveyor.legacy-state-reconciliation",
+      "status": "not_applicable",
+      "evidence": [],
+      "note": "Books v1 не поддерживает восстановление legacy task-state через reconciliation manifest; неизвестное старое состояние остаётся fail-closed."
+    },
+    {
+      "id": "starter.access.structured-first-ui-last",
+      "status": "applied_adapted",
+      "evidence": [
+        ".memory-bank/connection-access-policy.md#Для Books достаточный канонический local source начинается с structured Markdown copy и `source-manifest.md`"
+      ],
+      "note": "Общий structured-first порядок сохранён и усилен Books-specific local-first источником; provider, публичный UI и deploy этим правилом не добавляются."
+    },
+    {
+      "id": "starter.conveyor.precommit-generated-preview-normalization",
+      "status": "not_applicable",
+      "evidence": [],
+      "note": "Books v1 не имеет preview adapter или preview-generated configuration residue; правило нужно пересмотреть при появлении такого контура."
+    },
+    {
+      "id": "starter.qa.security-full-dependency-graph",
+      "status": "applied_adapted",
+      "evidence": [
+        "scripts/security-gate.mjs#[\"audit\", \"--audit-level=high\"]",
+        "tests/unit/security-gate.test.mjs#security gate audits the full root dependency graph without omitting dev"
+      ],
+      "note": "Books audit проверяет полный корневой dependency graph, включая dev tooling, и блокирует high/critical findings без production-only исключения."
+    },
+    {
+      "id": "starter.agent.scoped-knowledge-truth-contract",
+      "status": "implementation_required",
+      "evidence": [],
+      "note": "Нужна отдельная feature task с Eval: trusted Books/source scope, opaque same-scope evidence references, complete-coverage truth states и защищённый ignored response manifest."
+    },
+    {
+      "id": "starter.integrations.mutating-capability-adapter-gate",
+      "status": "not_applicable",
+      "evidence": [],
+      "note": "Books v1 не объявляет versioned mutating capabilities и не имеет typed external-write adapter; правило станет обязательным до рекламы такой возможности."
+    },
+    {
+      "id": "starter.conveyor.successor-lineage-refresh",
+      "status": "not_applicable",
+      "evidence": [],
+      "note": "В Books v1 нет sealed successor-lineage state или refresh flow; пересмотр нужен только после отдельного внедрения successor-lineage cleanup."
+    },
+    {
+      "id": "starter.rollout.scoped-health-delta",
+      "status": "not_applicable",
+      "evidence": [],
+      "note": "У Books v1 нет deployment/rollout runtime: утверждён только local CLI contour без deploy."
+    },
+    {
+      "id": "starter.governance.operational-mirror-input-boundary",
+      "status": "applied_adapted",
+      "evidence": [
+        "scripts/lib/governance-input-boundary.mjs#VERSIONED_GOVERNANCE_INPUTS",
+        "scripts/lib/governance-input-boundary.mjs#SINGLE_WRITER_OPERATIONAL_DOCS",
+        "tests/unit/governance-input-boundary.test.mjs#canonical-main operational read-back cannot change committed governance truth"
+      ],
+      "note": "Books явно разделяет versioned canonical governance и single-writer operational docs; committed snapshot связан с exact SHA, а operational capture/read-back не меняет rule truth."
+    },
+    {
+      "id": "starter.rollout.optional-capability-isolation",
+      "status": "not_applicable",
+      "evidence": [],
+      "note": "Books v1 не имеет provider/capability rollout; новые optional capabilities потребуют отдельного owner-approved rollout contract."
+    }
+  ]
+}

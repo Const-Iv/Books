@@ -64,3 +64,35 @@ test("Books artifacts preserve is a no-op when task has no runtime books", async
     await rm(tempRoot, { recursive: true, force: true });
   }
 });
+
+test("Books artifacts preserve reuses an identical task-scoped conflict copy on retry", async () => {
+  const tempRoot = await mkdtemp(path.join(os.tmpdir(), "books-artifacts-retry-"));
+  try {
+    const sourceWorktree = path.join(tempRoot, "task");
+    const mainWorktree = path.join(tempRoot, "main");
+    const sourceBookDir = path.join(sourceWorktree, "runtime", "books", "sample-topic", "sample-book");
+    const mainBookDir = path.join(mainWorktree, "runtime", "books", "sample-topic", "sample-book");
+    await mkdir(sourceBookDir, { recursive: true });
+    await mkdir(mainBookDir, { recursive: true });
+    await writeFile(path.join(sourceBookDir, "Toolkit.md"), "task version\n", "utf8");
+    await writeFile(path.join(mainBookDir, "Toolkit.md"), "main version\n", "utf8");
+
+    const first = await preserveBooksRuntimeArtifacts(sourceWorktree, mainWorktree, "task-789");
+    await writeFile(path.join(sourceBookDir, "New source.md"), "new on retry\n", "utf8");
+    const second = await preserveBooksRuntimeArtifacts(sourceWorktree, mainWorktree, "task-789");
+
+    assert.deepEqual(first.conflictCopies, [
+      {
+        source: "sample-topic/sample-book/Toolkit.md",
+        target: "sample-topic/sample-book/Toolkit - from task-789.md"
+      }
+    ]);
+    assert.deepEqual(second.conflictCopies, first.conflictCopies);
+    assert.deepEqual(second.copied, ["sample-topic/sample-book/New source.md"]);
+    assert.equal(existsSync(path.join(mainBookDir, "Toolkit - from task-789-2.md")), false);
+    assert.equal(await readFile(path.join(mainBookDir, "Toolkit.md"), "utf8"), "main version\n");
+    assert.equal(await readFile(path.join(mainBookDir, "Toolkit - from task-789.md"), "utf8"), "task version\n");
+  } finally {
+    await rm(tempRoot, { recursive: true, force: true });
+  }
+});

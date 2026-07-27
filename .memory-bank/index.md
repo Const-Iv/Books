@@ -18,6 +18,7 @@ Purpose: хранить долгоживущие, reusable знания прое
 | Bugfix / regression | `product-charter.md`, `architecture-map.md`, `code-rules.md`, `qa-playbook.md` | `project-context.md` | Root-cause fix with reusable guard and no charter regression |
 | Conveyor / release work | `product-charter.md`, `project-context.md`, `qa-playbook.md`, `code-rules.md` | `architecture-map.md` | Process-safe implementation with state/history validation and no charter bypass |
 | Governance update | `product-charter.md`, `code-rules.md`, `qa-playbook.md`, `project-context.md` | `architecture-map.md` | Synced rules in canonical sources |
+| Local source / external service / UI access | `product-charter.md`, `connection-access-policy.md`, `project-context.md` | `qa-playbook.md` | Local-first access through the narrowest authoritative contour with read-back |
 | Rule sharing to downstream projects | `product-charter.md`, `code-rules.md`, `project-context.md`, `starter-rule-registry.json` | `architecture-map.md`, `qa-playbook.md`, `skills/starter-rule-share/SKILL.md` | Project-grouped report with concrete present/missing/manual-review rules and approval-safe task seeds |
 | New downstream project bootstrap | `product-charter.md`, `project-context.md`, `architecture-map.md`, `code-rules.md`, `qa-playbook.md` | `plans/_project_intake_template.md`, `README.md`, `skills/starter-project-bootstrap/SKILL.md` | `$starter-project-bootstrap` guided flow with approved project intake, canonical transfer, and baseline QA before feature work |
 | CI / flaky QA | `product-charter.md`, `qa-playbook.md`, `code-rules.md` | `project-context.md`, `architecture-map.md` | Minimal deterministic fix plus failure classification |
@@ -29,9 +30,11 @@ Purpose: хранить долгоживущие, reusable знания прое
 - Project Intake для нового downstream-проекта — в `plans/_project_intake_template.md`; mission/vision там проверяются по формулам из `product-charter.md`, после owner approval согласованные ответы переносятся в canonical sources, а несогласованные пункты считаются blocker. Пока гипотеза не подтверждена, архитектура, технологии, способ запуска, коммерческая модель, зоны ответственности и важные возможности не считаются утверждёнными. Applicable capability decisions фиксируются там же как optional-if-applicable блоки, чтобы product-specific auth, payments, credits, analytics, i18n, async jobs, API docs, service layout, runtime choices и действия после публикации не попадали в starter core как mandatory defaults. Unknown root technology фиксируется через echo-testing gate: isolated minimal proof или blocker до feature work.
 - Conversational bootstrap нового downstream-проекта — в `skills/starter-project-bootstrap/SKILL.md`; обязательные gate'ы остаются в product charter, code rules и Project Intake template.
 - `.memory-bank/starter-rule-registry.json` — machine-readable реестр reusable starter rules для outbound sharing: stable `id`, exact `text`, `targetFiles`, `requiredFragments`, `source`, `sharePolicy`. Он не должен содержать starter mission/vision, downstream product wording, локальные пути или product-specific defaults.
+- `.memory-bank/starter-rule-adoptions.json` — project-local решения Books по manual-review правилам: подтверждённое evidence, executable gaps и capability-specific exclusions; integration signals в нём независимы.
 - Stable architecture/process boundaries — в `architecture-map.md`.
 - Repeatable QA rules, failure classes, evidence capture — в `qa-playbook.md`.
 - Stack/runtime/command context — в `project-context.md`.
+- Приоритет local source, connector/API, browser/Computer Use и внешний write contract — в `connection-access-policy.md`.
 - Не дублировать одно и то же правило в нескольких memory-файлах без необходимости.
 
 ## Shared Starter Baseline Rules

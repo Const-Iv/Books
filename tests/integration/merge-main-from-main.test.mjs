@@ -6,6 +6,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { captureOperationalDocs } from "../../scripts/lib/doc-utils.mjs";
+import { readCommittedGovernanceSnapshot } from "../../scripts/lib/governance-input-boundary.mjs";
 import {
   getPipelinePaths,
   getHistoryPath,
@@ -20,6 +21,7 @@ import { createTempStarterRepo, runStarterScript } from "../helpers/temp-repo.mj
 test("task:merge:main can merge a committed task branch when started from main", async () => {
   const fixture = await createTempStarterRepo({ installDependencies: true });
   try {
+    const governanceBefore = readCommittedGovernanceSnapshot(fixture.repoRoot);
     const env = {
       CODEX_HOME: fixture.codexHome,
       STARTER_NO_OPEN: "1"
@@ -81,6 +83,10 @@ test("task:merge:main can merge a committed task branch when started from main",
     const events = await readNdjson(getHistoryPath(fixture.repoRoot));
     assert.ok(events.some((event) => event.type === "MERGE_MAIN" && event.branch === startPayload.branch));
     assert.ok(events.some((event) => event.type === "PUSH_MAIN" && event.branch === startPayload.branch));
+
+    const governanceAfter = readCommittedGovernanceSnapshot(fixture.repoRoot);
+    assert.equal(governanceAfter.governanceDigest, governanceBefore.governanceDigest);
+    assert.deepEqual(governanceAfter.files, governanceBefore.files);
   } finally {
     await fixture.cleanup();
   }
