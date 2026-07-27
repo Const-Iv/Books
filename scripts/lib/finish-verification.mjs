@@ -28,6 +28,7 @@ import {
 
 const PROFILE_PATH = ".memory-bank/finish-profile.json";
 const BOOKS_RUNTIME_PATH = "runtime/books";
+const PROTECTED_BOOKS_DIRECTORIES = [".knowledge", ".response-manifests"];
 
 /**
  * @typedef {Object} LocalOnlyPath
@@ -51,6 +52,14 @@ const BOOKS_RUNTIME_PATH = "runtime/books";
  * @property {string} source
  * @property {string} target
  * @property {string} sha256
+ * @property {number} mode
+ */
+
+/**
+ * @typedef {Object} PreservedDirectory
+ * @property {string} source
+ * @property {string} target
+ * @property {number} mode
  */
 
 /**
@@ -72,6 +81,7 @@ const BOOKS_RUNTIME_PATH = "runtime/books";
  * @property {string[]} runtimeSourcePaths
  * @property {Array<{path: string, files: number}>} preservedPaths
  * @property {PreservedArtifact[]} preservedArtifacts
+ * @property {PreservedDirectory[]} preservedDirectories
  * @property {Awaited<ReturnType<typeof preserveBooksRuntimeArtifacts>> | null} artifactPreservation
  */
 
@@ -91,6 +101,187 @@ function resolveInside(root, relativePath) {
     throw new Error(`Finish verification path escapes its root: ${relativePath}`);
   }
   return resolved;
+}
+
+/**
+ * Validate every existing component before reading an ignored artifact. This
+ * prevents verification itself from following a symlink outside runtime/books.
+ *
+ * @param {string} root
+ * @param {string} relativePath
+ * @param {"file"|"directory"} expectedType
+ * @returns {Promise<import("node:fs").Stats>}
+ */
+async function inspectPathInside(root, relativePath, expectedType) {
+  const resolvedRoot = path.resolve(root);
+  const rootStats = await lstat(resolvedRoot);
+  if (!rootStats.isDirectory() || rootStats.isSymbolicLink()) {
+    throw new Error(`Books runtime root is not a regular directory: ${resolvedRoot}`);
+  }
+  const resolved = resolveInside(resolvedRoot, relativePath);
+  const relation = path.relative(resolvedRoot, resolved);
+  const segments = relation.split(path.sep).filter(Boolean);
+  let current = resolvedRoot;
+  for (const [index, segment] of segments.entries()) {
+    current = path.join(current, segment);
+    const metadata = await lstat(current);
+    const isLast = index === segments.length - 1;
+    if (metadata.isSymbolicLink()) {
+      throw new Error(`Books runtime path contains a symlink: ${current}`);
+    }
+    if (!isLast && !metadata.isDirectory()) {
+      throw new Error(`Books runtime path contains a non-directory component: ${current}`);
+    }
+    if (isLast && expectedType === "file" && !metadata.isFile()) {
+      throw new Error(`Books runtime artifact is not a regular file: ${current}`);
+    }
+    if (isLast && expectedType === "directory" && !metadata.isDirectory()) {
+      throw new Error(`Books runtime artifact directory is invalid: ${current}`);
+    }
+  }
+  return lstat(resolved);
+}
+
+/**
+ * @param {string} candidate
+ * @returns {Promise<import("node:fs").Stats | null>}
+ */
+async function lstatOrNull(candidate) {
+  try {
+    return await lstat(candidate);
+  } catch (error) {
+    if (error !== null && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/**
+ * Inventory every canonical-main protected artifact, including files that do
+ * not exist in the task worktree. Symlinks are never followed and every
+ * protected directory/file must retain 0700/0600 respectively.
+ *
+ * @param {string} mainWorktreePath
+ * @returns {Promise<{artifacts: PreservedArtifact[], directories: PreservedDirectory[], failures: string[]}>}
+ */
+async function inventoryProtectedRuntime(mainWorktreePath) {
+  const runtimeRoot = path.join(mainWorktreePath, BOOKS_RUNTIME_PATH);
+  /** @type {PreservedArtifact[]} */
+  const artifacts = [];
+  /** @type {PreservedDirectory[]} */
+  const directories = [];
+  /** @type {string[]} */
+  const failures = [];
+  if (!(await lstatOrNull(runtimeRoot))) {
+    return { artifacts, directories, failures };
+  }
+  try {
+    await inspectPathInside(mainWorktreePath, BOOKS_RUNTIME_PATH, "directory");
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+    return { artifacts, directories, failures };
+  }
+
+  /**
+   * @param {string} relativePath
+   * @returns {Promise<void>}
+   */
+  async function visit(relativePath) {
+    const absolutePath = resolveInside(runtimeRoot, relativePath);
+    const metadata = await lstat(absolutePath);
+    if (metadata.isSymbolicLink()) {
+      failures.push(`Protected Books target contains a symlink: ${relativePath}`);
+      return;
+    }
+    if (metadata.isDirectory()) {
+      const mode = metadata.mode & 0o777;
+      if (mode !== 0o700) {
+        failures.push(`Protected Books directory permissions are unsafe: ${relativePath}`);
+      }
+      directories.push({ source: relativePath, target: relativePath, mode });
+      const entries = await readdir(absolutePath, { withFileTypes: true });
+      for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+        await visit(path.join(relativePath, entry.name));
+      }
+      return;
+    }
+    if (metadata.isFile()) {
+      const mode = metadata.mode & 0o777;
+      if (mode !== 0o600) {
+        failures.push(`Protected Books artifact permissions are unsafe: ${relativePath}`);
+      }
+      artifacts.push({
+        source: relativePath,
+        target: relativePath,
+        sha256: await sha256(absolutePath),
+        mode
+      });
+      return;
+    }
+    failures.push(`Protected Books target contains an unsupported entry: ${relativePath}`);
+  }
+
+  for (const relativeDirectory of PROTECTED_BOOKS_DIRECTORIES) {
+    const metadata = await lstatOrNull(path.join(runtimeRoot, relativeDirectory));
+    if (metadata) {
+      await visit(relativeDirectory);
+    }
+  }
+  artifacts.sort((left, right) => left.target.localeCompare(right.target));
+  directories.sort((left, right) => left.target.localeCompare(right.target));
+  return { artifacts, directories, failures };
+}
+
+/**
+ * @param {string} mainWorktreePath
+ * @param {PreservedArtifact[]} expectedArtifacts
+ * @param {PreservedDirectory[]} expectedDirectories
+ * @returns {Promise<string[]>}
+ */
+async function verifyProtectedTargetSnapshot(
+  mainWorktreePath,
+  expectedArtifacts,
+  expectedDirectories
+) {
+  const actual = await inventoryProtectedRuntime(mainWorktreePath);
+  const failures = [...actual.failures];
+  const expectedFiles = new Map(
+    expectedArtifacts
+      .filter((entry) => isProtectedKnowledgeArtifact(entry.target))
+      .map((entry) => [entry.target, entry])
+  );
+  const actualFiles = new Map(actual.artifacts.map((entry) => [entry.target, entry]));
+  const expectedDirs = new Map(expectedDirectories.map((entry) => [entry.target, entry]));
+  const actualDirs = new Map(actual.directories.map((entry) => [entry.target, entry]));
+
+  for (const [target, expected] of expectedFiles) {
+    const current = actualFiles.get(target);
+    if (!current) {
+      failures.push(`Protected Books artifact disappeared: ${target}`);
+    } else if (current.sha256 !== expected.sha256 || current.mode !== expected.mode) {
+      failures.push(`Protected Books artifact changed: ${target}`);
+    }
+  }
+  for (const target of actualFiles.keys()) {
+    if (!expectedFiles.has(target)) {
+      failures.push(`Unexpected protected Books artifact appeared: ${target}`);
+    }
+  }
+  for (const [target, expected] of expectedDirs) {
+    const current = actualDirs.get(target);
+    if (!current) {
+      failures.push(`Protected Books directory disappeared: ${target}`);
+    } else if (current.mode !== expected.mode) {
+      failures.push(`Protected Books directory changed: ${target}`);
+    }
+  }
+  for (const target of actualDirs.keys()) {
+    if (!expectedDirs.has(target)) {
+      failures.push(`Unexpected protected Books directory appeared: ${target}`);
+    }
+  }
+  return failures;
 }
 
 /**
@@ -272,7 +463,7 @@ export function verifyTrackedEquivalence(mainWorktreePath, state, changedFiles) 
  * @param {import("./runtime.mjs").TaskState} state
  * @param {string} mainWorktreePath
  * @param {Awaited<ReturnType<typeof preserveBooksRuntimeArtifacts>>} preservation
- * @returns {Promise<{artifacts: PreservedArtifact[], failures: string[]}>}
+ * @returns {Promise<{artifacts: PreservedArtifact[], directories: PreservedDirectory[], failures: string[]}>}
  */
 async function verifyBooksPreservation(state, mainWorktreePath, preservation) {
   const expectedSource = path.resolve(state.worktreePath, BOOKS_RUNTIME_PATH);
@@ -287,13 +478,32 @@ async function verifyBooksPreservation(state, mainWorktreePath, preservation) {
   if (preservation.skippedReason === "same_worktree") {
     failures.push("Task and canonical main resolve to the same worktree; cleanup is unsafe.");
   }
+  const protectedTarget = await inventoryProtectedRuntime(mainWorktreePath);
+  failures.push(...protectedTarget.failures);
   if (preservation.skippedReason === "missing_source") {
     if (existsSync(expectedSource)) {
       failures.push("Books preservation reported missing_source but the source exists.");
     }
-    return { artifacts: [], failures };
+    return {
+      artifacts: protectedTarget.artifacts,
+      directories: protectedTarget.directories,
+      failures
+    };
   }
 
+  try {
+    await Promise.all([
+      inspectPathInside(state.worktreePath, BOOKS_RUNTIME_PATH, "directory"),
+      inspectPathInside(mainWorktreePath, BOOKS_RUNTIME_PATH, "directory")
+    ]);
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+    return {
+      artifacts: protectedTarget.artifacts,
+      directories: protectedTarget.directories,
+      failures
+    };
+  }
   const sourceInventory = await inventoryRegularFiles(expectedSource);
   const targetBySource = new Map();
   for (const relativePath of [...preservation.copied, ...preservation.identical]) {
@@ -315,8 +525,16 @@ async function verifyBooksPreservation(state, mainWorktreePath, preservation) {
       continue;
     }
     const targetPath = resolveInside(expectedTarget, targetRelativePath);
-    if (!existsSync(targetPath)) {
-      failures.push(`Preserved Books artifact is missing in canonical main: ${targetRelativePath}`);
+    const sourcePath = resolveInside(expectedSource, sourceRelativePath);
+    let sourceStats;
+    let targetStats;
+    try {
+      [sourceStats, targetStats] = await Promise.all([
+        inspectPathInside(expectedSource, sourceRelativePath, "file"),
+        inspectPathInside(expectedTarget, targetRelativePath, "file")
+      ]);
+    } catch (error) {
+      failures.push(error instanceof Error ? error.message : String(error));
       continue;
     }
     const targetHash = await sha256(targetPath);
@@ -324,51 +542,194 @@ async function verifyBooksPreservation(state, mainWorktreePath, preservation) {
       failures.push(`Preserved Books artifact checksum mismatch: ${targetRelativePath}`);
       continue;
     }
-    artifacts.push({ source: sourceRelativePath, target: targetRelativePath, sha256: sourceHash });
+    const sourceMode = sourceStats.mode & 0o777;
+    const targetMode = targetStats.mode & 0o777;
+    if (sourceMode !== targetMode) {
+      failures.push(`Preserved Books artifact mode mismatch: ${targetRelativePath}`);
+      continue;
+    }
+    if (isProtectedKnowledgeArtifact(sourceRelativePath)) {
+      const protectedDirectory = sourceRelativePath.split(path.sep)[0];
+      const protectedDirectoryRecord = protectedTarget.directories.find(
+        (entry) => entry.target === protectedDirectory
+      );
+      if (sourceMode !== 0o600 || !protectedDirectoryRecord) {
+        failures.push(`Protected Books artifact permissions are unsafe: ${targetRelativePath}`);
+        continue;
+      }
+    }
+    artifacts.push({
+      source: sourceRelativePath,
+      target: targetRelativePath,
+      sha256: sourceHash,
+      mode: sourceMode
+    });
   }
   for (const sourceRelativePath of targetBySource.keys()) {
     if (!sourceInventory.has(sourceRelativePath)) {
       failures.push(`Books preservation returned an unknown source mapping: ${sourceRelativePath}`);
     }
   }
-  return { artifacts, failures };
+  for (const protectedArtifact of protectedTarget.artifacts) {
+    const existing = artifacts.find((entry) => entry.target === protectedArtifact.target);
+    if (!existing) {
+      artifacts.push(protectedArtifact);
+      continue;
+    }
+    if (
+      existing.sha256 !== protectedArtifact.sha256 ||
+      existing.mode !== protectedArtifact.mode
+    ) {
+      failures.push(`Protected Books target evidence disagrees: ${protectedArtifact.target}`);
+    }
+  }
+  artifacts.sort((left, right) => left.target.localeCompare(right.target));
+  return {
+    artifacts,
+    directories: protectedTarget.directories,
+    failures
+  };
 }
 
 /**
  * @param {string} repoRoot
  * @param {import("./runtime.mjs").TaskState} state
- * @returns {Promise<{artifacts: PreservedArtifact[], failures: string[]}>}
+ * @returns {Promise<{artifacts: PreservedArtifact[], directories: PreservedDirectory[], failures: string[]}>}
  */
 async function verifyPreservedArtifactsAfterCleanup(repoRoot, state) {
   const preResult = await readJson(path.join(getTaskArtifactsDir(repoRoot, state.taskId), "finish-verification-pre_cleanup-result.json"));
   if (!preResult || typeof preResult !== "object" || preResult.status !== "passed") {
-    return { artifacts: [], failures: ["Post-cleanup verification requires passed pre-cleanup preservation evidence."] };
+    return { artifacts: [], directories: [], failures: ["Post-cleanup verification requires passed pre-cleanup preservation evidence."] };
   }
   const rawArtifacts = Array.isArray(preResult.preservedArtifacts) ? preResult.preservedArtifacts : null;
   if (!rawArtifacts) {
-    return { artifacts: [], failures: ["Pre-cleanup preservation evidence is missing preservedArtifacts."] };
+    return { artifacts: [], directories: [], failures: ["Pre-cleanup preservation evidence is missing preservedArtifacts."] };
   }
+  const rawDirectories = Array.isArray(preResult.preservedDirectories)
+    ? preResult.preservedDirectories
+    : null;
   /** @type {PreservedArtifact[]} */
   const artifacts = [];
+  /** @type {PreservedDirectory[]} */
+  const directories = [];
+  /** @type {PreservedArtifact[]} */
+  const expectedProtectedArtifacts = [];
+  /** @type {PreservedDirectory[]} */
+  const expectedProtectedDirectories = [];
   const failures = [];
   const mainWorktreePath = state.mainWorktreePath ?? repoRoot;
+  const runtimeRoot = path.join(mainWorktreePath, BOOKS_RUNTIME_PATH);
+  const runtimeMetadata = await lstatOrNull(runtimeRoot);
+  if (runtimeMetadata) {
+    try {
+      await inspectPathInside(mainWorktreePath, BOOKS_RUNTIME_PATH, "directory");
+    } catch (error) {
+      failures.push(error instanceof Error ? error.message : String(error));
+      return { artifacts, directories, failures };
+    }
+  }
+  if (!rawDirectories) {
+    failures.push("Pre-cleanup preservation evidence is missing preservedDirectories.");
+  } else {
+    const seenDirectories = new Set();
+    for (const raw of rawDirectories) {
+      if (
+        !raw ||
+        typeof raw !== "object" ||
+        typeof raw.target !== "string" ||
+        typeof raw.source !== "string" ||
+        typeof raw.mode !== "number" ||
+        !isProtectedKnowledgeArtifact(raw.target) ||
+        raw.source !== raw.target ||
+        seenDirectories.has(raw.target)
+      ) {
+        failures.push("Pre-cleanup preservation evidence contains a malformed directory record.");
+        continue;
+      }
+      seenDirectories.add(raw.target);
+      expectedProtectedDirectories.push(/** @type {PreservedDirectory} */ (raw));
+      try {
+        const targetStats = await inspectPathInside(runtimeRoot, raw.target, "directory");
+        if ((targetStats.mode & 0o777) !== raw.mode || raw.mode !== 0o700) {
+          failures.push(`Protected Books directory permissions changed after cleanup: ${raw.target}`);
+          continue;
+        }
+        directories.push(/** @type {PreservedDirectory} */ (raw));
+      } catch (error) {
+        failures.push(error instanceof Error ? error.message : String(error));
+      }
+    }
+  }
+  const seenArtifacts = new Set();
   for (const raw of rawArtifacts) {
-    if (!raw || typeof raw !== "object" || typeof raw.target !== "string" || typeof raw.sha256 !== "string") {
+    if (
+      !raw ||
+      typeof raw !== "object" ||
+      typeof raw.source !== "string" ||
+      typeof raw.target !== "string" ||
+      typeof raw.sha256 !== "string" ||
+      typeof raw.mode !== "number" ||
+      seenArtifacts.has(raw.target)
+    ) {
       failures.push("Pre-cleanup preservation evidence contains a malformed artifact record.");
       continue;
     }
-    const targetPath = resolveInside(path.join(mainWorktreePath, BOOKS_RUNTIME_PATH), raw.target);
-    if (!existsSync(targetPath)) {
-      failures.push(`Preserved Books artifact disappeared after cleanup: ${raw.target}`);
+    seenArtifacts.add(raw.target);
+    if (isProtectedKnowledgeArtifact(raw.target)) {
+      expectedProtectedArtifacts.push(/** @type {PreservedArtifact} */ (raw));
+    }
+    const targetPath = resolveInside(runtimeRoot, raw.target);
+    let targetStats;
+    try {
+      targetStats = await inspectPathInside(runtimeRoot, raw.target, "file");
+    } catch (error) {
+      failures.push(error instanceof Error ? error.message : String(error));
       continue;
     }
     if ((await sha256(targetPath)) !== raw.sha256) {
       failures.push(`Preserved Books artifact changed after cleanup: ${raw.target}`);
       continue;
     }
+    if ((targetStats.mode & 0o777) !== raw.mode) {
+      failures.push(`Preserved Books artifact mode changed after cleanup: ${raw.target}`);
+      continue;
+    }
+    if (isProtectedKnowledgeArtifact(raw.target)) {
+      const protectedDirectory = raw.target.split(path.sep)[0];
+      const protectedDirectoryRecord = directories.find(
+        (entry) => entry.target === protectedDirectory
+      );
+      if ((targetStats.mode & 0o777) !== 0o600 || !protectedDirectoryRecord) {
+        failures.push(`Protected Books artifact permissions changed after cleanup: ${raw.target}`);
+        continue;
+      }
+    }
     artifacts.push(/** @type {PreservedArtifact} */ (raw));
   }
-  return { artifacts, failures };
+  failures.push(
+    ...(await verifyProtectedTargetSnapshot(
+      mainWorktreePath,
+      expectedProtectedArtifacts,
+      expectedProtectedDirectories
+    ))
+  );
+  return { artifacts, directories, failures };
+}
+
+/**
+ * @param {string} relativePath
+ * @returns {boolean}
+ */
+function isProtectedKnowledgeArtifact(relativePath) {
+  if (!relativePath || path.isAbsolute(relativePath) || path.normalize(relativePath) !== relativePath) {
+    return false;
+  }
+  const segments = relativePath.split(path.sep);
+  if (segments.some((segment) => segment === "." || segment === "..")) {
+    return false;
+  }
+  const firstSegment = segments[0];
+  return PROTECTED_BOOKS_DIRECTORIES.includes(firstSegment);
 }
 
 /**
@@ -501,6 +862,7 @@ export async function runFinishVerification(repoRoot, state, phase) {
     runtimeSourcePaths: [],
     preservedPaths: [],
     preservedArtifacts: [],
+    preservedDirectories: [],
     artifactPreservation: null
   };
 
@@ -540,6 +902,7 @@ export async function runFinishVerification(repoRoot, state, phase) {
       result.artifactPreservation = preservation;
       const preservationVerification = await verifyBooksPreservation(state, mainWorktreePath, preservation);
       result.preservedArtifacts = preservationVerification.artifacts;
+      result.preservedDirectories = preservationVerification.directories;
       result.preservedPaths = preservation.skippedReason === "missing_source"
         ? []
         : [{ path: BOOKS_RUNTIME_PATH, files: preservationVerification.artifacts.length }];
@@ -606,7 +969,10 @@ export async function runFinishVerification(repoRoot, state, phase) {
 
       const preservationVerification = await verifyPreservedArtifactsAfterCleanup(repoRoot, state);
       result.preservedArtifacts = preservationVerification.artifacts;
-      result.preservedPaths = preservationVerification.artifacts.length > 0
+      result.preservedDirectories = preservationVerification.directories;
+      result.preservedPaths =
+        preservationVerification.artifacts.length > 0 ||
+        preservationVerification.directories.length > 0
         ? [{ path: BOOKS_RUNTIME_PATH, files: preservationVerification.artifacts.length }]
         : [];
       recordFailures(
@@ -635,7 +1001,8 @@ export async function runFinishVerification(repoRoot, state, phase) {
         mainWorktreePath: canonicalPath(mainWorktreePath),
         changedFiles: result.changedFiles,
         preservedPaths: result.preservedPaths,
-        preservedArtifacts: result.preservedArtifacts
+        preservedArtifacts: result.preservedArtifacts,
+        preservedDirectories: result.preservedDirectories
       });
       const scriptName = phase === "pre_cleanup" ? profile.preCleanupScript : profile.postCleanupScript;
       const hook = runRuntimeHook(mainWorktreePath, scriptName, contextPath, phase, state);
@@ -643,6 +1010,34 @@ export async function runFinishVerification(repoRoot, state, phase) {
       result.blocked.push(...hook.blocked);
       result.notes.push(...hook.notes);
       result.runtimeSourcePaths.push(...hook.runtimeSourcePaths);
+
+      if (phase === "pre_cleanup" && result.artifactPreservation) {
+        const postHookVerification = await verifyBooksPreservation(
+          state,
+          mainWorktreePath,
+          result.artifactPreservation
+        );
+        const protectedSnapshotFailures = await verifyProtectedTargetSnapshot(
+          mainWorktreePath,
+          result.preservedArtifacts,
+          result.preservedDirectories
+        );
+        recordFailures(
+          result,
+          "post_hook_books_preservation_readback",
+          [...postHookVerification.failures, ...protectedSnapshotFailures],
+          "Books runtime preservation remains exact after the pre-cleanup runtime hook"
+        );
+      }
+      if (phase === "post_cleanup") {
+        const postHookVerification = await verifyPreservedArtifactsAfterCleanup(repoRoot, state);
+        recordFailures(
+          result,
+          "post_hook_books_cleanup_readback",
+          postHookVerification.failures,
+          "Books runtime preservation remains exact after the post-cleanup runtime hook"
+        );
+      }
     }
 
     if (isGitDirty(mainWorktreePath)) {

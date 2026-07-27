@@ -1,6 +1,6 @@
 // @ts-check
 
-import { existsSync } from "node:fs";
+import { existsSync, lstatSync } from "node:fs";
 import path from "node:path";
 
 import { buildCommitMessage } from "./lib/conveyor-utils.mjs";
@@ -113,6 +113,40 @@ async function normalizeOperationalSnapshots(repoRoot) {
 }
 
 /**
+ * `runtime/` is an ignored local-artifact boundary. A root symlink would be
+ * staged as a tracked Git entry before QA and could redirect canonical-main
+ * reads/writes outside the repository, so reject it before any task commit.
+ *
+ * @param {string} repoRoot
+ * @returns {void}
+ */
+function assertRuntimeArtifactBoundary(repoRoot) {
+  const runtimePath = path.join(repoRoot, "runtime");
+  try {
+    const metadata = lstatSync(runtimePath);
+    if (!metadata.isDirectory() || metadata.isSymbolicLink()) {
+      throw new Error("Task runtime must be a regular ignored directory, never a symlink or file.");
+    }
+  } catch (error) {
+    if (!(error !== null && typeof error === "object" && "code" in error && error.code === "ENOENT")) {
+      throw error;
+    }
+  }
+  const trackedRuntime = runCommand(
+    repoRoot,
+    "git",
+    ["ls-files", "--stage", "--", "runtime"],
+    { allowFailure: true }
+  );
+  if (trackedRuntime.status !== 0) {
+    throw new Error("Unable to verify the ignored runtime boundary before task commit.");
+  }
+  if (trackedRuntime.stdout.trim()) {
+    throw new Error("Task runtime contains tracked Git entries; publication is blocked.");
+  }
+}
+
+/**
  * @param {string} repoRoot
  * @param {import("./lib/runtime.mjs").TaskState} state
  * @returns {Promise<boolean>}
@@ -201,6 +235,7 @@ async function recordCommitAndPush(repoRoot, state, options = {}) {
  * @returns {Promise<void>}
  */
 async function ensureTaskCommit(repoRoot, state) {
+  assertRuntimeArtifactBoundary(repoRoot);
   if (!isGitDirty(repoRoot) && state.commitSha === getHeadSha(repoRoot)) {
     return;
   }
