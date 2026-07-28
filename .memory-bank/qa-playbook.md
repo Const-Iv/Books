@@ -161,6 +161,8 @@ Acceptance criteria проверяют пользовательский резу
 
 ## Evidence Capture
 
+- Adaptive Subagent Workflow проверяется по `.memory-bank/eval-specs/adaptive-subagent-workflow.md`: 7/7 Triviality Gate для `trivial`, корректная topology, отсутствие overlapping writers и параллельных live actions, deterministic checks и ноль critical failures.
+
 - Записывать точные команды и PASS/FAIL.
 - Для bugfixes фиксировать defect class, invariant и shared seam.
 - Для AI/agent behavior changes записывать eval cases, expected behavior, actual behavior и pass/fail.

@@ -192,6 +192,33 @@ Acceptance criteria описывают принимаемый результат
 - <обратная совместимость>
 - <данные или поведение, которые нужно сохранить>
 
+## Карта выполнения
+
+Заполнить по `.memory-bank/subagent-workflow.md`. Сокращённая карта допустима только после прохождения всех условий Triviality Gate.
+
+- **Классификация:** `trivial` | `nontrivial`
+- **Triviality Gate:** <7/7 PASS или точные failed/unknown conditions; сомнение означает nontrivial>
+- **Режим:** `single` | `sequential` | `parallel/hybrid`
+- **Обоснование:** <почему topology минимально достаточна>
+- **Root owner:** <кто отвечает за решения, интеграцию и claims>
+- **Максимум одновременно активных subagents:** `0` | `1` | `2` | `3`
+- **Максимальная глубина:** `0` | `1`
+- **Ожидаемый эффект:** качество | wall-clock | изоляция контекста | coordination не окупается
+- **Ожидаемое влияние на total usage:** <не заявлять экономию без evidence>
+- **Fallback:** <когда вернуться к single/sequential>
+
+### Workstreams
+
+| ID | Цель | Role | Depends on | File/module ownership | Read/write scope | Result/evidence | Sync point |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| W1 | <bounded результат> | root / explorer / worker / reviewer | <зависимость> | <один writer> | read-only / exact write scope | <проверяемый результат> | <точка интеграции> |
+
+### Последовательные этапы одного владельца
+
+- <shared contract и integration>
+- <approved live action и authoritative read-back>
+- <commit, publication proof и cleanup>
+
 ## План для агента
 
 - [ ] Шаг 1: <изменение и ближайшая проверка>
