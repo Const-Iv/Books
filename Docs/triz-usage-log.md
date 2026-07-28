@@ -2,24 +2,6 @@
 
 Журнал срабатываний TRIZ-триггеров и применённых решений.
 
-## 2026-04-30T08:18:00.993Z 20260429-162316-4a71
-
-- Branch: `codex/20260429-162316-4a71-teach-starter-rule-share-downstream-import-evidence`
-- Reasons: historical_recurrence
-- Status: trigger recorded
-
-## 2026-04-30T08:35:50.121Z 20260430-082858-2709
-
-- Branch: `codex/20260430-082858-2709-require-exact-cleanup-verification-in-worktree-finish`
-- Reasons: cross_module_conflict, historical_recurrence
-- Status: trigger recorded
-
-## 2026-05-05T14:21:07.376Z 20260505-082304-ffc7
-
-- Branch: `codex/20260505-082304-ffc7-readable-rule-sync-report`
-- Reasons: historical_recurrence
-- Status: trigger recorded
-
 ## 2026-05-05T17:11:43.039Z 20260505-170240-5c0b
 
 - Branch: `codex/20260505-170240-5c0b-self-check-manual-rule-review-in-reports`
@@ -194,5 +176,23 @@
 ## 2026-07-20T15:37:33.617Z 20260720-151622-00e9
 
 - Branch: `codex/20260720-151622-00e9-goal-seed-staged-handoff-rules`
+- Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
+
+## 2026-07-28T08:08:52.461Z 20260728-080020-d53a
+
+- Branch: `codex/20260728-080020-d53a-importirovat-adaptive-subagent-workflow`
+- Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
+
+## 2026-07-28T08:09:42.440Z 20260728-080020-d53a
+
+- Branch: `codex/20260728-080020-d53a-importirovat-adaptive-subagent-workflow`
+- Reasons: cross_module_conflict, historical_recurrence
+- Status: trigger recorded
+
+## 2026-07-28T08:15:11.046Z 20260728-080020-d53a
+
+- Branch: `codex/20260728-080020-d53a-importirovat-adaptive-subagent-workflow`
 - Reasons: cross_module_conflict, historical_recurrence
 - Status: trigger recorded
