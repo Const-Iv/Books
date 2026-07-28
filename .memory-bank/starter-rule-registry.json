@@ -1013,6 +1013,49 @@
       "sharePolicy": "required"
     },
     {
+      "id": "starter.agent.adaptive-subagent-workflow",
+      "title": "Plans choose an adaptive execution topology",
+      "text": "Каждый нетривиальный plan/spec проходит fail-closed Triviality Gate и фиксирует Adaptive Subagent Workflow: классификацию, топологию `single | sequential | parallel/hybrid`, root owner, ограничения по числу и глубине subagents, workstream ownership, ожидаемый эффект, usage и sync points. `Trivial` допустим только при одновременном выполнении семи условий; failed или unknown condition означает `nontrivial`. Subagents используются только для bounded independently verifiable workstreams без overlapping writers и параллельных live actions; shared contracts, integration, external writes, merge, publication, cleanup и authoritative read-back остаются у одного последовательного владельца. Каждый результат subagent содержит `findings`, `evidence`, `risks`, `unresolved`, `recommended next step`. Reasoning mode выбирается от `Low` до `Ultra` по acceptance и Eval; minimum pass threshold требует корректной топологии, deterministic checks, ноль critical safety/privacy/approval failures и измеримый выигрыш, если растёт total usage.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/index.md",
+        ".memory-bank/code-rules.md",
+        ".memory-bank/context-hygiene.md",
+        ".memory-bank/qa-playbook.md",
+        ".memory-bank/subagent-workflow.md",
+        ".memory-bank/eval-specs/adaptive-subagent-workflow.md",
+        "CODEX_MEMORY.md",
+        "plans/_template.md",
+        "plans/_bugfix_template.md",
+        "README.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "Adaptive Subagent Workflow",
+        "Triviality Gate",
+        "single",
+        "sequential",
+        "parallel/hybrid",
+        "findings",
+        "unresolved",
+        "Ultra",
+        "overlapping writers"
+      ],
+      "source": {
+        "type": "starter-rule-import",
+        "candidateIds": [
+          "rs-1a7b582d46",
+          "rs-f28cd65936"
+        ],
+        "approval": "runtime/rule-sync/approvals/2026-07-28-owner-approved-adaptive-subagent-workflow.json",
+        "scan": "runtime/rule-sync/scans/rule-sync-2026-07-28-022554594Z.json",
+        "importedAt": "2026-07-28T07:01:42Z",
+        "note": "Owner approved one complete portable Adaptive Subagent Workflow with Triviality Gate as one section, not a standalone duplicate."
+      },
+      "sharePolicy": "required"
+    },
+    {
       "id": "starter.dependencies.generated-artifact-recovery-and-cleanup",
       "title": "Generated dependency recovery preserves useful diffs and cleanup reproducibility",
       "text": "Если dependency recovery или deterministic QA изменяет tracked generated dependency artifacts, finish перед task commit и local-main operational auto-commit восстанавливает только доказанные generated paths, не скрывает source/config/workflow/docs/tests/governance diffs и не пропускает QA gate. Удаление уже tracked dependency debt считается отдельной destructive cleanup-задачей с явным owner approval и rollback-ready plan. Перед merge или публикацией такого cleanup candidate commit, в котором generated dependency paths уже отсутствуют, проверяется из clean clone или изолированного checkout: tracked manifests и lock-файлы должны восстановить зависимости canonical deterministic install-командой под закреплённой поддерживаемой версией runtime/toolchain; после установки должны пройти полный QA, build и applicable native-runtime smoke. Отсутствующее или failed evidence блокирует cleanup.",

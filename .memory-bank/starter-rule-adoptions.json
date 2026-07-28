@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-27T19:27:45.000Z",
+  "updatedAt": "2026-07-28T11:12:00+03:00",
   "signals": {
     "activeRules": "project_local",
     "reusableSkills": "source_present",
@@ -145,6 +145,16 @@
         "tests/unit/governance-input-boundary.test.mjs#canonical-main operational read-back cannot change committed governance truth"
       ],
       "note": "Books явно разделяет versioned canonical governance и single-writer operational docs; committed snapshot связан с exact SHA, а operational capture/read-back не меняет rule truth."
+    },
+    {
+      "id": "starter.agent.adaptive-subagent-workflow",
+      "status": "applied_exact",
+      "evidence": [
+        ".memory-bank/subagent-workflow.md#Adaptive Subagent Workflow",
+        ".memory-bank/eval-specs/adaptive-subagent-workflow.md#Eval spec: Adaptive Subagent Workflow",
+        "plans/_template.md#Карта выполнения"
+      ],
+      "note": "Books применяет portable workflow без изменения product charter, локального CLI-контура и source/copyright boundaries."
     },
     {
       "id": "starter.rollout.optional-capability-isolation",

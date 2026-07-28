@@ -18,6 +18,7 @@ Purpose: хранить долгоживущие, reusable знания прое
 | Bugfix / regression | `product-charter.md`, `architecture-map.md`, `code-rules.md`, `qa-playbook.md` | `project-context.md` | Root-cause fix with reusable guard and no charter regression |
 | Conveyor / release work | `product-charter.md`, `project-context.md`, `qa-playbook.md`, `code-rules.md` | `architecture-map.md` | Process-safe implementation with state/history validation and no charter bypass |
 | Governance update | `product-charter.md`, `code-rules.md`, `qa-playbook.md`, `project-context.md` | `architecture-map.md` | Synced rules in canonical sources |
+| Nontrivial plan / agent workflow | `product-charter.md`, `subagent-workflow.md`, `code-rules.md`, `qa-playbook.md` | `eval-specs/adaptive-subagent-workflow.md` | Execution map with topology, ownership, sync points and deterministic evidence |
 | Local source / external service / UI access | `product-charter.md`, `connection-access-policy.md`, `project-context.md` | `qa-playbook.md` | Local-first access through the narrowest authoritative contour with read-back |
 | Rule sharing to downstream projects | `product-charter.md`, `code-rules.md`, `project-context.md`, `starter-rule-registry.json` | `architecture-map.md`, `qa-playbook.md`, `skills/starter-rule-share/SKILL.md` | Project-grouped report with concrete present/missing/manual-review rules and approval-safe task seeds |
 | New downstream project bootstrap | `product-charter.md`, `project-context.md`, `architecture-map.md`, `code-rules.md`, `qa-playbook.md` | `plans/_project_intake_template.md`, `README.md`, `skills/starter-project-bootstrap/SKILL.md` | `$starter-project-bootstrap` guided flow with approved project intake, canonical transfer, and baseline QA before feature work |
@@ -32,6 +33,7 @@ Purpose: хранить долгоживущие, reusable знания прое
 - `.memory-bank/starter-rule-registry.json` — machine-readable реестр reusable starter rules для outbound sharing: stable `id`, exact `text`, `targetFiles`, `requiredFragments`, `source`, `sharePolicy`. Он не должен содержать starter mission/vision, downstream product wording, локальные пути или product-specific defaults.
 - `.memory-bank/starter-rule-adoptions.json` — project-local решения Books по manual-review правилам: подтверждённое evidence, executable gaps и capability-specific exclusions; integration signals в нём независимы.
 - Stable architecture/process boundaries — в `architecture-map.md`.
+- Adaptive Subagent Workflow, Triviality Gate и execution topology — в `subagent-workflow.md`; behavior Eval — в `eval-specs/adaptive-subagent-workflow.md`.
 - Repeatable QA rules, failure classes, evidence capture — в `qa-playbook.md`.
 - Stack/runtime/command context — в `project-context.md`.
 - Приоритет local source, connector/API, browser/Computer Use и внешний write contract — в `connection-access-policy.md`.

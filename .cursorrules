@@ -45,6 +45,7 @@ Mirror rules:
 - unknown root technology для нового продукта или capability требует isolated echo-test evidence до feature/refactor/behavior-change work; echo-test не заменяет QA/security/owner approval;
 - если используется BMAD, `_bmad/` — canonical install, `_bmad-output/` — локальный scratch без коммита;
 - `.cursorrules` не заменяет `AGENTS.md` и не считается единственным source of truth;
+- `.memory-bank/subagent-workflow.md` хранит полный Adaptive Subagent Workflow: семиусловный fail-closed Triviality Gate, `single | sequential | parallel/hybrid`, ownership/sync, result contract, reasoning modes до `Ultra`, запрет overlapping writers и параллельных live actions;
 - QA и release decisions должны идти через `qa:agent`, `task:*`, `release:local`, а не через ad-hoc shell flow.
 - `qa:security` проверяет полный root dependency graph вместе с dev tooling и блокирует `high`/`critical` findings.
 - test quality evidence должно быть behavior-focused; skipped/focused tests, arbitrary sleeps и tests that pass regardless of implementation не считаются trustworthy QA.
