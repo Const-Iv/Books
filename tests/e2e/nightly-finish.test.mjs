@@ -115,7 +115,7 @@ async function installRuntimeVerificationHook(repoRoot) {
       "const args = process.argv.slice(2);",
       "const phaseIndex = args.indexOf('--phase');",
       "const phase = phaseIndex >= 0 ? args[phaseIndex + 1] ?? '' : '';",
-      "const failed = phase === 'post_cleanup' && process.env.BOOKS_TEST_FAIL_POST_VERIFY === '1';",
+      "const failed = (phase === 'pre_cleanup' && process.env.BOOKS_TEST_FAIL_PRE_VERIFY === '1') || (phase === 'post_cleanup' && process.env.BOOKS_TEST_FAIL_POST_VERIFY === '1');",
       "console.log(JSON.stringify({",
       "  version: 1,",
       "  phase,",
@@ -269,6 +269,198 @@ test("Nightly: finish skips publish when the task branch HEAD is already in main
     assert.equal(skipEvent.payload.publishStatus, "skipped_already_merged");
     assert.equal(events.some((event) => event.type === "MERGE_MAIN" && event.branch === started.branch), false);
     assert.equal(events.some((event) => event.type === "PUSH_MAIN" && event.branch === started.branch), false);
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test("Nightly: successor-lineage is explicit, fail-closed, and records superseded_verified", async () => {
+  const fixture = await createTempStarterRepo({ installDependencies: true });
+  try {
+    const env = buildEnv(fixture);
+    const original = startTask(fixture.repoRoot, env, "Finish successor original");
+    await appendReadmeLine(original.worktreePath, "Original accepted result.");
+    runQaCheckpoint(original.worktreePath, env);
+    assert.equal(
+      runStarterScript(original.worktreePath, ["scripts/worktree-finish-core.mjs", "--cleanup", "2"], { env }).status,
+      0
+    );
+    const originalState = await loadTaskStateByBranch(fixture.repoRoot, original.branch);
+    assert.ok(originalState?.commitSha);
+
+    const successor = startTask(fixture.repoRoot, env, "Finish successor replacement");
+    await appendReadmeLine(successor.worktreePath, "Successor accepted result.");
+    runQaCheckpoint(successor.worktreePath, env);
+    assert.equal(
+      runStarterScript(successor.worktreePath, ["scripts/worktree-finish-core.mjs", "--cleanup", "2"], { env }).status,
+      0
+    );
+    const successorState = await loadTaskStateByBranch(fixture.repoRoot, successor.branch);
+    assert.ok(successorState?.commitSha);
+    const trackedManifestPath = path.join(fixture.repoRoot, "successor-manifest.json");
+    await writeJson(trackedManifestPath, { version: 1 });
+    runCommand(fixture.repoRoot, "git", ["add", "successor-manifest.json"]);
+    runCommand(fixture.repoRoot, "git", ["commit", "-m", "Add tracked manifest rejection fixture"]);
+    const mainSha = runCommand(fixture.repoRoot, "git", ["rev-parse", "HEAD"]).stdout.trim();
+
+    const trackedManifest = runStarterScript(
+      fixture.repoRoot,
+      [
+        "scripts/worktree-finish-core.mjs",
+        "--task-id",
+        original.taskId,
+        "--successor-lineage",
+        trackedManifestPath,
+        "--cleanup",
+        "1"
+      ],
+      { env, allowFailure: true }
+    );
+    assert.notEqual(trackedManifest.status, 0);
+    assert.match(`${trackedManifest.stderr}\n${trackedManifest.stdout}`, /manifest must be ignored by Git/);
+    assert.equal(existsSync(original.worktreePath), true);
+
+    const ordinaryCleanup = runStarterScript(
+      fixture.repoRoot,
+      ["scripts/worktree-finish-core.mjs", "--task-id", original.taskId, "--cleanup", "1"],
+      { env, allowFailure: true }
+    );
+    assert.notEqual(ordinaryCleanup.status, 0);
+    assert.equal(existsSync(original.worktreePath), true);
+    assert.match(`${ordinaryCleanup.stderr}\n${ordinaryCleanup.stdout}`, /Tracked main mismatch: README\.md/);
+
+    const manifestPath = path.join(fixture.repoRoot, "runtime", "worktree-finish", `${original.taskId}.json`);
+    await mkdir(path.dirname(manifestPath), { recursive: true });
+    await writeJson(manifestPath, {
+      version: 1,
+      taskId: original.taskId,
+      taskCommitSha: originalState.commitSha,
+      mainSha,
+      successors: [
+        {
+          taskId: successor.taskId,
+          commitSha: successorState.commitSha,
+          paths: ["README.md"]
+        }
+      ]
+    });
+
+    const finished = runStarterScript(
+      fixture.repoRoot,
+      [
+        "scripts/worktree-finish-core.mjs",
+        "--task-id",
+        original.taskId,
+        "--successor-lineage",
+        manifestPath,
+        "--cleanup",
+        "1"
+      ],
+      { env }
+    );
+    assert.equal(finished.status, 0);
+    assert.equal(existsSync(original.worktreePath), false);
+
+    const state = await loadTaskStateByBranch(fixture.repoRoot, original.branch);
+    assert.equal(state?.supersessionMode, "declared_successor_lineage");
+    assert.equal(state?.supersessionStatus, "superseded_verified");
+    assert.equal(state?.equivalenceMode ?? null, null);
+    assert.equal(state?.supersessionMainSha, mainSha);
+    assert.equal(state?.originalAcceptanceStatus, "passed");
+    assert.equal(state?.successorAcceptanceStatus, "passed");
+    assert.equal(state?.publishStatus, "skipped_successor_cleanup_only");
+    assert.equal(state?.mainVerificationStatus, "passed");
+    assert.equal(state?.cleanupStatus, "passed");
+
+    const events = await readNdjson(getHistoryPath(fixture.repoRoot));
+    const skipEvent = getLatestEvent(events, "PUBLISH_SKIP", original.branch);
+    assert.equal(skipEvent.payload.supersessionStatus, "superseded_verified");
+    assert.deepEqual(skipEvent.payload.successorTaskIds, [successor.taskId]);
+    const mainVerify = getLatestEvent(events, "MAIN_VERIFY", original.branch);
+    assert.ok(
+      Array.isArray(mainVerify.payload.checks) &&
+        mainVerify.payload.checks.some(
+          (check) => check && typeof check === "object" && check.id === "tracked_successor_lineage" && check.status === "passed"
+        )
+    );
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test("Nightly: successor-lineage cannot bypass local-only preservation or runtime read-back", async () => {
+  const fixture = await createTempStarterRepo({ installDependencies: true });
+  try {
+    const env = buildEnv(fixture);
+    const original = startTask(fixture.repoRoot, env, "Finish successor runtime original");
+    await appendReadmeLine(original.worktreePath, "Runtime original accepted result.");
+    runQaCheckpoint(original.worktreePath, env);
+    assert.equal(
+      runStarterScript(original.worktreePath, ["scripts/worktree-finish-core.mjs", "--cleanup", "2"], { env }).status,
+      0
+    );
+    const originalState = await loadTaskStateByBranch(fixture.repoRoot, original.branch);
+    assert.ok(originalState?.commitSha);
+
+    const successor = startTask(fixture.repoRoot, env, "Finish successor runtime replacement");
+    await appendReadmeLine(successor.worktreePath, "Runtime successor accepted result.");
+    runQaCheckpoint(successor.worktreePath, env);
+    assert.equal(
+      runStarterScript(successor.worktreePath, ["scripts/worktree-finish-core.mjs", "--cleanup", "2"], { env }).status,
+      0
+    );
+    const successorState = await loadTaskStateByBranch(fixture.repoRoot, successor.branch);
+    assert.ok(successorState?.commitSha);
+
+    await installRuntimeVerificationHook(fixture.repoRoot);
+    await mkdir(path.join(original.worktreePath, "runtime", "books", "successor-proof"), { recursive: true });
+    await writeFile(
+      path.join(original.worktreePath, "runtime", "books", "successor-proof", "result.json"),
+      "{\"kept\":true}\n",
+      "utf8"
+    );
+
+    const mainSha = runCommand(fixture.repoRoot, "git", ["rev-parse", "HEAD"]).stdout.trim();
+    const manifestPath = path.join(fixture.repoRoot, "runtime", "worktree-finish", `${original.taskId}.json`);
+    await mkdir(path.dirname(manifestPath), { recursive: true });
+    await writeJson(manifestPath, {
+      version: 1,
+      taskId: original.taskId,
+      taskCommitSha: originalState.commitSha,
+      mainSha,
+      successors: [
+        {
+          taskId: successor.taskId,
+          commitSha: successorState.commitSha,
+          paths: ["README.md"]
+        }
+      ]
+    });
+
+    const failed = runStarterScript(
+      fixture.repoRoot,
+      [
+        "scripts/worktree-finish-core.mjs",
+        "--task-id",
+        original.taskId,
+        "--successor-lineage",
+        manifestPath,
+        "--cleanup",
+        "1"
+      ],
+      { env: { ...env, BOOKS_TEST_FAIL_PRE_VERIFY: "1" }, allowFailure: true }
+    );
+    assert.notEqual(failed.status, 0);
+    assert.match(`${failed.stderr}\n${failed.stdout}`, /must return version=1, status=passed/);
+    assert.equal(existsSync(original.worktreePath), true);
+    assert.equal(
+      await readFile(path.join(fixture.repoRoot, "runtime", "books", "successor-proof", "result.json"), "utf8"),
+      "{\"kept\":true}\n"
+    );
+    const state = await loadTaskStateByBranch(fixture.repoRoot, original.branch);
+    assert.equal(state?.supersessionStatus, "superseded_verified");
+    assert.equal(state?.mainVerificationStatus, "failed");
+    assert.equal(state?.cleanupStatus, "kept");
   } finally {
     await fixture.cleanup();
   }

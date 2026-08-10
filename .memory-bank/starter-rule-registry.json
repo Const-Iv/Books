@@ -1086,6 +1086,127 @@
         "importedAt": "2026-07-17T09:23:11.000Z"
       },
       "sharePolicy": "required"
+    },
+    {
+      "id": "starter.conveyor.successor-lineage-cleanup",
+      "title": "Superseded task cleanup requires declared successor lineage",
+      "text": "Переписанный после публикации task result удаляется только по отдельно одобренному ignored exact-SHA manifest. Version 1 сохраняет ordered finished/published successor task/commit/path records; version=2 добавляет typed `managed_task` / `approved_direct_main`, где direct commit обязан быть single-parent на first-parent canonical `main`, не иметь task state и объявлять exact rewritten `paths` плюс full `changedPaths` внутри process-only profile. Complete accounting всех rewritten paths/commits, transport-only merges, immutable manifest/proof/history, original/current-main QA и обычные dependency/local-only/profile/pre/post runtime/read-back gates обязательны; PASS — `superseded_verified`, а не equivalence.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        ".memory-bank/qa-playbook.md",
+        ".memory-bank/project-context.md",
+        "CODEX_MEMORY.md",
+        "scripts/README.md",
+        "skills/worktree-finish/SKILL.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "ignored exact-SHA manifest",
+        "ordered finished/published successor task/commit/path records",
+        "version=2",
+        "`approved_direct_main`",
+        "first-parent canonical `main`",
+        "full `changedPaths`",
+        "process-only profile",
+        "complete accounting всех rewritten paths/commits",
+        "transport-only merges",
+        "immutable manifest/proof/history",
+        "Original/current-main QA",
+        "dependency/local-only/profile/pre/post runtime/read-back gates",
+        "`superseded_verified`, а не equivalence"
+      ],
+      "source": {
+        "type": "starter-owner-update",
+        "plan": "plans/2026-07-24-1235-successor-lineage-cleanup-gate.md",
+        "importedAt": "2026-07-24T15:35:00.000+03:00",
+        "note": "Typed version=2 direct-main operational successor support added by plans/2026-08-03-direct-main-successor-cleanup-proof.md without creating a second rule id."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.conveyor.legacy-state-reconciliation",
+      "title": "Legacy task-state reconciliation is manifest-bound and fail-closed",
+      "text": "Legacy task-state перед cleanup восстанавливается только по отдельно одобренному ignored exact-SHA manifest. Missing `baseSha` восстанавливается только как sole parent exact task tip; existing recorded `baseSha` manifest повторяет без замены, а Git доказывает непустую strict linear single-parent chain до task tip. Exact task/commit/sealed-main, clean worktree, exact QA/preview и ordered MERGE/PUSH/MAIN_VERIFY tuple обязательны. Retry сверяет exact manifest path/hash, SHA-addressed immutable proof, recovered state и reconciliation history, затем воспроизводит proof против sealed main, который обязан оставаться ancestor current main; status-флаг не является proof. Ручная правка state запрещена; `merged -> finished` фиксирует cleanup как `failed`, а обычные successor/dependency/local-only/profile/post-cleanup gates сохраняются.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        ".memory-bank/qa-playbook.md",
+        ".memory-bank/project-context.md",
+        "CODEX_MEMORY.md",
+        "scripts/README.md",
+        "skills/worktree-finish/SKILL.md",
+        ".cursorrules",
+        "CLAUDE.md"
+      ],
+      "requiredFragments": [
+        "ignored exact-SHA manifest",
+        "Missing `baseSha`",
+        "sole parent exact task tip",
+        "existing recorded `baseSha`",
+        "strict linear single-parent chain",
+        "clean worktree",
+        "exact QA/preview",
+        "ordered MERGE/PUSH/MAIN_VERIFY tuple",
+        "exact manifest path/hash",
+        "SHA-addressed immutable proof",
+        "sealed main",
+        "ancestor current main",
+        "Ручная правка state запрещена",
+        "`merged -> finished`",
+        "cleanup как `failed`",
+        "обычные successor/dependency/local-only/profile/post-cleanup gates"
+      ],
+      "source": {
+        "type": "starter-owner-update",
+        "plan": "plans/2026-07-24-1645-legacy-task-state-reconciliation.md",
+        "importedAt": "2026-07-24T16:45:00.000+03:00",
+        "note": "Conditional existing-base multi-commit support added by plans/2026-08-10-0658-multi-commit-legacy-cleanup.md without changing the rule id."
+      },
+      "sharePolicy": "required"
+    },
+    {
+      "id": "starter.conveyor.successor-lineage-refresh",
+      "title": "Sealed successor-lineage refresh is explicit and append-only",
+      "text": "Sealed successor-lineage state и связанное proof evidence нельзя менять, обнулять или заменять вручную. Если canonical `main` продвинулся до cleanup, refresh допускается только отдельным explicit cleanup-only flow с новым ignored manifest: прежние state, manifest, proof и history проверяются как immutable; новый `main` должен быть descendant ранее подтверждённого `main`; порядок и непрерывность прежних successor records сохраняются; original/current-main QA и все обычные dependency, local-only, profile и runtime/read-back gates повторяются. Старый proof сохраняется неизменным, новый результат добавляется append-only; любой gap блокирует cleanup.",
+      "targetFiles": [
+        "AGENTS.md",
+        ".memory-bank/code-rules.md",
+        ".memory-bank/qa-playbook.md",
+        ".memory-bank/project-context.md",
+        "CODEX_MEMORY.md",
+        ".cursorrules",
+        "CLAUDE.md",
+        "scripts/README.md",
+        "scripts/lib/runtime.mjs",
+        "scripts/lib/successor-lineage.mjs",
+        "scripts/worktree-finish-core.mjs",
+        "skills/worktree-finish/SKILL.md",
+        "tests/unit/successor-lineage.test.mjs",
+        "tests/unit/worktree-finish-contract.test.mjs"
+      ],
+      "requiredFragments": [
+        "Sealed successor-lineage state",
+        "explicit cleanup-only flow",
+        "новым ignored manifest",
+        "проверяются как immutable",
+        "должен быть descendant",
+        "порядок и непрерывность прежних successor records",
+        "Старый proof сохраняется неизменным",
+        "SUCCESSOR_LINEAGE_REFRESH"
+      ],
+      "source": {
+        "type": "starter-rule-import",
+        "candidateIds": [
+          "rs-35ee82b228"
+        ],
+        "approval": "runtime/rule-sync/approvals/2026-07-27-owner-approved-rule-import.json",
+        "scan": "runtime/rule-sync/scans/rule-sync-2026-07-26-233223794Z.json",
+        "sourceCommit": "050687233af013b99ea5cdc3697e3ff52a6f7aa3",
+        "importedAt": "2026-07-27T15:53:00.000+03:00"
+      },
+      "sharePolicy": "required"
     }
   ]
 }

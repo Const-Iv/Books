@@ -165,6 +165,9 @@ node scripts/skills-manage.mjs link --source skills/worktree-finish --adopt
 - успешный delete cleanup требует `cleanupStatus = passed` только после проверки exact `state.worktreePath`, отсутствия этого пути в `git worktree list`, удаления `$CODEX_HOME/worktrees/<taskId>/` и отсутствия task-scoped leftovers; один `cleanupDecision`, похожий worktree name или exit code не считается доказательством фактической уборки.
 - если похожий worktree относится к другому `taskId`, branch или проекту, он сообщается как отдельный pending cleanup и не удаляется без нового выбора `1. Удалить` / `2. Оставить`.
 - optional repo hook `task:finish:cleanup` может вернуть task-scoped `extraPaths`, `blocked` и `notes`; starter core удаляет только пути внутри текущего task scope.
+- для отдельно подтверждённого cleanup переписанного результата принимает только `--successor-lineage <ignored-manifest.json> --cleanup 1`: manifest v1 хранит ordered finished/published managed task records, а v2 добавляет typed `managed_task` / `approved_direct_main`; полный closed-set proof учитывает rewritten paths, content-changing commits, transport-only merges, immutable manifest/proof/history и exact original/current-main QA; PASS записывается как `superseded_verified`, не equivalence;
+- `--legacy-state-reconciliation <ignored-manifest.json> --cleanup 1` восстанавливает legacy `merged` task только по exact task/base/main SHA, clean worktree, exact QA/preview и одному ordered `MERGE_MAIN -> PUSH_MAIN -> passed MAIN_VERIFY` tuple; retry повторно проверяет sealed manifest/proof/history, ручная правка task-state запрещена;
+- `--task-id <id> --successor-lineage <new-ignored-manifest.json> --refresh-successor-lineage --cleanup 1` выполняет только append-only refresh: прежний seal остаётся immutable, новый `main` обязан быть descendant, continuity records и original/current-main QA проверяются заново.
 
 ### `task:merge:main`
 
