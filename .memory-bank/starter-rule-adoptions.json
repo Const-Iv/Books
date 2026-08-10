@@ -68,15 +68,24 @@
     },
     {
       "id": "starter.conveyor.successor-lineage-cleanup",
-      "status": "not_applicable",
-      "evidence": [],
-      "note": "Books v1 не имеет successor-lineage cleanup flow или соответствующих manifest/state contracts; правило нужно пересмотреть только при появлении этой возможности."
+      "status": "applied_adapted",
+      "evidence": [
+        "scripts/lib/successor-lineage.mjs#proveSuccessorLineage",
+        "scripts/lib/successor-cleanup-flow.mjs#maybeSkipSuccessorPublish",
+        "scripts/lib/finish-verification.mjs#tracked_successor_lineage",
+        "tests/unit/successor-lineage.test.mjs#successor-lineage accepts a complete ordered finished/published chain"
+      ],
+      "note": "Books сохраняет runtime finish profile и добавляет cleanup-only exact-SHA successor proof с immutable manifest/proof/history, original/current-main QA и статусом superseded_verified вместо ложной equivalence."
     },
     {
       "id": "starter.conveyor.legacy-state-reconciliation",
-      "status": "not_applicable",
-      "evidence": [],
-      "note": "Books v1 не поддерживает восстановление legacy task-state через reconciliation manifest; неизвестное старое состояние остаётся fail-closed."
+      "status": "applied_adapted",
+      "evidence": [
+        "scripts/lib/legacy-state-reconciliation.mjs#proveLegacyStateReconciliation",
+        "scripts/lib/successor-cleanup-flow.mjs#maybeReconcileLegacyState",
+        "tests/unit/legacy-state-reconciliation.test.mjs#legacy reconciliation repairs merged state only with successful publish and main verification evidence"
+      ],
+      "note": "Legacy merged state восстанавливается только по owner-approved ignored manifest, ordered publish evidence и immutable retry proof; ручная правка task-state остаётся запрещена."
     },
     {
       "id": "starter.access.structured-first-ui-last",
@@ -126,9 +135,13 @@
     },
     {
       "id": "starter.conveyor.successor-lineage-refresh",
-      "status": "not_applicable",
-      "evidence": [],
-      "note": "В Books v1 нет sealed successor-lineage state или refresh flow; пересмотр нужен только после отдельного внедрения successor-lineage cleanup."
+      "status": "applied_adapted",
+      "evidence": [
+        "scripts/lib/successor-lineage.mjs#proveSuccessorLineageRefresh",
+        "scripts/lib/successor-cleanup-flow.mjs#SUCCESSOR_LINEAGE_REFRESH",
+        "tests/unit/successor-lineage.test.mjs#successor-lineage refresh advances only with a new seal and preserved ordered evidence"
+      ],
+      "note": "Books refresh использует новый ignored manifest, revalidates предыдущий immutable seal и добавляет append-only proof/history только для descendant current main."
     },
     {
       "id": "starter.rollout.scoped-health-delta",

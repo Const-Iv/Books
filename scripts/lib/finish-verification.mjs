@@ -13,15 +13,19 @@ import {
   gitTreeEntriesEqual,
   proveParallelDuplicateCommit
 } from "./duplicate-equivalence.mjs";
+import { loadSuccessorLineageManifest, proveSuccessorLineage } from "./successor-lineage.mjs";
 import {
   getCodexHome,
   getCurrentBranch,
   getHeadSha,
+  getHistoryPath,
   getTaskArtifactsDir,
   getTrackedChangedFiles,
   getWorktreeList,
   isGitDirty,
+  loadAllTaskStates,
   readJson,
+  readNdjson,
   runCommand,
   writeJson
 } from "./runtime.mjs";
@@ -455,6 +459,161 @@ export function verifyTrackedEquivalence(mainWorktreePath, state, changedFiles) 
     if (!gitTreeEntriesEqual(taskEntry, mainEntry)) {
       failures.push(`Tracked main mismatch: ${filePath}`);
     }
+  }
+  return failures;
+}
+
+/**
+ * @param {string} repoRoot
+ * @param {string} mainWorktreePath
+ * @param {import("./runtime.mjs").TaskState} state
+ * @param {string[]} changedFiles
+ * @returns {Promise<string[]>}
+ */
+async function verifyTrackedSuccessorLineage(repoRoot, mainWorktreePath, state, changedFiles) {
+  const failures = [];
+  if (
+    state.supersessionMode !== "declared_successor_lineage" ||
+    state.supersessionStatus !== "superseded_verified" ||
+    !state.commitSha ||
+    !state.supersessionMainSha ||
+    !state.supersessionManifestSha256 ||
+    !state.supersessionManifestRelativePath ||
+    !state.supersessionProofArtifactRelativePath ||
+    !new Set([1, 2]).has(state.supersessionManifestVersion ?? 1) ||
+    !Array.isArray(state.successorLineage) ||
+    state.successorLineage.length === 0
+  ) {
+    return ["Successor-lineage state is incomplete."];
+  }
+
+  try {
+    const manifestPath = path.resolve(mainWorktreePath, state.supersessionManifestRelativePath);
+    const manifestRelativePath = path.relative(mainWorktreePath, manifestPath);
+    if (!manifestRelativePath || manifestRelativePath.startsWith("..") || path.isAbsolute(manifestRelativePath)) {
+      throw new Error("Successor-lineage sealed manifest path is outside canonical main.");
+    }
+    const ignored = runCommand(
+      mainWorktreePath,
+      "git",
+      ["check-ignore", "-q", "--no-index", "--", manifestRelativePath],
+      { allowFailure: true }
+    );
+    if (ignored.status !== 0) {
+      throw new Error("Successor-lineage sealed manifest is no longer an ignored local file.");
+    }
+    const loaded = loadSuccessorLineageManifest(manifestPath);
+    if (loaded.sha256 !== state.supersessionManifestSha256) {
+      throw new Error("Successor-lineage sealed manifest SHA-256 changed before cleanup.");
+    }
+    if (loaded.manifest.version !== (state.supersessionManifestVersion ?? 1)) {
+      throw new Error("Successor-lineage sealed manifest version does not match task state.");
+    }
+    const proof = proveSuccessorLineage(
+      mainWorktreePath,
+      state,
+      loaded.manifest,
+      await loadAllTaskStates(repoRoot),
+      "HEAD",
+      { allowedDirectPaths: [] }
+    );
+    if (!sameStringSet(proof.changedPaths, changedFiles)) {
+      failures.push("Successor-lineage changed-file set does not match task state.");
+    }
+    if (JSON.stringify(proof.successors) !== JSON.stringify(state.successorLineage)) {
+      failures.push("Successor-lineage sealed manifest entries do not match task state.");
+    }
+
+    const artifactDir = getTaskArtifactsDir(repoRoot, state.taskId);
+    const proofPath = path.resolve(artifactDir, state.supersessionProofArtifactRelativePath);
+    const proofRelativePath = path.relative(artifactDir, proofPath);
+    if (!proofRelativePath || proofRelativePath.startsWith("..") || path.isAbsolute(proofRelativePath)) {
+      throw new Error("Successor-lineage proof artifact path is outside the task artifact directory.");
+    }
+    const artifact = await readJson(proofPath);
+    const expectedArtifact = {
+      version: 2,
+      status: proof.status,
+      manifestVersion: proof.manifestVersion,
+      taskId: state.taskId,
+      taskCommitSha: proof.taskCommitSha,
+      mainSha: proof.mainSha,
+      manifestSha256: state.supersessionManifestSha256,
+      manifestRelativePath: state.supersessionManifestRelativePath,
+      changedPaths: proof.changedPaths,
+      rewrittenPaths: proof.rewrittenPaths,
+      successors: proof.successors,
+      approvedDirectMainCommitShas: proof.approvedDirectMainCommitShas,
+      originalAcceptance: {
+        command: "npm run qa:agent",
+        sha: proof.taskCommitSha,
+        status: "passed"
+      },
+      currentMainAcceptance: {
+        command: "npm run qa:agent",
+        sha: proof.mainSha,
+        status: "passed"
+      }
+    };
+    const unexpectedArtifactKeys =
+      artifact && typeof artifact === "object" && !Array.isArray(artifact)
+        ? Object.keys(artifact).filter((key) => !Object.hasOwn(expectedArtifact, key))
+        : [];
+    const normalizedArtifact =
+      artifact && typeof artifact === "object" && !Array.isArray(artifact)
+        ? {
+            version: artifact.version,
+            status: artifact.status,
+            manifestVersion: artifact.manifestVersion ?? 1,
+            taskId: artifact.taskId,
+            taskCommitSha: artifact.taskCommitSha,
+            mainSha: artifact.mainSha,
+            manifestSha256: artifact.manifestSha256,
+            manifestRelativePath: artifact.manifestRelativePath,
+            changedPaths: artifact.changedPaths,
+            rewrittenPaths: artifact.rewrittenPaths,
+            successors: artifact.successors,
+            approvedDirectMainCommitShas: artifact.approvedDirectMainCommitShas ?? [],
+            originalAcceptance: artifact.originalAcceptance,
+            currentMainAcceptance: artifact.currentMainAcceptance
+          }
+        : artifact;
+    if (unexpectedArtifactKeys.length > 0 || JSON.stringify(normalizedArtifact) !== JSON.stringify(expectedArtifact)) {
+      throw new Error("Successor-lineage immutable proof artifact does not match task state.");
+    }
+    const history = await readNdjson(getHistoryPath(repoRoot));
+    const publishSkip = [...history].reverse().find(
+      (event) =>
+        event.taskId === state.taskId &&
+        event.branch === state.branch &&
+        event.type === "PUBLISH_SKIP" &&
+        event.payload.supersessionStatus === "superseded_verified" &&
+        event.payload.commitSha === state.commitSha &&
+        event.payload.mainSha === state.supersessionMainSha &&
+        event.payload.manifestSha256 === state.supersessionManifestSha256
+    );
+    if (!publishSkip) {
+      throw new Error("Successor-lineage cleanup requires matching append-only PUBLISH_SKIP evidence.");
+    }
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+  }
+
+  const mainSha = getHeadSha(mainWorktreePath);
+  if (
+    state.originalAcceptanceStatus !== "passed" ||
+    state.originalAcceptanceCommand !== "npm run qa:agent" ||
+    state.originalAcceptanceTaskSha !== state.commitSha
+  ) {
+    failures.push("Successor-lineage cleanup requires exact original-task acceptance evidence.");
+  }
+  if (
+    state.successorAcceptanceStatus !== "passed" ||
+    state.successorAcceptanceCommand !== "npm run qa:agent" ||
+    state.successorAcceptanceMainSha !== mainSha ||
+    state.supersessionMainSha !== mainSha
+  ) {
+    failures.push("Successor-lineage cleanup requires exact current-main acceptance evidence.");
   }
   return failures;
 }
@@ -920,12 +1079,17 @@ export async function runFinishVerification(repoRoot, state, phase) {
         details: `${dependencies.fingerprint}${dependencies.installed ? ` (${dependencies.reason})` : " (current)"}`
       });
 
-      const trackedFailures = verifyTrackedEquivalence(mainWorktreePath, state, result.changedFiles);
+      const successorMode = state.supersessionStatus === "superseded_verified";
+      const trackedFailures = successorMode
+        ? await verifyTrackedSuccessorLineage(repoRoot, mainWorktreePath, state, result.changedFiles)
+        : verifyTrackedEquivalence(mainWorktreePath, state, result.changedFiles);
       recordFailures(
         result,
-        "tracked_main_equivalence",
+        successorMode ? "tracked_successor_lineage" : "tracked_main_equivalence",
         trackedFailures,
-        state.equivalenceMode === "parallel_duplicate_commit"
+        successorMode
+          ? `${result.changedFiles.length} task paths have a verified successor lineage`
+          : state.equivalenceMode === "parallel_duplicate_commit"
           ? `${result.changedFiles.length} task paths match the explicit replacement commit in main`
           : `${result.changedFiles.length} task paths match canonical main Git objects`
       );
@@ -996,6 +1160,14 @@ export async function runFinishVerification(repoRoot, state, phase) {
         commitSha: state.commitSha,
         equivalenceMode: state.equivalenceMode ?? null,
         replacementCommitSha: state.replacementCommitSha ?? null,
+        supersessionMode: state.supersessionMode ?? null,
+        supersessionStatus: state.supersessionStatus ?? null,
+        supersessionManifestVersion: state.supersessionManifestVersion ?? null,
+        supersessionManifestSha256: state.supersessionManifestSha256 ?? null,
+        supersessionManifestRelativePath: state.supersessionManifestRelativePath ?? null,
+        supersessionProofArtifactRelativePath: state.supersessionProofArtifactRelativePath ?? null,
+        supersessionMainSha: state.supersessionMainSha ?? null,
+        successorLineage: state.successorLineage ?? [],
         mainSha: result.mainSha,
         worktreePath: state.worktreePath,
         mainWorktreePath: canonicalPath(mainWorktreePath),

@@ -43,6 +43,14 @@ Run this discovery only inside the locked target repository.
 6. Ask for cleanup explicitly before deleting any local branch or worktree.
 7. Verify the final state from task state/history and filesystem, not just from exit code: merged or not, pushed or not, and `cleanupStatus` passed, kept, or failed.
 
+## Superseded And Legacy Cleanup
+
+- Use `--successor-lineage <ignored-manifest.json> --cleanup 1` only after separate owner approval. Version 1 requires ordered finished/published managed task records; version 2 additionally permits typed `approved_direct_main` only for an exact single-parent first-parent commit without managed task state and with full `changedPaths` inside a declared process-only profile.
+- Require complete accounting of every rewritten original-task path and every content-changing commit. Transport merges are allowed only when they carry an already-accounted blob; custom merge resolutions, stale main, missing paths, hidden scope, unfinished successors and unordered records fail closed.
+- Repeat `npm run qa:agent` from the exact original task commit and exact current-main SHA. Preserve dependency, `runtime/books`, finish-profile and pre/post cleanup verification gates. Record `superseded_verified`; never call it equivalence.
+- Use `--legacy-state-reconciliation <ignored-manifest.json> --cleanup 1` only for owner-approved recovery backed by exact SHA, clean worktree, QA/preview and ordered `MERGE_MAIN -> PUSH_MAIN -> MAIN_VERIFY` evidence. Never edit task-state manually.
+- If accepted successor evidence becomes stale because `main` advances, use a new ignored manifest with `--refresh-successor-lineage`; previous manifest/proof/history stay immutable and the refresh is append-only.
+
 ## Cleanup Choice
 
 Present cleanup as a fixed user-facing choice unless the repo explicitly requires something else:

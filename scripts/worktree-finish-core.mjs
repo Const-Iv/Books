@@ -6,6 +6,10 @@ import path from "node:path";
 import { buildCommitMessage } from "./lib/conveyor-utils.mjs";
 import { proveParallelDuplicateCommit } from "./lib/duplicate-equivalence.mjs";
 import { runFinishVerification } from "./lib/finish-verification.mjs";
+import {
+  maybeReconcileLegacyState,
+  maybeSkipSuccessorPublish
+} from "./lib/successor-cleanup-flow.mjs";
 import { executeTaskCleanup, normalizeCleanupChoice } from "./lib/worktree-cleanup.mjs";
 import {
   OPERATIONAL_DOCS,
@@ -529,6 +533,10 @@ async function main() {
   const requestedBranch = typeof flags.branch === "string" ? flags.branch : null;
   const requestedTaskId = typeof flags["task-id"] === "string" ? flags["task-id"] : null;
   const duplicateOf = typeof flags["duplicate-of"] === "string" ? flags["duplicate-of"] : null;
+  const successorLineage = typeof flags["successor-lineage"] === "string" ? flags["successor-lineage"] : null;
+  const refreshSuccessorLineage = flags["refresh-successor-lineage"] === true;
+  const legacyStateReconciliation =
+    typeof flags["legacy-state-reconciliation"] === "string" ? flags["legacy-state-reconciliation"] : null;
   const decision = typeof flags.decision === "string" ? flags.decision : null;
 
   if (decision && decision !== "retry") {
@@ -549,6 +557,33 @@ async function main() {
   if (duplicateOf && publishMain) {
     throw new Error("--duplicate-of cannot be combined with --publish-main; duplicate cleanup never performs a second merge.");
   }
+  if (flags["successor-lineage"] !== undefined && !successorLineage) {
+    throw new Error("--successor-lineage requires one JSON manifest path.");
+  }
+  if (flags["refresh-successor-lineage"] !== undefined && !refreshSuccessorLineage) {
+    throw new Error("--refresh-successor-lineage is a boolean flag and does not accept a value.");
+  }
+  if (refreshSuccessorLineage && !successorLineage) {
+    throw new Error("--refresh-successor-lineage requires --successor-lineage <ignored-manifest.json>.");
+  }
+  if (flags["legacy-state-reconciliation"] !== undefined && !legacyStateReconciliation) {
+    throw new Error("--legacy-state-reconciliation requires one JSON manifest path.");
+  }
+  if (successorLineage && duplicateOf) {
+    throw new Error("--successor-lineage and --duplicate-of are mutually exclusive.");
+  }
+  if (successorLineage && cleanup !== "yes") {
+    throw new Error("--successor-lineage is cleanup-only and requires --cleanup yes (or 1).");
+  }
+  if (refreshSuccessorLineage && cleanup !== "yes") {
+    throw new Error("--refresh-successor-lineage is cleanup-only and requires --cleanup yes (or 1).");
+  }
+  if (legacyStateReconciliation && cleanup !== "yes") {
+    throw new Error("--legacy-state-reconciliation is cleanup-only and requires --cleanup yes (or 1).");
+  }
+  if (legacyStateReconciliation && duplicateOf) {
+    throw new Error("--legacy-state-reconciliation and --duplicate-of are mutually exclusive.");
+  }
 
   const state = await resolveTaskState(repoRoot, currentBranch, {
     branch: requestedBranch,
@@ -565,13 +600,21 @@ async function main() {
     }
     Object.assign(state, qaRefreshed);
   }
-  const skippedDuplicate = await maybeSkipDuplicatePublish(repoRoot, state, duplicateOf);
-  const skippedAlreadyMerged = skippedDuplicate ? false : await maybeSkipAlreadyMergedPublish(repoRoot, state);
+  await maybeReconcileLegacyState(repoRoot, state, legacyStateReconciliation);
+  const skippedSuccessor = await maybeSkipSuccessorPublish(
+    repoRoot,
+    state,
+    successorLineage,
+    refreshSuccessorLineage
+  );
+  const skippedDuplicate = skippedSuccessor ? false : await maybeSkipDuplicatePublish(repoRoot, state, duplicateOf);
+  const skippedAlreadyMerged = skippedSuccessor || skippedDuplicate ? false : await maybeSkipAlreadyMergedPublish(repoRoot, state);
 
   const publishAlreadyCompleted =
+    skippedSuccessor ||
     skippedDuplicate ||
     skippedAlreadyMerged ||
-    (["pushed", "local-only", "skipped_already_merged", "skipped_duplicate_cleanup_only"].includes(state.publishStatus ?? "") &&
+    (["pushed", "local-only", "skipped_already_merged", "skipped_duplicate_cleanup_only", "skipped_successor_cleanup_only"].includes(state.publishStatus ?? "") &&
       ["merged", "finished"].includes(state.status ?? ""));
 
   if (!publishAlreadyCompleted) {

@@ -29,7 +29,26 @@
       "module": "scripts/lib/finish-verification.mjs",
       "tests": [
         "tests/unit/duplicate-equivalence.test.mjs",
+        "tests/unit/successor-cleanup-contract.test.mjs",
         "tests/integration/books-artifacts-finish.test.mjs"
+      ]
+    },
+    {
+      "module": "scripts/lib/successor-lineage.mjs",
+      "tests": [
+        "tests/unit/successor-lineage.test.mjs"
+      ]
+    },
+    {
+      "module": "scripts/lib/legacy-state-reconciliation.mjs",
+      "tests": [
+        "tests/unit/legacy-state-reconciliation.test.mjs"
+      ]
+    },
+    {
+      "module": "scripts/lib/successor-cleanup-flow.mjs",
+      "tests": [
+        "tests/unit/successor-cleanup-contract.test.mjs"
       ]
     },
     {
@@ -115,7 +134,8 @@
       "module": "scripts/worktree-finish-core.mjs",
       "tests": [
         "tests/e2e/nightly-finish.test.mjs",
-        "tests/integration/books-artifacts-finish.test.mjs"
+        "tests/integration/books-artifacts-finish.test.mjs",
+        "tests/unit/successor-cleanup-contract.test.mjs"
       ]
     }
   ]
